@@ -1,0 +1,54 @@
+# Secrets / environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+secrets.yaml
+secrets/
+.credentials/
+credentials.json
+token.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+
+# Home Assistant runtime
+.storage/
+.homeassistant/
+deps/
+tts/
+home-assistant.log*
+home-assistant_v2.db*
+*.db-shm
+*.db-wal
+
+# IDE / OS
+.vscode/
+.idea/
+.cursor/
+.DS_Store
+Thumbs.db
+
+# Temporary exploration data
+tmp/
+temp/
+scratch/
+captures/private/
+
+# Local config
+*.local
