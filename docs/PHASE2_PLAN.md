@@ -778,3 +778,55 @@ None.
 ### PRODUCT.md drift check
 
 PRODUCT.md not edited. `contests[]` remains the schedule source; featured is supplementary consistency only.
+
+## Implementation Notes — Slice 7 (single contest row → `Game`)
+
+### What landed
+
+- `custom_components/maxpreps/parsing/contests.py` — `decode_contest_row(row, school_id) -> Game`; participant read indices `PART_IDX_NAME` (14), `PART_IDX_RESULT` (5), `PART_IDX_SCORE` (6) on `row[37]`/`row[38]` copies; status/home-away decode helpers
+- `tests/test_contests.py` — Centennial football worked examples (Johns Creek final/home, Alpharetta scheduled, Dunwoody neutral final, Riverwood deleted/away); baseball row decode; synthetics for unknown `contestState`, `contestState` 4 without `hasResult`, timezone-aware date rejection, missing school; optional volleyball TBA `opponent_id` None regression
+
+No deleted-row filtering, `Schedule` adapter, HTTP client, timezone localization, or new `Game` fields.
+
+### Evidence tiers (decode behavior)
+
+| Mapping | Tier | Notes |
+|---------|------|-------|
+| `id` ← `row[1]` contestId | **Proven** | Matches research Slice 06 |
+| `date` ← `row[11]` ISO, timezone-naive | **Proven** | Raises `ContestSchemaError` if tz-aware; no JSON-LD/featured/school-TZ |
+| `contestState` 1 → `deleted` | **Proven** | Riverwood row |
+| `contestState` 2 → `scheduled` | **Proven** | Alpharetta Pregame row |
+| `contestState` 4 + `hasResult` → `final` | **Inferred** | Dunwoody/Johns Creek finals; not a named enum in fixtures |
+| Other `contestState` / 4 without `hasResult` → `unknown` | **Proven** (behavior) | Message from `row[28]` preserved; no live/postponed/cancelled inference |
+| `homeAwayType` 0/1 → home/away | **Proven** | Research Slice 06 |
+| `homeAwayType` 2 → `neutral` | **Inferred** | Dunwoody row only; not upgraded to proven |
+| Scores/result from `row[37]`/`row[38]` `[6]`/`[5]` | **Inferred** | Featured alignment; only when `hasResult` true; never `row[29]` prose |
+| `venue` ← `row[5]` only | **Proven** | Participant city/state `[15]`/`[16]` intentionally unused (school address, not game venue) |
+| `game_url` ← `row[18]` | **Proven** | Null on deleted Riverwood |
+| `status_message` ← `row[28]` when non-blank | **Proven** | Required for `unknown`; also stored on deleted/scheduled |
+
+Slice 6 index constants not mapped to `Game` fields (`IDX_SPORT_SEASON_ID`, participant row id/index, etc.) remain unused on purpose — not omissions.
+
+### Decisions
+
+- **Configured-school orientation:** `row[37]` is the selected-school view, `row[38]` the opponent — not winner-first. Participant `teams[*]` supplies `team_name`, `opponent_name`, `opponent_id`, and `home_away` for the school matching `school_id`; missing school raises `ContestSchemaError`.
+- **Deleted rows decode:** `decode_contest_row` returns a `Game` for `contestState` 1; filtering is Slice 8.
+- **TBA opponents:** `opponent_id` null/blank → `None`; `opponent_name` null/blank → `""` (required `str` on `Game`).
+- **No `teamContext`:** `team_name` comes from the participant row, not page chrome.
+
+### Test command and result
+
+```
+pip install -e ".[dev]"
+pytest
+```
+
+Result: **pass** (65 tests).
+
+### Deviations
+
+None.
+
+### PRODUCT.md drift check
+
+PRODUCT.md not edited. Timezone-naive dates preserved per Phase 2 charter; no HA PRE/IN/POST or live-score states added.

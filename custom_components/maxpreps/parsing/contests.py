@@ -1,10 +1,12 @@
-"""Validate MaxPreps schedule ``contests[]`` positional schema."""
+"""Validate and decode MaxPreps schedule ``contests[]`` positional schema."""
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 
 from custom_components.maxpreps.exceptions import ContestSchemaError
+from custom_components.maxpreps.models import Game, GameStatus, HomeAway
 
 CONTEST_ROW_ARITY = 41
 PARTICIPANT_WIDTH = 32
@@ -26,6 +28,17 @@ PART_IDX_TEAM_ID = 1
 PART_IDX_SPORT_SEASON_ID = 2
 PART_IDX_INDEX = 4
 PART_IDX_HOME_AWAY_TYPE = 11
+PART_IDX_RESULT = 5
+PART_IDX_SCORE = 6
+PART_IDX_NAME = 14
+
+_CONTEST_STATE_DELETED = 1
+_CONTEST_STATE_SCHEDULED = 2
+_CONTEST_STATE_FINAL = 4
+
+_HOME_AWAY_HOME = 0
+_HOME_AWAY_AWAY = 1
+_HOME_AWAY_NEUTRAL = 2
 
 _FEATURED_FIELD_MAP: tuple[tuple[str, int], ...] = (
     ("location", IDX_LOCATION),
@@ -70,6 +83,40 @@ def check_featured_game_consistency(
                 f"featuredGameData {featured_key!r} does not match "
                 f"contests[][{row_index}] for contestId {featured_id!r}"
             )
+
+
+def decode_contest_row(row: list[Any], school_id: str) -> Game:
+    """Decode one shaped contest row into a ``Game`` for the configured school."""
+    school_participant, opponent_participant = _resolve_participants(row, school_id)
+
+    has_result = row[IDX_HAS_RESULT]
+    contest_state = row[IDX_CONTEST_STATE]
+
+    team_score: int | None = None
+    opponent_score: int | None = None
+    result: str | None = None
+    if has_result:
+        current_team = row[IDX_CURRENT_TEAM]
+        opponent_team = row[IDX_OPPONENT_TEAM]
+        team_score = current_team[PART_IDX_SCORE]
+        opponent_score = opponent_team[PART_IDX_SCORE]
+        result = current_team[PART_IDX_RESULT]
+
+    return Game(
+        id=row[IDX_CONTEST_ID],
+        date=_parse_contest_date(row[IDX_DATE]),
+        status=_decode_status(contest_state, has_result),
+        team_name=_require_participant_name(school_participant),
+        opponent_name=_participant_name(opponent_participant),
+        home_away=_decode_home_away(school_participant[PART_IDX_HOME_AWAY_TYPE]),
+        opponent_id=_optional_id(opponent_participant[PART_IDX_TEAM_ID]),
+        team_score=team_score,
+        opponent_score=opponent_score,
+        result=result,
+        venue=_optional_str(row[IDX_LOCATION]),
+        game_url=_optional_str(row[IDX_CANONICAL_URL]),
+        status_message=_optional_str(row[IDX_STATUS_MESSAGE]),
+    )
 
 
 def _find_contest_row(contests: list[Any], contest_id: str) -> list[Any] | None:
@@ -164,3 +211,84 @@ def _require_type(value: Any, expected_type: type[Any], row_index: int, field: i
 def _require_str_or_none(value: Any, row_index: int, field: int | str) -> None:
     if value is not None and not isinstance(value, str):
         raise ContestSchemaError(f"contests[{row_index}][{field}] must be a string or null")
+
+
+def _resolve_participants(
+    row: list[Any],
+    school_id: str,
+) -> tuple[list[Any], list[Any]]:
+    teams = row[IDX_TEAMS]
+    school_participant: list[Any] | None = None
+    opponent_participant: list[Any] | None = None
+
+    for participant in teams:
+        if participant[PART_IDX_TEAM_ID] == school_id:
+            school_participant = participant
+        else:
+            opponent_participant = participant
+
+    if school_participant is None or opponent_participant is None:
+        raise ContestSchemaError(
+            f"configured school_id {school_id!r} not found in contests teams"
+        )
+
+    return school_participant, opponent_participant
+
+
+def _parse_contest_date(value: str) -> datetime:
+    parsed = datetime.fromisoformat(value)
+    if parsed.tzinfo is not None:
+        raise ContestSchemaError("contest date must be timezone-naive")
+    return parsed
+
+
+def _decode_status(contest_state: int, has_result: bool) -> GameStatus:
+    if contest_state == _CONTEST_STATE_DELETED:
+        return GameStatus.DELETED
+    if contest_state == _CONTEST_STATE_SCHEDULED:
+        return GameStatus.SCHEDULED
+    if contest_state == _CONTEST_STATE_FINAL and has_result:
+        return GameStatus.FINAL
+    return GameStatus.UNKNOWN
+
+
+def _decode_home_away(home_away_type: int) -> HomeAway:
+    if home_away_type == _HOME_AWAY_HOME:
+        return HomeAway.HOME
+    if home_away_type == _HOME_AWAY_AWAY:
+        return HomeAway.AWAY
+    if home_away_type == _HOME_AWAY_NEUTRAL:
+        return HomeAway.NEUTRAL
+    raise ContestSchemaError(f"unobserved homeAwayType {home_away_type!r}")
+
+
+def _optional_str(value: Any) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        return None
+    stripped = value.strip()
+    return stripped if stripped else None
+
+
+def _optional_id(value: Any) -> str | None:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        stripped = value.strip()
+        return stripped if stripped else None
+    return None
+
+
+def _require_participant_name(participant: list[Any]) -> str:
+    name = participant[PART_IDX_NAME]
+    if not isinstance(name, str) or not name.strip():
+        raise ContestSchemaError("selected-school participant name is missing")
+    return name
+
+
+def _participant_name(participant: list[Any]) -> str:
+    name = participant[PART_IDX_NAME]
+    if not isinstance(name, str) or not name.strip():
+        return ""
+    return name
