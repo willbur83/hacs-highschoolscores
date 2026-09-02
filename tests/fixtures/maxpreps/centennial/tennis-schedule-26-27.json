@@ -1,0 +1,32 @@
+{
+  "description": "Legacy ASPX schedule page capture for Centennial Boys Varsity Tennis (Slice 15). Empty schedule — no __NEXT_DATA__ / pageProps.contests.",
+  "source_url": "https://www.maxpreps.com/ga/roswell/centennial-knights/tennis/schedule/",
+  "captured_at": "2026-09-01T21:31:05.260823+00:00",
+  "status_code": 200,
+  "content_type": "text/html; charset=utf-8",
+  "transport": "Legacy ASPX /local/team/schedule.aspx (NOT Next.js __NEXT_DATA__)",
+  "page_type": "teamschedule",
+  "has_next_data": false,
+  "has_page_props_contests": false,
+  "has_featured_game_data": false,
+  "schedule_empty": true,
+  "empty_state_message": "No Schedule Available",
+  "legacy_rewrite_url": null,
+  "response_headers": {
+    "x-mp-caching-rules": "key: File system rule:/local/team/ - akamai: 600 (09/01/26 02:41:05); client: -1 (09/01/26 02:31:04); last mod: 09/01/26 02:31:05; /local/team/schedule.aspx /ga/roswell/centennial-knights/tennis/schedule/ gendersport=boys,tennis schoolid=52dea55b-3988-4979-b5fd-20376058997f ssid=7a9c6e6c-6511-4894-9dd6-67230fb02f84",
+    "x-mp-rendered-for-member": "False"
+  },
+  "identifiers": {
+    "school_id": "52dea55b-3988-4979-b5fd-20376058997f",
+    "sport_season_id": "7a9c6e6c-6511-4894-9dd6-67230fb02f84",
+    "all_season_id": "e6fc52ec-0c90-4628-b4de-a2cbe3bbcb05",
+    "gender": "Boys",
+    "sport": "Tennis",
+    "season": "Spring",
+    "year": "26-27",
+    "level": "Varsity"
+  },
+  "pageProps": null,
+  "contests": null,
+  "featuredGameData": null
+}

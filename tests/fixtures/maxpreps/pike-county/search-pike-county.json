@@ -1,0 +1,59 @@
+{
+  "description": "Sanitized school search results from __NEXT_DATA__.props.pageProps (Slice 16). Query: Pike County.",
+  "source_url": "https://www.maxpreps.com/search/?q=pike%20county&q2=Pike%20County",
+  "captured_at": "2026-09-01T21:43:43.756041+00:00",
+  "status_code": 200,
+  "content_type": "text/html; charset=utf-8",
+  "transport": "Next.js __NEXT_DATA__ embedded in HTML search results page (no separate search API observed)",
+  "buildId": "c4253631-315fb3c5\n",
+  "page": "/discovery/search",
+  "query": {
+    "q2": "Pike County",
+    "q": "pike county"
+  },
+  "pageProps": {
+    "query": "pike county",
+    "signals": {
+      "location": false,
+      "gender": false,
+      "sport": false,
+      "state": false,
+      "tab": false
+    },
+    "initialSchoolResults": [
+      {
+        "schoolId": "84dd878e-671b-40d4-83de-e73ab301f92e",
+        "name": "Pike County",
+        "state": "GA",
+        "city": "Zebulon",
+        "zip": "30295",
+        "mascot": "Pirates",
+        "mascotUrl": "https://image.maxpreps.io/school-mascot/8/4/d/84dd878e-671b-40d4-83de-e73ab301f92e.gif?version=635804514000000000&width=1024&height=1024",
+        "canonicalUrl": "https://www.maxpreps.com/ga/zebulon/pike-county-pirates/",
+        "ranking": 112599
+      },
+      {
+        "schoolId": "72d03be2-b33d-4408-9dda-ebee32685d7f",
+        "name": "Pike County",
+        "state": "AL",
+        "city": "Brundidge",
+        "zip": "36010-2214",
+        "mascot": "Bulldogs",
+        "mascotUrl": "https://image.maxpreps.io/school-mascot/7/2/d/72d03be2-b33d-4408-9dda-ebee32685d7f.gif?version=638253632400000000&width=1024&height=1024",
+        "canonicalUrl": "https://www.maxpreps.com/al/brundidge/pike-county-bulldogs/",
+        "ranking": 45897
+      },
+      {
+        "schoolId": "e6603370-6c33-4e59-aa5d-9b946e4c8cf3",
+        "name": "Pike County Central",
+        "state": "KY",
+        "city": "Pikeville",
+        "zip": "41501-3456",
+        "mascot": "Hawks",
+        "mascotUrl": "https://image.maxpreps.io/school-mascot/e/6/6/e6603370-6c33-4e59-aa5d-9b946e4c8cf3.gif?version=636504911400000000&width=1024&height=1024",
+        "canonicalUrl": "https://www.maxpreps.com/ky/pikeville/pike-county-central-hawks/",
+        "ranking": 29433
+      }
+    ]
+  }
+}

@@ -1,0 +1,3192 @@
+{
+  "description": "Sanitized __NEXT_DATA__.props.pageProps from Centennial Girls Varsity Basketball schedule page (Slice 14 private cache promoted in Phase 2 Slice 0; zero new live requests).",
+  "source_url": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/schedule/",
+  "captured_at": "2026-09-01T21:02:11.313820+00:00",
+  "status_code": 200,
+  "content_type": "text/html; charset=utf-8",
+  "transport": "Next.js __NEXT_DATA__ embedded in HTML document (no separate data URL observed)",
+  "buildId": "d8af3013-00483cf1\n",
+  "page": "/team/schedule",
+  "query": {
+    "url": "/local/team/schedule.aspx?gendersport=girls,basketball&schoolid=52dea55b-3988-4979-b5fd-20376058997f&ssid=e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+    "currentContext": "Team",
+    "schoolid": "52dea55b-3988-4979-b5fd-20376058997f",
+    "ssid": "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+    "gendersport": "girls,basketball",
+    "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+    "gender": "Girls",
+    "sport": "Basketball",
+    "teamLevel": "Varsity"
+  },
+  "pageProps": {
+    "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/schedule/",
+    "tracking": {
+      "gender": "Girls",
+      "sportName": "Basketball",
+      "teamLevel": "Varsity",
+      "ssid": "e3e91f97-0b3e-4627-9b25-52d957e3aad5"
+    },
+    "requestContext": {
+      "deviceType": "desktop",
+      "appType": 0
+    },
+    "teamContext": {
+      "data": {
+        "schoolAddress": "9310 Scott Rd",
+        "schoolZipCode": "30076-3417",
+        "schoolMascot": "Knights",
+        "schoolMascotUrl": "https://image.maxpreps.io/school-mascot/5/2/d/52dea55b-3988-4979-b5fd-20376058997f.gif?version=638883757819641160&width=1024&height=1024",
+        "schoolColor1": "034CB2",
+        "schoolColor2": "222222",
+        "schoolColor3": "FFFFFF",
+        "schoolMailingAddress": null,
+        "schoolMailingAddress2": null,
+        "schoolMailingAddressNote": null,
+        "schoolMailingCity": null,
+        "schoolMailingState": null,
+        "schoolMailingZip": null,
+        "schoolPhone": "(470) 254-4230 x44202",
+        "schoolCanonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/",
+        "stateId": "54dba61f-b00c-4d96-9a20-28d5d86be8be",
+        "stateName": "Georgia",
+        "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+        "leagueId": "161b3fca-bd4d-4be0-a01b-31df2442c72b",
+        "leagueName": "AAAA Region 6",
+        "leagueCanonicalUrl": "https://www.maxpreps.com/ga/basketball/girls/26-27/region/aaaa-region-6/?leagueid=161b3fca-bd4d-4be0-a01b-31df2442c72b",
+        "stateDivisionId": "efb8ea61-3090-4d2b-8bbf-df2276354c70",
+        "stateDivisionName": "Division AAAAA",
+        "sectionDivisionId": "00000000-0000-0000-0000-000000000000",
+        "sectionDivisionName": "",
+        "schoolAssociationId": "78f7060d-fad4-4731-82ba-b8b0d337e57f",
+        "schoolAssociationName": "Georgia High School Association",
+        "schoolAssociationGoverningBodyName": "Georgia High School Association",
+        "schoolAssociationGoverningBodyUrl": "http://www.ghsa.net",
+        "schoolAssociationGoverningBodyAbbreviation": "GHSA",
+        "schoolShouldAppendHighSchoolString": true,
+        "schoolNameAcronym": "CHS",
+        "stateNominationStartsOn": null,
+        "stateNominationEndsOn": null,
+        "stateNominationBodyName": null,
+        "stateNominationBodyAbbreviation": null,
+        "stateQualificationStartsOn": null,
+        "stateQualificationEndsOn": null,
+        "stateQualificationBodyName": null,
+        "stateQualificationBodyAbbreviation": null,
+        "isGameChangerConnected": false,
+        "prepSportswearId": -1,
+        "isDeleted": false,
+        "schoolName": "Centennial",
+        "schoolFormattedName": "Centennial (Roswell, GA)",
+        "schoolCity": "Roswell",
+        "stateCode": "GA",
+        "sportSeasonName": "Girls Basketball Varsity Winter 26-27",
+        "gender": "Girls",
+        "sport": "Basketball",
+        "season": "Winter",
+        "level": "Varsity",
+        "year": "26-27",
+        "formattedSportSeasonName": "Girls Basketball",
+        "coachName": null,
+        "teamSize": 0,
+        "sectionId": "a6673070-5906-41b6-b4a7-86ff35c1bdf1",
+        "sectionName": "Georgia",
+        "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+        "teamId": "52dea55b-3988-4979-b5fd-20376058997f",
+        "sportSeasonId": "e3e91f97-0b3e-4627-9b25-52d957e3aad5"
+      },
+      "teamMenuData": [
+        {
+          "text": "Home",
+          "adminUrl": null,
+          "publicUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+          "adminLoginUrl": null,
+          "openInPopup": false,
+          "roles": null,
+          "subMenu": null
+        },
+        {
+          "text": "Dashboard",
+          "adminUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/admin/?admin=1",
+          "publicUrl": null,
+          "adminLoginUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/admin/?admin=1",
+          "openInPopup": false,
+          "roles": [
+            {
+              "role": "StandardAdminUser",
+              "permissions": null
+            },
+            {
+              "role": "AthleticDirector",
+              "permissions": [
+                "AthleticDirectorBasic"
+              ]
+            },
+            {
+              "role": "HeadCoach",
+              "permissions": [
+                "CoachAdminAll",
+                "CoachAdminData"
+              ]
+            }
+          ],
+          "subMenu": null
+        },
+        {
+          "text": "Schedule",
+          "adminUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/schedule/?admin=1",
+          "publicUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/schedule/",
+          "adminLoginUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/schedule/?admin=1",
+          "openInPopup": false,
+          "roles": [
+            {
+              "role": "StandardAdminUser",
+              "permissions": null
+            },
+            {
+              "role": "AthleticDirector",
+              "permissions": [
+                "AthleticDirectorBasic"
+              ]
+            },
+            {
+              "role": "HeadCoach",
+              "permissions": [
+                "CoachAdminAll",
+                "CoachAdminData",
+                "CoachAdminOTR"
+              ]
+            }
+          ],
+          "subMenu": null
+        },
+        {
+          "text": "Roster",
+          "adminUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/roster/?admin=1",
+          "publicUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/roster/",
+          "adminLoginUrl": null,
+          "openInPopup": false,
+          "roles": [
+            {
+              "role": "StandardAdminUser",
+              "permissions": null
+            },
+            {
+              "role": "AthleticDirector",
+              "permissions": [
+                "AthleticDirectorBasic"
+              ]
+            },
+            {
+              "role": "HeadCoach",
+              "permissions": [
+                "CoachAdminAll",
+                "CoachAdminData"
+              ]
+            }
+          ],
+          "subMenu": null
+        },
+        {
+          "text": "Videos",
+          "adminUrl": null,
+          "publicUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/media/videos/",
+          "adminLoginUrl": null,
+          "openInPopup": false,
+          "roles": null,
+          "subMenu": null
+        },
+        {
+          "text": "Stats",
+          "adminUrl": "https://admin.maxpreps.com/(S([sessionId]))/admin/coach/stats/teamseasonstats.aspx?sessionid=[v2SessionId]",
+          "publicUrl": null,
+          "adminLoginUrl": "https://secure.maxpreps.com/utility/member/admin_gateway.aspx?accessid1=52dea55b-3988-4979-b5fd-20376058997f&accessid2=81d2a4ab-cd12-46ac-9ead-f00c1c49206b&roleType=HeadCoach&destination=%2Fadmin%2Fcoach%2Fchange_season.aspx%3Fssid%3De3e91f97-0b3e-4627-9b25-52d957e3aad5%26destination%3DL2FkbWluL2NvYWNoL3N0YXRzL3RlYW1zZWFzb25zdGF0cy5hc3B4",
+          "openInPopup": false,
+          "roles": [
+            {
+              "role": "StandardAdminUser",
+              "permissions": null
+            },
+            {
+              "role": "AthleticDirector",
+              "permissions": [
+                "AthleticDirectorBasic"
+              ]
+            },
+            {
+              "role": "HeadCoach",
+              "permissions": [
+                "CoachAdminAll",
+                "CoachAdminData"
+              ]
+            }
+          ],
+          "subMenu": null
+        },
+        {
+          "text": "Standings",
+          "adminUrl": null,
+          "publicUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/standings/",
+          "adminLoginUrl": null,
+          "openInPopup": false,
+          "roles": null,
+          "subMenu": null
+        },
+        {
+          "text": "Rankings",
+          "adminUrl": null,
+          "publicUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/25-26/rankings/",
+          "adminLoginUrl": null,
+          "openInPopup": false,
+          "roles": null,
+          "subMenu": null
+        },
+        {
+          "text": "Photos",
+          "adminUrl": null,
+          "publicUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/media/photos/",
+          "adminLoginUrl": null,
+          "openInPopup": false,
+          "roles": null,
+          "subMenu": null
+        },
+        {
+          "text": "News",
+          "adminUrl": null,
+          "publicUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/media/news/",
+          "adminLoginUrl": null,
+          "openInPopup": false,
+          "roles": null,
+          "subMenu": null
+        },
+        {
+          "text": "More",
+          "adminUrl": null,
+          "publicUrl": null,
+          "adminLoginUrl": null,
+          "openInPopup": false,
+          "roles": [
+            {
+              "role": "StandardAdminUser",
+              "permissions": null
+            },
+            {
+              "role": "AthleticDirector",
+              "permissions": [
+                "AthleticDirectorBasic"
+              ]
+            },
+            {
+              "role": "HeadCoach",
+              "permissions": [
+                "CoachAdminAll",
+                "CoachAdminData",
+                "CoachAdminCommunications",
+                "CoachAdminOTR"
+              ]
+            }
+          ],
+          "subMenu": [
+            {
+              "text": "Previous Seasons",
+              "adminUrl": null,
+              "publicUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/history/",
+              "adminLoginUrl": null,
+              "openInPopup": false,
+              "roles": null,
+              "subMenu": null
+            },
+            {
+              "text": "All-Time Roster",
+              "adminUrl": null,
+              "publicUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/roster/all-time/",
+              "adminLoginUrl": null,
+              "openInPopup": false,
+              "roles": null,
+              "subMenu": null
+            },
+            {
+              "text": "Coach History",
+              "adminUrl": "https://admin.maxpreps.com/(S([sessionId]))/admin/coach/history/admin_team_history_season_successes.aspx?sessionid=[v2SessionId]",
+              "publicUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/staff/all-time/",
+              "adminLoginUrl": "https://secure.maxpreps.com/utility/member/admin_gateway.aspx?accessid1=52dea55b-3988-4979-b5fd-20376058997f&accessid2=81d2a4ab-cd12-46ac-9ead-f00c1c49206b&roleType=HeadCoach&destination=%2Fadmin%2Fcoach%2Fchange_season.aspx%3Fssid%3De3e91f97-0b3e-4627-9b25-52d957e3aad5%26destination%3DL2FkbWluL2NvYWNoL2hpc3RvcnkvYWRtaW5fdGVhbV9oaXN0b3J5X3NlYXNvbl9zdWNjZXNzZXMuYXNweA",
+              "openInPopup": false,
+              "roles": null,
+              "subMenu": null
+            },
+            {
+              "text": "Game History",
+              "adminUrl": null,
+              "publicUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/schedule/all-time/",
+              "adminLoginUrl": null,
+              "openInPopup": false,
+              "roles": null,
+              "subMenu": null
+            },
+            {
+              "text": "Coverages",
+              "adminUrl": "https://admin.maxpreps.com/(S([sessionId]))/admin/coach/utility/coverages.aspx?sessionid=[v2SessionId]",
+              "publicUrl": null,
+              "adminLoginUrl": "https://secure.maxpreps.com/utility/member/admin_gateway.aspx?accessid1=52dea55b-3988-4979-b5fd-20376058997f&accessid2=81d2a4ab-cd12-46ac-9ead-f00c1c49206b&roleType=HeadCoach&destination=%2Fadmin%2Fcoach%2Fchange_season.aspx%3Fssid%3De3e91f97-0b3e-4627-9b25-52d957e3aad5%26destination%3DL2FkbWluL2NvYWNoL3V0aWxpdHkvY292ZXJhZ2VzLmFzcHg",
+              "openInPopup": false,
+              "roles": [
+                {
+                  "role": "StandardAdminUser",
+                  "permissions": null
+                }
+              ],
+              "subMenu": null
+            },
+            {
+              "text": "Team Preview",
+              "adminUrl": "https://admin.maxpreps.com/(S([sessionId]))/admin/coach/teampreview/teampreview.aspx?sessionid=[v2SessionId]",
+              "publicUrl": null,
+              "adminLoginUrl": "https://secure.maxpreps.com/utility/member/admin_gateway.aspx?accessid1=52dea55b-3988-4979-b5fd-20376058997f&accessid2=81d2a4ab-cd12-46ac-9ead-f00c1c49206b&roleType=HeadCoach&destination=%2Fadmin%2Fcoach%2Fchange_season.aspx%3Fssid%3De3e91f97-0b3e-4627-9b25-52d957e3aad5%26destination%3DL2FkbWluL2NvYWNoL3RlYW1wcmV2aWV3L3RlYW1wcmV2aWV3LmFzcHg",
+              "openInPopup": false,
+              "roles": [
+                {
+                  "role": "StandardAdminUser",
+                  "permissions": null
+                },
+                {
+                  "role": "AthleticDirector",
+                  "permissions": [
+                    "AthleticDirectorBasic"
+                  ]
+                },
+                {
+                  "role": "HeadCoach",
+                  "permissions": [
+                    "CoachAdminAll"
+                  ]
+                }
+              ],
+              "subMenu": null
+            },
+            {
+              "text": "Players of the Game",
+              "adminUrl": "https://admin.maxpreps.com/(S([sessionId]))/admin/coach/playerof/manage_pogs.aspx?sessionid=[v2SessionId]",
+              "publicUrl": null,
+              "adminLoginUrl": "https://secure.maxpreps.com/utility/member/admin_gateway.aspx?accessid1=52dea55b-3988-4979-b5fd-20376058997f&accessid2=81d2a4ab-cd12-46ac-9ead-f00c1c49206b&roleType=HeadCoach&destination=%2Fadmin%2Fcoach%2Fchange_season.aspx%3Fssid%3De3e91f97-0b3e-4627-9b25-52d957e3aad5%26destination%3DL2FkbWluL2NvYWNoL3BsYXllcm9mL21hbmFnZV9wb2dzLmFzcHg",
+              "openInPopup": false,
+              "roles": [
+                {
+                  "role": "StandardAdminUser",
+                  "permissions": null
+                },
+                {
+                  "role": "AthleticDirector",
+                  "permissions": [
+                    "AthleticDirectorBasic"
+                  ]
+                },
+                {
+                  "role": "HeadCoach",
+                  "permissions": [
+                    "CoachAdminAll",
+                    "CoachAdminData"
+                  ]
+                }
+              ],
+              "subMenu": null
+            },
+            {
+              "text": "Players of the Year",
+              "adminUrl": "https://admin.maxpreps.com/(S([sessionId]))/admin/coach/playerof/edit_poy.aspx?sessionid=[v2SessionId]",
+              "publicUrl": null,
+              "adminLoginUrl": "https://secure.maxpreps.com/utility/member/admin_gateway.aspx?accessid1=52dea55b-3988-4979-b5fd-20376058997f&accessid2=81d2a4ab-cd12-46ac-9ead-f00c1c49206b&roleType=HeadCoach&destination=%2Fadmin%2Fcoach%2Fchange_season.aspx%3Fssid%3De3e91f97-0b3e-4627-9b25-52d957e3aad5%26destination%3DL2FkbWluL2NvYWNoL3BsYXllcm9mL2VkaXRfcG95LmFzcHg",
+              "openInPopup": false,
+              "roles": [
+                {
+                  "role": "StandardAdminUser",
+                  "permissions": null
+                },
+                {
+                  "role": "AthleticDirector",
+                  "permissions": [
+                    "AthleticDirectorBasic"
+                  ]
+                },
+                {
+                  "role": "HeadCoach",
+                  "permissions": [
+                    "CoachAdminAll",
+                    "CoachAdminData"
+                  ]
+                }
+              ],
+              "subMenu": null
+            },
+            {
+              "text": "AAAA Region 6 Alignment",
+              "adminUrl": "https://admin.maxpreps.com/(S([sessionId]))/admin/coach/utility/frame_leaguecorrections.aspx?sessionid=[v2SessionId]&leagueid=161b3fca-bd4d-4be0-a01b-31df2442c72b",
+              "publicUrl": null,
+              "adminLoginUrl": "https://secure.maxpreps.com/utility/member/admin_gateway.aspx?accessid1=52dea55b-3988-4979-b5fd-20376058997f&accessid2=81d2a4ab-cd12-46ac-9ead-f00c1c49206b&roleType=HeadCoach&destination=%2Fadmin%2Fcoach%2Fchange_season.aspx%3Fssid%3De3e91f97-0b3e-4627-9b25-52d957e3aad5%26destination%3DL2FkbWluL2NvYWNoL3V0aWxpdHkvZnJhbWVfbGVhZ3VlY29ycmVjdGlvbnMuYXNweD9sZWFndWVpZD0xNjFiM2ZjYS1iZDRkLTRiZTAtYTAxYi0zMWRmMjQ0MmM3MmI",
+              "openInPopup": false,
+              "roles": [
+                {
+                  "role": "StandardAdminUser",
+                  "permissions": null
+                },
+                {
+                  "role": "AthleticDirector",
+                  "permissions": [
+                    "AthleticDirectorBasic"
+                  ]
+                },
+                {
+                  "role": "HeadCoach",
+                  "permissions": [
+                    "CoachAdminAll",
+                    "CoachAdminData"
+                  ]
+                }
+              ],
+              "subMenu": null
+            },
+            {
+              "text": "Class Alignment",
+              "adminUrl": "https://admin.maxpreps.com/(S([sessionId]))/admin/coach/divisions/viewdivisions.aspx?sessionid=[v2SessionId]",
+              "publicUrl": null,
+              "adminLoginUrl": "https://secure.maxpreps.com/utility/member/admin_gateway.aspx?accessid1=52dea55b-3988-4979-b5fd-20376058997f&accessid2=81d2a4ab-cd12-46ac-9ead-f00c1c49206b&roleType=HeadCoach&destination=%2Fadmin%2Fcoach%2Fchange_season.aspx%3Fssid%3De3e91f97-0b3e-4627-9b25-52d957e3aad5%26destination%3DL2FkbWluL2NvYWNoL2RpdmlzaW9ucy92aWV3ZGl2aXNpb25zLmFzcHg",
+              "openInPopup": false,
+              "roles": [
+                {
+                  "role": "StandardAdminUser",
+                  "permissions": null
+                },
+                {
+                  "role": "AthleticDirector",
+                  "permissions": [
+                    "AthleticDirectorBasic"
+                  ]
+                },
+                {
+                  "role": "HeadCoach",
+                  "permissions": [
+                    "CoachAdminAll",
+                    "CoachAdminData"
+                  ]
+                }
+              ],
+              "subMenu": null
+            },
+            {
+              "text": "Stat Definitions",
+              "adminUrl": "https://www.maxpreps.com/popup/stat_descriptions.aspx?gendersport=girls,basketball",
+              "publicUrl": null,
+              "adminLoginUrl": null,
+              "openInPopup": true,
+              "roles": [
+                {
+                  "role": "StandardAdminUser",
+                  "permissions": null
+                },
+                {
+                  "role": "AthleticDirector",
+                  "permissions": [
+                    "AthleticDirectorBasic"
+                  ]
+                },
+                {
+                  "role": "HeadCoach",
+                  "permissions": [
+                    "CoachAdminAll",
+                    "CoachAdminData",
+                    "CoachAdminCommunications",
+                    "CoachAdminOTR"
+                  ]
+                }
+              ],
+              "subMenu": null
+            },
+            {
+              "text": "Support",
+              "adminUrl": "https://support.maxpreps.com/hc/en-us",
+              "publicUrl": null,
+              "adminLoginUrl": null,
+              "openInPopup": false,
+              "roles": [
+                {
+                  "role": "StandardAdminUser",
+                  "permissions": null
+                },
+                {
+                  "role": "AthleticDirector",
+                  "permissions": [
+                    "AthleticDirectorBasic"
+                  ]
+                },
+                {
+                  "role": "HeadCoach",
+                  "permissions": [
+                    "CoachAdminAll",
+                    "CoachAdminData",
+                    "CoachAdminCommunications",
+                    "CoachAdminOTR"
+                  ]
+                }
+              ],
+              "subMenu": null
+            }
+          ]
+        }
+      ],
+      "teamSeasonPickerData": [
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+          "sportSeasonId": "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "26-27",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/jv/",
+          "sportSeasonId": "3a119091-bc3f-4aeb-8444-5dac65765f96",
+          "allSeasonId": "ff016164-111f-4a65-890f-a45eab6693de",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "JV",
+          "season": "Winter",
+          "year": "26-27",
+          "teamLevel": "JV",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/freshman/",
+          "sportSeasonId": "242c8fb3-3d46-4fe0-ad57-c313f34cb708",
+          "allSeasonId": "9d27feb5-fd55-4621-99b3-f50739855630",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Freshman",
+          "season": "Winter",
+          "year": "26-27",
+          "teamLevel": "Freshman",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/25-26/schedule/",
+          "sportSeasonId": "21828fea-d8ad-4a1b-a5e2-c844935274e8",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "25-26",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/jv/25-26/schedule/",
+          "sportSeasonId": "54358530-8ac2-4f30-9667-fdfc6117241a",
+          "allSeasonId": "ff016164-111f-4a65-890f-a45eab6693de",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "JV",
+          "season": "Winter",
+          "year": "25-26",
+          "teamLevel": "JV",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/24-25/schedule/",
+          "sportSeasonId": "751ce3ae-05eb-402f-bd9f-bf8a09bf342f",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "24-25",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/jv/24-25/schedule/",
+          "sportSeasonId": "bca08cfc-24cc-41bc-9ca3-44080c996b26",
+          "allSeasonId": "ff016164-111f-4a65-890f-a45eab6693de",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "JV",
+          "season": "Winter",
+          "year": "24-25",
+          "teamLevel": "JV",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/23-24/schedule/",
+          "sportSeasonId": "64f42437-442a-4e1d-b863-81c8881b454f",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "23-24",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/jv/23-24/schedule/",
+          "sportSeasonId": "237c4e88-1276-4ac7-b8d2-5d08478d1840",
+          "allSeasonId": "ff016164-111f-4a65-890f-a45eab6693de",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "JV",
+          "season": "Winter",
+          "year": "23-24",
+          "teamLevel": "JV",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/22-23/schedule/",
+          "sportSeasonId": "84c99c44-70c7-4c4b-954a-b01221e57897",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "22-23",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/jv/22-23/schedule/",
+          "sportSeasonId": "77b3c81e-091b-4637-96a0-2f546b0b5c61",
+          "allSeasonId": "ff016164-111f-4a65-890f-a45eab6693de",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "JV",
+          "season": "Winter",
+          "year": "22-23",
+          "teamLevel": "JV",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/21-22/schedule/",
+          "sportSeasonId": "a269c13b-9e63-4b37-a1ae-e01de91cc059",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "21-22",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/jv/21-22/schedule/",
+          "sportSeasonId": "c9397a14-3d82-4323-a292-92c0b44adb90",
+          "allSeasonId": "ff016164-111f-4a65-890f-a45eab6693de",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "JV",
+          "season": "Winter",
+          "year": "21-22",
+          "teamLevel": "JV",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/20-21/schedule/",
+          "sportSeasonId": "4294c805-e0f1-4024-8310-bfab78a36006",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "20-21",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/jv/20-21/schedule/",
+          "sportSeasonId": "f2bb5914-8ce8-49d9-8f09-dd296ddd75d3",
+          "allSeasonId": "ff016164-111f-4a65-890f-a45eab6693de",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "JV",
+          "season": "Winter",
+          "year": "20-21",
+          "teamLevel": "JV",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/19-20/schedule/",
+          "sportSeasonId": "d09f9e34-fdf4-450a-ad1c-384d923a050c",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "19-20",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/jv/19-20/schedule/",
+          "sportSeasonId": "1eed74e3-64d2-4010-b389-cf46601fc5aa",
+          "allSeasonId": "ff016164-111f-4a65-890f-a45eab6693de",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "JV",
+          "season": "Winter",
+          "year": "19-20",
+          "teamLevel": "JV",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/18-19/schedule/",
+          "sportSeasonId": "b4272dfc-79ea-48c8-8b26-b05e9cf75695",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "18-19",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/jv/18-19/schedule/",
+          "sportSeasonId": "17c55bf9-f7c3-4a26-ae5f-55f5a8c8c3ca",
+          "allSeasonId": "ff016164-111f-4a65-890f-a45eab6693de",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "JV",
+          "season": "Winter",
+          "year": "18-19",
+          "teamLevel": "JV",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/17-18/schedule/",
+          "sportSeasonId": "286d72ce-1cc8-4ce0-84aa-b8e7c9a30e88",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "17-18",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/jv/17-18/schedule/",
+          "sportSeasonId": "206e4552-984b-48be-a58d-ad6932997d34",
+          "allSeasonId": "ff016164-111f-4a65-890f-a45eab6693de",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "JV",
+          "season": "Winter",
+          "year": "17-18",
+          "teamLevel": "JV",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/16-17/schedule/",
+          "sportSeasonId": "1a61b3d2-afd1-4fb8-bd7b-ac16caee131f",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "16-17",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/jv/16-17/schedule/",
+          "sportSeasonId": "8fdaabc6-714a-4c7a-b08f-30bac9763e88",
+          "allSeasonId": "ff016164-111f-4a65-890f-a45eab6693de",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "JV",
+          "season": "Winter",
+          "year": "16-17",
+          "teamLevel": "JV",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/15-16/schedule/",
+          "sportSeasonId": "ca779a46-8fc3-4db8-9bc6-b015749777a8",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "15-16",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/jv/15-16/schedule/",
+          "sportSeasonId": "e5b82413-db50-4e86-91f0-17bed04902c6",
+          "allSeasonId": "ff016164-111f-4a65-890f-a45eab6693de",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "JV",
+          "season": "Winter",
+          "year": "15-16",
+          "teamLevel": "JV",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/14-15/schedule/",
+          "sportSeasonId": "b2e164af-cc17-44b1-a3f3-c4798695f001",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "14-15",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/13-14/schedule/",
+          "sportSeasonId": "3218665c-3480-43c1-8004-42713fd0fd98",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "13-14",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/12-13/schedule/",
+          "sportSeasonId": "f08b3304-5ef3-45f3-8019-075e42a9d158",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "12-13",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/11-12/schedule/",
+          "sportSeasonId": "e89e04e2-2103-4346-be98-c8c257032221",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "11-12",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/10-11/schedule/",
+          "sportSeasonId": "019aea19-e9ad-4917-a6bb-f0b5707f8678",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "10-11",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/09-10/schedule/",
+          "sportSeasonId": "bdd76c39-8f17-4427-9af5-117e9187a811",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "09-10",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/08-09/schedule/",
+          "sportSeasonId": "9f835eb4-0a53-4bec-89a8-a39e076e9f88",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "08-09",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/07-08/schedule/",
+          "sportSeasonId": "ef4ed7f9-38ed-41ce-8d40-c14149e6805c",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "07-08",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        },
+        {
+          "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/06-07/schedule/",
+          "sportSeasonId": "2a5eca03-0fe9-41f7-9533-e5f5f41444a3",
+          "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+          "gender": "Girls",
+          "sport": "Basketball",
+          "level": "Varsity",
+          "season": "Winter",
+          "year": "06-07",
+          "teamLevel": "Varsity",
+          "isPublished": true
+        }
+      ],
+      "stateData": {
+        "stateId": "54dba61f-b00c-4d96-9a20-28d5d86be8be",
+        "name": "Georgia",
+        "nameLong": "Georgia",
+        "abbreviation": "Ga.",
+        "code": "GA",
+        "isStandard": true,
+        "hasSections": false,
+        "areaID": "a6673070-5906-41b6-b4a7-86ff35c1bdf1",
+        "isFullyCovered": false,
+        "isExtended": false,
+        "hasCoverage": true,
+        "leagueAlias": "Region",
+        "sectionAlias": "Section",
+        "divisionAlias": "Class",
+        "governingBodyIsPartner": true,
+        "governingBodyUrl": "http://www.ghsa.net",
+        "governingBodyName": "GA High School Assn.",
+        "governingBodyAbbreviation": "GHSA",
+        "governingBodyAssociationId": "78f7060d-fad4-4731-82ba-b8b0d337e57f",
+        "governingBodyArticleUrl": "https://support.maxpreps.com/hc/en-us/articles/53622910965659-MaxPreps-and-the-Georgia-High-School-Association-GHSA",
+        "governingBodyImageUrl": "https://asset.maxpreps.io/includes/images/logos/state/ghsa-100x63.jpg",
+        "governingBodyImageWidth": 100,
+        "governingBodyImageHeight": 63,
+        "governingBodyImageAspectRatio": 1.587,
+        "coachAssociationId": "48f7060d-fad4-1231-82ba-b8b0d337e57e",
+        "coachAssociationName": "Georgia Volleyball Coaches Association",
+        "coachAssociationAbbreviation": "GVCA",
+        "timeZoneCode": "EST",
+        "timeZoneName": "Eastern Standard Time",
+        "timeZoneOffsetText": "-5:00",
+        "timeZoneOffset": -5,
+        "timeZoneObservesDayLightSavings": true,
+        "canonicalUrl": null
+      },
+      "sportData": {
+        "sportId": "cfa8c213-4917-11d3-b6f4-005004730205",
+        "name": "Basketball",
+        "groupName": "Basketball",
+        "code": "BK",
+        "shortCode": "BK",
+        "value": "Basketball",
+        "defaultGender": "Boys",
+        "singleGender": false,
+        "statModel": "Standard",
+        "scheduleModel": "Standard",
+        "contestName": "Game",
+        "athleteName": "Player",
+        "participatingVerb": "Playing",
+        "hasJerseyNumbers": true,
+        "fullCovered": true,
+        "periodAlias": "Quarter",
+        "pointAlias": "Point",
+        "overtimeAlias": "Overtime",
+        "overtimeShortAlias": "OT",
+        "overtimePeriodCountsIncludeRegulationPeriods": false,
+        "tiebreakerAlias": ""
+      },
+      "teamPhotoUrl": "",
+      "isTeamPhotoKnownMissing": true,
+      "tda": {
+        "teamId": "52dea55b-3988-4979-b5fd-20376058997f",
+        "sportSeasonId": "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+        "hasTeamPhoto": false,
+        "hasMascotImage": true,
+        "hasTeamRoster": false,
+        "hasAnyTeamRoster": true,
+        "hasContests": true,
+        "hasStandings": false,
+        "hasPrimaryLeague": true,
+        "hasStats": false,
+        "hasRankings": false,
+        "hasVideos": true,
+        "hasProPhotos": true,
+        "hasArticles": true,
+        "isAnyCoachActive": true,
+        "isPrepsSportsEnabled": true,
+        "updatedOn": "2026-09-01T21:02:10",
+        "details": "Loading on 09/01/2026 21:02:10., ",
+        "hasMaxprepsTeamPreview": false,
+        "hasImportedTeamPreview": false,
+        "maxprepsTeamPreviewCreatedOn": null,
+        "maxprepsTeamPreviewModifiedOn": null
+      },
+      "isAllTimeRosterEnabled": true,
+      "mostRecentAdminGenderSportSeasonLevel": {
+        "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+        "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+        "sportSeasonId": "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+        "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+        "gender": "Girls",
+        "sport": "Basketball",
+        "level": "Varsity",
+        "season": "Winter",
+        "year": "26-27",
+        "teamLevel": "Varsity",
+        "isPublished": true
+      },
+      "mostRecentPublicGenderSportSeasonLevel": {
+        "schoolId": "52dea55b-3988-4979-b5fd-20376058997f",
+        "canonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+        "sportSeasonId": "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+        "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+        "gender": "Girls",
+        "sport": "Basketball",
+        "level": "Varsity",
+        "season": "Winter",
+        "year": "26-27",
+        "teamLevel": "Varsity",
+        "isPublished": true
+      },
+      "teamSettings": {
+        "rosterUpdatedOn": null,
+        "scheduleUpdatedOn": "2026-08-25T15:50:32",
+        "rankingUpdatedOn": null,
+        "standingsUpdatedOn": "2026-08-25T15:50:32",
+        "newsUpdatedOn": null,
+        "videosUpdatedOn": null,
+        "photosUpdatedOn": null,
+        "areVolunteersDisallowed": false
+      },
+      "favoriteCount": 139,
+      "standingsData": {
+        "overallStanding": null,
+        "leagueStanding": null,
+        "year": "26-27"
+      },
+      "lastYearStandingsData": {
+        "overallStanding": {
+          "winningPercentage": 0.208,
+          "overallWinLossTies": "5-19",
+          "homeWinLossTies": "3-10",
+          "awayWinLossTies": "2-8",
+          "neutralWinLossTies": "0-1",
+          "points": 752,
+          "pointsAgainst": 1359,
+          "streak": 4,
+          "streakResult": "L"
+        },
+        "leagueStanding": {
+          "leagueName": "AAAA Region 6",
+          "canonicalUrl": "https://www.maxpreps.com/ga/basketball/girls/25-26/region/aaaa-region-6/?leagueid=8cc6c142-efe3-4750-987f-e5dd5651b302",
+          "conferenceWinningPercentage": 0,
+          "conferenceWinLossTies": "0-8",
+          "conferenceStandingPlacement": "5th",
+          "leagueAlias": "Region"
+        },
+        "year": "25-26"
+      },
+      "rankingsData": {
+        "timeStamp": null,
+        "data": []
+      },
+      "dmas": [
+        {
+          "dmaId": "972bda10-c871-43f9-9083-a6743a4c9cfc",
+          "name": "Atlanta",
+          "code": 524,
+          "type": "DMA",
+          "isPublished": false,
+          "url": null,
+          "lastSportUpdateOn": null,
+          "stateCode": "GA",
+          "rankingsCanonicalUrl": null,
+          "scoreboardCanonicalUrl": null
+        },
+        {
+          "dmaId": "530d8d02-1cc8-4840-8b8a-f8ac786522ae",
+          "name": "Metro Atlanta",
+          "code": 0,
+          "type": "Metro",
+          "isPublished": true,
+          "url": "atlanta",
+          "lastSportUpdateOn": "2014-04-02T22:58:00",
+          "stateCode": null,
+          "rankingsCanonicalUrl": null,
+          "scoreboardCanonicalUrl": null
+        }
+      ],
+      "schoolPartnerInfo": {
+        "isATicketingPartner": true,
+        "isAStreamingPartner": true,
+        "isASitesPartner": false,
+        "streamingUrl": "https://www.nfhsnetwork.com/schools/centennial-high-school-roswell-ga",
+        "ticketingUrl": "https://gofan.co/school/GA4885",
+        "unityId": "f53e94de87",
+        "huddleId": "GA4885"
+      }
+    },
+    "breadcrumbListData": {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "name": "MaxPreps.com",
+          "item": {
+            "@type": "Thing",
+            "@id": "https://www.maxpreps.com/"
+          },
+          "position": 1
+        },
+        {
+          "@type": "ListItem",
+          "name": "Girls Basketball",
+          "item": {
+            "@type": "Thing",
+            "@id": "https://www.maxpreps.com/basketball/girls/"
+          },
+          "position": 2
+        },
+        {
+          "@type": "ListItem",
+          "name": "GA Girls Basketball",
+          "item": {
+            "@type": "Thing",
+            "@id": "https://www.maxpreps.com/ga/basketball/girls/"
+          },
+          "position": 3
+        },
+        {
+          "@type": "ListItem",
+          "name": "Centennial High School Basketball",
+          "item": {
+            "@type": "Thing",
+            "@id": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/"
+          },
+          "position": 4
+        }
+      ]
+    },
+    "siteNavData": {
+      "allSeasonId": "81d2a4ab-cd12-46ac-9ead-f00c1c49206b",
+      "season": "Winter",
+      "sections": [
+        {
+          "links": [
+            {
+              "url": "https://www.maxpreps.com/basketball/girls/",
+              "text": "G. Basketball Home"
+            },
+            {
+              "url": "https://www.maxpreps.com/basketball/girls/schools/",
+              "text": "Teams"
+            },
+            {
+              "url": "https://www.maxpreps.com/basketball/girls/athletes/",
+              "text": "Players"
+            },
+            {
+              "url": "https://www.maxpreps.com/basketball/girls/#states",
+              "text": "States"
+            },
+            {
+              "url": "https://www.maxpreps.com/list/schedules_scores_redirect.aspx?gendersport=girls,basketball",
+              "text": "Scores"
+            },
+            {
+              "url": "https://www.maxpreps.com/basketball/girls/rankings/1/",
+              "text": "Rankings"
+            },
+            {
+              "url": "https://www.maxpreps.com/basketball/girls/stat-leaders/",
+              "text": "Stat leaders"
+            },
+            {
+              "url": "https://www.maxpreps.com/photography/browse-galleries/?gendersport=girls,basketball&state=all states",
+              "text": "Photos"
+            },
+            {
+              "url": "https://www.maxpreps.com/basketball/girls/playoffs/",
+              "text": "Playoffs"
+            },
+            {
+              "url": "https://www.maxpreps.com/video/channel/basketball/",
+              "text": "Videos"
+            },
+            {
+              "url": "https://www.maxpreps.com/news/aT5TtNXPJE6gw3znKNhmFw/national-high-school-girls-basketball-record-book.htm",
+              "text": "Record Book"
+            },
+            {
+              "url": "https://www.maxpreps.com/news/articles_list.aspx?gendersport=girls,basketball",
+              "text": "News"
+            },
+            {
+              "url": "https://www.nfhsnetwork.com/sports/basketball?gender=girls&utm_campaign=sport-menu&utm_medium=referral&utm_source=maxpreps&utm_content=fixed",
+              "text": "Live Streams"
+            }
+          ],
+          "header": "G. Basketball",
+          "id": "Girls,Basketball,Winter"
+        },
+        {
+          "links": [
+            {
+              "url": "https://www.maxpreps.com/football/",
+              "text": "Football Home"
+            },
+            {
+              "url": "https://www.maxpreps.com/football/schools/",
+              "text": "Teams"
+            },
+            {
+              "url": "https://www.maxpreps.com/football/athletes/",
+              "text": "Players"
+            },
+            {
+              "url": "https://www.maxpreps.com/football/#states",
+              "text": "States"
+            },
+            {
+              "url": "https://www.maxpreps.com/list/schedules_scores_redirect.aspx?gendersport=boys,football",
+              "text": "Scores"
+            },
+            {
+              "url": "https://www.maxpreps.com/football/rankings/1/",
+              "text": "Rankings"
+            },
+            {
+              "url": "https://www.maxpreps.com/football/stat-leaders/",
+              "text": "Stat leaders"
+            },
+            {
+              "url": "https://www.maxpreps.com/photography/browse-galleries/?gendersport=boys,football&state=all states",
+              "text": "Photos"
+            },
+            {
+              "url": "https://www.maxpreps.com/football/playoffs/",
+              "text": "Playoffs"
+            },
+            {
+              "url": "https://www.maxpreps.com/video/channel/football/",
+              "text": "Videos"
+            },
+            {
+              "url": "https://www.maxpreps.com/news/1kaTlgLBKUKkzkQPotK9yw/national-high-school-football-record-book.htm",
+              "text": "Record Book"
+            },
+            {
+              "url": "https://www.maxpreps.com/news/articles_list.aspx?gendersport=boys,football",
+              "text": "News"
+            },
+            {
+              "url": "https://www.nfhsnetwork.com/sports/football?utm_campaign=sport-menu&utm_medium=referral&utm_source=maxpreps&utm_content=fixed",
+              "text": "Live Streams"
+            }
+          ],
+          "header": "Football",
+          "id": "Boys,Football,Fall"
+        },
+        {
+          "links": [
+            {
+              "url": "https://www.maxpreps.com/baseball/",
+              "text": "Baseball Home"
+            },
+            {
+              "url": "https://www.maxpreps.com/baseball/schools/",
+              "text": "Teams"
+            },
+            {
+              "url": "https://www.maxpreps.com/baseball/athletes/",
+              "text": "Players"
+            },
+            {
+              "url": "https://www.maxpreps.com/baseball/#states",
+              "text": "States"
+            },
+            {
+              "url": "https://www.maxpreps.com/list/schedules_scores_redirect.aspx?gendersport=boys,baseball",
+              "text": "Scores"
+            },
+            {
+              "url": "https://www.maxpreps.com/baseball/rankings/1/",
+              "text": "Rankings"
+            },
+            {
+              "url": "https://www.maxpreps.com/baseball/stat-leaders/",
+              "text": "Stat leaders"
+            },
+            {
+              "url": "https://www.maxpreps.com/photography/browse-galleries/?gendersport=boys,baseball&state=all states",
+              "text": "Photos"
+            },
+            {
+              "url": "https://www.maxpreps.com/baseball/playoffs/",
+              "text": "Playoffs"
+            },
+            {
+              "url": "https://www.maxpreps.com/news/viAlrzyYJUCPhWbwrqfTXA/national-high-school-baseball-record-book.htm",
+              "text": "Record Book"
+            },
+            {
+              "url": "https://www.maxpreps.com/news/articles_list.aspx?gendersport=boys,baseball",
+              "text": "News"
+            },
+            {
+              "url": "https://www.nfhsnetwork.com/sports/baseball?utm_campaign=sport-menu&utm_medium=referral&utm_source=maxpreps&utm_content=fixed",
+              "text": "Live Streams"
+            }
+          ],
+          "header": "Baseball",
+          "id": "Boys,Baseball,Spring"
+        },
+        {
+          "links": [
+            {
+              "url": "https://www.maxpreps.com/basketball/",
+              "text": "B. Basketball Home"
+            },
+            {
+              "url": "https://www.maxpreps.com/basketball/schools/",
+              "text": "Teams"
+            },
+            {
+              "url": "https://www.maxpreps.com/basketball/athletes/",
+              "text": "Players"
+            },
+            {
+              "url": "https://www.maxpreps.com/basketball/#states",
+              "text": "States"
+            },
+            {
+              "url": "https://www.maxpreps.com/list/schedules_scores_redirect.aspx?gendersport=boys,basketball",
+              "text": "Scores"
+            },
+            {
+              "url": "https://www.maxpreps.com/basketball/rankings/1/",
+              "text": "Rankings"
+            },
+            {
+              "url": "https://www.maxpreps.com/basketball/stat-leaders/",
+              "text": "Stat leaders"
+            },
+            {
+              "url": "https://www.maxpreps.com/photography/browse-galleries/?gendersport=boys,basketball&state=all states",
+              "text": "Photos"
+            },
+            {
+              "url": "https://www.maxpreps.com/basketball/playoffs/",
+              "text": "Playoffs"
+            },
+            {
+              "url": "https://www.maxpreps.com/video/channel/basketball/",
+              "text": "Videos"
+            },
+            {
+              "url": "https://www.maxpreps.com/news/NJXu8aL8DUeoU-eSSSAxvg/national-high-school-basketball-record-book.htm",
+              "text": "Record Book"
+            },
+            {
+              "url": "https://www.maxpreps.com/news/articles_list.aspx?gendersport=boys,basketball",
+              "text": "News"
+            },
+            {
+              "url": "https://www.nfhsnetwork.com/sports/basketball?gender=boys&utm_campaign=sport-menu&utm_medium=referral&utm_source=maxpreps&utm_content=fixed",
+              "text": "Live Streams"
+            }
+          ],
+          "header": "B. Basketball",
+          "id": "Boys,Basketball,Winter"
+        },
+        {
+          "links": [
+            {
+              "url": "https://www.maxpreps.com/volleyball/",
+              "text": "G. Volleyball Home"
+            },
+            {
+              "url": "https://www.maxpreps.com/volleyball/schools/",
+              "text": "Teams"
+            },
+            {
+              "url": "https://www.maxpreps.com/volleyball/athletes/",
+              "text": "Players"
+            },
+            {
+              "url": "https://www.maxpreps.com/volleyball/#states",
+              "text": "States"
+            },
+            {
+              "url": "https://www.maxpreps.com/list/schedules_scores_redirect.aspx?gendersport=girls,volleyball",
+              "text": "Scores"
+            },
+            {
+              "url": "https://www.maxpreps.com/volleyball/rankings/1/",
+              "text": "Rankings"
+            },
+            {
+              "url": "https://www.maxpreps.com/volleyball/stat-leaders/",
+              "text": "Stat leaders"
+            },
+            {
+              "url": "https://www.maxpreps.com/photography/browse-galleries/?gendersport=girls,volleyball&state=all states",
+              "text": "Photos"
+            },
+            {
+              "url": "https://www.maxpreps.com/volleyball/playoffs/",
+              "text": "Playoffs"
+            },
+            {
+              "url": "https://www.maxpreps.com/news/cIKV6USFeUinmv3U6-AUqA/national-high-school-volleyball-record-book.htm",
+              "text": "Record Book"
+            },
+            {
+              "url": "https://www.maxpreps.com/news/articles_list.aspx?gendersport=girls,volleyball",
+              "text": "News"
+            },
+            {
+              "url": "https://www.nfhsnetwork.com/sports/volleyball?gender=girls&utm_campaign=sport-menu&utm_medium=referral&utm_source=maxpreps&utm_content=fixed",
+              "text": "Live Streams"
+            }
+          ],
+          "header": "G. Volleyball",
+          "id": "Girls,Volleyball,Fall"
+        },
+        {
+          "links": [
+            {
+              "url": "https://www.maxpreps.com/sports/",
+              "text": "All Sports"
+            }
+          ],
+          "header": "All Sports",
+          "id": "PopularSports-AllSports"
+        },
+        {
+          "links": [
+            {
+              "url": "https://www.maxpreps.com/baseball/",
+              "text": "Baseball"
+            },
+            {
+              "url": "https://www.maxpreps.com/basketball/",
+              "text": "Basketball"
+            },
+            {
+              "url": "https://www.maxpreps.com/beach-volleyball/boys/",
+              "text": "Beach Volleyball"
+            },
+            {
+              "url": "https://www.maxpreps.com/cross-country/",
+              "text": "Cross Country"
+            },
+            {
+              "url": "https://www.maxpreps.com/football/",
+              "text": "Football"
+            },
+            {
+              "url": "https://www.maxpreps.com/golf/",
+              "text": "Golf"
+            },
+            {
+              "url": "https://www.maxpreps.com/ice-hockey/",
+              "text": "Ice Hockey"
+            },
+            {
+              "url": "https://www.maxpreps.com/lacrosse/",
+              "text": "Lacrosse"
+            },
+            {
+              "url": "https://www.maxpreps.com/soccer/",
+              "text": "Soccer"
+            },
+            {
+              "url": "https://www.maxpreps.com/swimming/",
+              "text": "Swimming"
+            },
+            {
+              "url": "https://www.maxpreps.com/tennis/",
+              "text": "Tennis"
+            },
+            {
+              "url": "https://www.maxpreps.com/track-field/",
+              "text": "Track & Field"
+            },
+            {
+              "url": "https://www.maxpreps.com/volleyball/boys/",
+              "text": "Volleyball"
+            },
+            {
+              "url": "https://www.maxpreps.com/water-polo/",
+              "text": "Water Polo"
+            },
+            {
+              "url": "https://www.maxpreps.com/wrestling/",
+              "text": "Wrestling"
+            }
+          ],
+          "header": "Popular Sports - Boys",
+          "id": "PopularSports-Boys"
+        },
+        {
+          "links": [
+            {
+              "url": "https://www.maxpreps.com/basketball/girls/",
+              "text": "Basketball"
+            },
+            {
+              "url": "https://www.maxpreps.com/beach-volleyball/",
+              "text": "Beach Volleyball"
+            },
+            {
+              "url": "https://www.maxpreps.com/cross-country/girls/",
+              "text": "Cross Country"
+            },
+            {
+              "url": "https://www.maxpreps.com/field-hockey/",
+              "text": "Field Hockey"
+            },
+            {
+              "url": "https://www.maxpreps.com/flag-football/girls/",
+              "text": "Flag Football"
+            },
+            {
+              "url": "https://www.maxpreps.com/golf/girls/",
+              "text": "Golf"
+            },
+            {
+              "url": "https://www.maxpreps.com/ice-hockey/girls/",
+              "text": "Ice Hockey"
+            },
+            {
+              "url": "https://www.maxpreps.com/lacrosse/girls/",
+              "text": "Lacrosse"
+            },
+            {
+              "url": "https://www.maxpreps.com/soccer/girls/",
+              "text": "Soccer"
+            },
+            {
+              "url": "https://www.maxpreps.com/softball/",
+              "text": "Softball"
+            },
+            {
+              "url": "https://www.maxpreps.com/swimming/girls/",
+              "text": "Swimming"
+            },
+            {
+              "url": "https://www.maxpreps.com/tennis/girls/",
+              "text": "Tennis"
+            },
+            {
+              "url": "https://www.maxpreps.com/track-field/girls/",
+              "text": "Track & Field"
+            },
+            {
+              "url": "https://www.maxpreps.com/volleyball/",
+              "text": "Volleyball"
+            },
+            {
+              "url": "https://www.maxpreps.com/water-polo/girls/",
+              "text": "Water Polo"
+            }
+          ],
+          "header": "Popular Sports - Girls",
+          "id": "PopularSports-Girls"
+        },
+        {
+          "links": [
+            {
+              "url": "https://www.maxpreps.com/apps/default.aspx?app=maxapp",
+              "text": "MaxPreps",
+              "description": "Follow your favorite high school teams and players",
+              "thumbnailUrl": "https://asset.maxpreps.io/includes/images/apps/maxapp_icon_v2.png"
+            },
+            {
+              "url": "https://www.maxpreps.com/apps/default.aspx?app=maxstats",
+              "text": "MP Stats for iPad",
+              "description": "Stat keeping for basketball teams",
+              "thumbnailUrl": "https://asset.maxpreps.io/includes/images/apps/maxstats_icon_128x128.png"
+            }
+          ],
+          "header": "Apps",
+          "id": "Media-Apps"
+        },
+        {
+          "links": [
+            {
+              "url": "https://www.maxpreps.com/photography/",
+              "text": "Photo Galleries",
+              "description": "Explore and purchase photos of your local teams and players",
+              "thumbnailUrl": "https://asset.maxpreps.io/includes/react/shared/site-nav-photography-thumbnail.png"
+            }
+          ],
+          "header": "Pro Photography",
+          "id": "Media-Photography"
+        },
+        {
+          "links": [
+            {
+              "url": "https://www.maxpreps.com/video/",
+              "text": "Video Center",
+              "description": "See top plays & highlights of the best high school sports",
+              "thumbnailUrl": "https://asset.maxpreps.io/includes/react/shared/site-nav-video-thumbnail.png"
+            },
+            {
+              "url": "https://www.nfhsnetwork.com/?utm_campaign=media-menu&utm_medium=referral&utm_source=maxpreps&utm_content=fixed",
+              "text": "Live Streams & Replays",
+              "description": "Get access to live game streams and full replays for 8000+ schools",
+              "thumbnailUrl": "https://asset.maxpreps.io/includes/react/shared/site-nav-nfhs.png"
+            }
+          ],
+          "header": "Watch",
+          "id": "Media-Video"
+        },
+        {
+          "links": [
+            {
+              "url": "https://gofan.co/?utm_campaign=media-menu&utm_medium=referral&utm_source=maxpreps&utm_content=fixed",
+              "text": "Digital Tickets",
+              "description": "Don't miss the action – Get Official Tickets",
+              "thumbnailUrl": "https://asset.maxpreps.io/includes/react/shared/site-nav-gofan.png"
+            }
+          ],
+          "header": "Tickets",
+          "id": "Tickets"
+        },
+        {
+          "links": [
+            {
+              "url": "https://secure.maxpreps.com/utility/member/new_coach.aspx",
+              "text": "Coaches",
+              "description": "Set up your high school team",
+              "thumbnailUrl": "https://asset.maxpreps.io/includes/react/shared/site-nav-whistle.svg"
+            }
+          ],
+          "header": "Content Contributors",
+          "id": "Content-Contributors"
+        }
+      ]
+    },
+    "isCrossbarVisible": false,
+    "featuredGameData": {
+      "teams": [
+        {
+          "id": "bdbbf1c2-dc33-41f1-87da-3ae84bbd3d67",
+          "b1": null,
+          "b2": null,
+          "b3": null,
+          "b4": null,
+          "b5": null,
+          "b6": null,
+          "b7": null,
+          "b8": null,
+          "b9": null,
+          "b10": null,
+          "b11": null,
+          "b12": null,
+          "b13": null,
+          "b14": null,
+          "b15": null,
+          "b16": null,
+          "b17": null,
+          "b18": null,
+          "b19": null,
+          "b20": null,
+          "b21": null,
+          "b22": null,
+          "b23": null,
+          "b24": null,
+          "b25": null,
+          "b26": null,
+          "b27": null,
+          "b28": null,
+          "b29": null,
+          "b30": null,
+          "teamId": "efadaef4-8fb1-469b-b110-218621e68254",
+          "contestId": "c55a65ce-2c9b-42eb-8fb8-01b6f657fc93",
+          "sportSeasonId": "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "statSupplierId": null,
+          "resultString": null,
+          "index": 1,
+          "scorePrediction": null,
+          "result": null,
+          "score": null,
+          "place": null,
+          "dnp": false,
+          "isTeamTBA": false,
+          "isForfeit": false,
+          "isDeleted": false,
+          "hasStats": false,
+          "totalsNeedUpdate": false,
+          "statEnteredOn": null,
+          "bFieldsUpdatedOn": null,
+          "scoresUpdatedOn": null,
+          "teamModifiedOn": null,
+          "homeAwayType": 1,
+          "contestType": 1,
+          "teamCanonicalUrl": "https://www.maxpreps.com/ga/johns-creek/johns-creek-gladiators/basketball/girls/",
+          "name": "Johns Creek",
+          "city": "Johns Creek",
+          "state": "GA",
+          "address": "5575 State Bridge Rd",
+          "address2": null,
+          "zipCode": "30022-8165",
+          "formattedName": "Johns Creek (GA)",
+          "formattedNameWithoutState": "Johns Creek",
+          "mascotUrl": "https://image.maxpreps.io/school-mascot/e/f/a/efadaef4-8fb1-469b-b110-218621e68254.gif?version=637856054400000000&width=1024&height=1024",
+          "mascot": "Gladiators",
+          "color1": "CC0022",
+          "color2": "C8880A",
+          "color3": "FFFFFF",
+          "color4": "222222",
+          "schoolNameAcronym": "JCHS",
+          "utcOffset": -18000,
+          "dstOffset": 3600,
+          "timeZoneId": "EDT"
+        },
+        {
+          "id": "a5b1b505-77e2-40ad-8a0c-10a4aac23b30",
+          "b1": null,
+          "b2": null,
+          "b3": null,
+          "b4": null,
+          "b5": null,
+          "b6": null,
+          "b7": null,
+          "b8": null,
+          "b9": null,
+          "b10": null,
+          "b11": null,
+          "b12": null,
+          "b13": null,
+          "b14": null,
+          "b15": null,
+          "b16": null,
+          "b17": null,
+          "b18": null,
+          "b19": null,
+          "b20": null,
+          "b21": null,
+          "b22": null,
+          "b23": null,
+          "b24": null,
+          "b25": null,
+          "b26": null,
+          "b27": null,
+          "b28": null,
+          "b29": null,
+          "b30": null,
+          "teamId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "contestId": "c55a65ce-2c9b-42eb-8fb8-01b6f657fc93",
+          "sportSeasonId": "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "statSupplierId": null,
+          "resultString": null,
+          "index": 2,
+          "scorePrediction": null,
+          "result": null,
+          "score": null,
+          "place": null,
+          "dnp": false,
+          "isTeamTBA": false,
+          "isForfeit": false,
+          "isDeleted": false,
+          "hasStats": false,
+          "totalsNeedUpdate": false,
+          "statEnteredOn": null,
+          "bFieldsUpdatedOn": null,
+          "scoresUpdatedOn": null,
+          "teamModifiedOn": null,
+          "homeAwayType": 0,
+          "contestType": 1,
+          "teamCanonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+          "name": "Centennial",
+          "city": "Roswell",
+          "state": "GA",
+          "address": "9310 Scott Rd",
+          "address2": null,
+          "zipCode": "30076-3417",
+          "formattedName": "Centennial (Roswell, GA)",
+          "formattedNameWithoutState": "Centennial (Roswell)",
+          "mascotUrl": "https://image.maxpreps.io/school-mascot/5/2/d/52dea55b-3988-4979-b5fd-20376058997f.gif?version=638883757819641160&width=1024&height=1024",
+          "mascot": "Knights",
+          "color1": "034CB2",
+          "color2": "222222",
+          "color3": "FFFFFF",
+          "color4": null,
+          "schoolNameAcronym": "CHS",
+          "utcOffset": -18000,
+          "dstOffset": 3600,
+          "timeZoneId": "EDT"
+        }
+      ],
+      "contestId": "c55a65ce-2c9b-42eb-8fb8-01b6f657fc93",
+      "importedOn": null,
+      "modifiedOn": "2026-08-04T10:06:12",
+      "createdOn": "2026-08-04T10:06:12",
+      "isScheduleImport": false,
+      "hasStory": false,
+      "shouldBuildNewStory": false,
+      "shouldOverrideConf": false,
+      "isScoreImport": false,
+      "isFlagged": false,
+      "isGow": false,
+      "isMultiTeam": false,
+      "isDeleted": false,
+      "hasResult": false,
+      "location": "Scrimmage",
+      "details": null,
+      "state": null,
+      "city": null,
+      "name": null,
+      "gameSource": null,
+      "scoreSource": null,
+      "dateCode": 0,
+      "date": "2026-11-06T18:00:00",
+      "tournamentBracketId": "00000000-0000-0000-0000-000000000000",
+      "tournamentId": "00000000-0000-0000-0000-000000000000",
+      "scoresAddedByUserId": null,
+      "sportSeasonId": "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+      "scoreAddedOn": null,
+      "storyPickedupOn": null,
+      "scoreStamp": null,
+      "isScoresVerified": false,
+      "mainQwixcoreGameId": null,
+      "title": "Johns Creek Girls Varsity Basketball @ Centennial",
+      "teamsCalculated": [
+        {
+          "contestId": "c55a65ce-2c9b-42eb-8fb8-01b6f657fc93",
+          "teamId": "efadaef4-8fb1-469b-b110-218621e68254",
+          "hasHudlStatsImported": false,
+          "calculatedTeamContestResult": 1,
+          "currentLiveScore": null,
+          "resultString": "",
+          "standings": "0-0"
+        },
+        {
+          "contestId": "c55a65ce-2c9b-42eb-8fb8-01b6f657fc93",
+          "teamId": "52dea55b-3988-4979-b5fd-20376058997f",
+          "hasHudlStatsImported": false,
+          "calculatedTeamContestResult": 1,
+          "currentLiveScore": null,
+          "resultString": "",
+          "standings": "0-0"
+        }
+      ],
+      "contestState": 2,
+      "allowReportFinalScore": false,
+      "reportFinalScoreUrl": null,
+      "allowReportInGameScore": false,
+      "reportInGameScoreUrl": null,
+      "allowEditContestResults": false,
+      "hasContestPage": true,
+      "calculatedContestResult": 1,
+      "canonicalUrl": "https://www.maxpreps.com/ga/basketball/girls/game/centennial-roswell-vs-johns-creek/11-6-2026/?c=c55a65ce-2c9b-42eb-8fb8-01b6f657fc93",
+      "isDateTba": false,
+      "isTimeTba": false,
+      "contestAlias": "Game",
+      "isLiveGameInProgress": false,
+      "overtimePeriodsPlayed": 0,
+      "overtimeAlias": "Overtime",
+      "overtimeShortAlias": "OT",
+      "currentLivePeriod": null,
+      "currentLiveTime": null,
+      "currentScorerFirstName": null,
+      "currentScorerLastName": null,
+      "currentScorerUserId": null,
+      "rolesWhoCanEnterScores": [],
+      "reasonWhyCannotEnterScores": "ContestState is Pregame.",
+      "description": "The Johns Creek varsity basketball team has an away non-conference game @  Centennial (Roswell, GA) on Friday, November 6 @ 6p.",
+      "endsOn": "2026-11-06T19:15:00",
+      "contestDateInGMT": "2026-11-06T23:00:00",
+      "contestLength": 75,
+      "isLiveScoringEnabled": true,
+      "isGameChangerConnected": false,
+      "hasGameChangerImportedStats": false,
+      "bracketName": null,
+      "bracketLogoUrl": null,
+      "bracketMatchupID": null,
+      "bracketIsPublished": null,
+      "bracketGameIndex": null,
+      "bracketGamesInMatchup": null,
+      "tournamentOrganizationName": null,
+      "tournamentName": null,
+      "tournamentLogoUrl": null,
+      "tournamentCanonicalUrl": null,
+      "goFanUrl": null,
+      "nfhsStreamUrl": null,
+      "currentTeam": {
+        "id": "a5b1b505-77e2-40ad-8a0c-10a4aac23b30",
+        "b1": null,
+        "b2": null,
+        "b3": null,
+        "b4": null,
+        "b5": null,
+        "b6": null,
+        "b7": null,
+        "b8": null,
+        "b9": null,
+        "b10": null,
+        "b11": null,
+        "b12": null,
+        "b13": null,
+        "b14": null,
+        "b15": null,
+        "b16": null,
+        "b17": null,
+        "b18": null,
+        "b19": null,
+        "b20": null,
+        "b21": null,
+        "b22": null,
+        "b23": null,
+        "b24": null,
+        "b25": null,
+        "b26": null,
+        "b27": null,
+        "b28": null,
+        "b29": null,
+        "b30": null,
+        "teamId": "52dea55b-3988-4979-b5fd-20376058997f",
+        "contestId": "c55a65ce-2c9b-42eb-8fb8-01b6f657fc93",
+        "sportSeasonId": "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+        "statSupplierId": null,
+        "resultString": "",
+        "index": 2,
+        "scorePrediction": null,
+        "result": null,
+        "score": null,
+        "place": null,
+        "dnp": false,
+        "isTeamTBA": false,
+        "isForfeit": false,
+        "isDeleted": false,
+        "hasStats": false,
+        "totalsNeedUpdate": false,
+        "statEnteredOn": null,
+        "bFieldsUpdatedOn": null,
+        "scoresUpdatedOn": null,
+        "teamModifiedOn": null,
+        "homeAwayType": 0,
+        "contestType": 1,
+        "teamCanonicalUrl": "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+        "name": "Centennial",
+        "city": "Roswell",
+        "state": "GA",
+        "address": "9310 Scott Rd",
+        "address2": null,
+        "zipCode": "30076-3417",
+        "formattedName": "Centennial (Roswell, GA)",
+        "formattedNameWithoutState": "Centennial (Roswell)",
+        "mascotUrl": "https://image.maxpreps.io/school-mascot/5/2/d/52dea55b-3988-4979-b5fd-20376058997f.gif?version=638883757819641160&width=1024&height=1024",
+        "mascot": "Knights",
+        "color1": "034CB2",
+        "color2": "222222",
+        "color3": "FFFFFF",
+        "color4": null,
+        "schoolNameAcronym": "CHS",
+        "utcOffset": -18000,
+        "dstOffset": 3600,
+        "timeZoneId": "EDT",
+        "hasHudlStatsImported": false,
+        "calculatedTeamContestResult": 1,
+        "currentLiveScore": null,
+        "standings": "0-0"
+      },
+      "opponentTeam": {
+        "id": "bdbbf1c2-dc33-41f1-87da-3ae84bbd3d67",
+        "b1": null,
+        "b2": null,
+        "b3": null,
+        "b4": null,
+        "b5": null,
+        "b6": null,
+        "b7": null,
+        "b8": null,
+        "b9": null,
+        "b10": null,
+        "b11": null,
+        "b12": null,
+        "b13": null,
+        "b14": null,
+        "b15": null,
+        "b16": null,
+        "b17": null,
+        "b18": null,
+        "b19": null,
+        "b20": null,
+        "b21": null,
+        "b22": null,
+        "b23": null,
+        "b24": null,
+        "b25": null,
+        "b26": null,
+        "b27": null,
+        "b28": null,
+        "b29": null,
+        "b30": null,
+        "teamId": "efadaef4-8fb1-469b-b110-218621e68254",
+        "contestId": "c55a65ce-2c9b-42eb-8fb8-01b6f657fc93",
+        "sportSeasonId": "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+        "statSupplierId": null,
+        "resultString": "",
+        "index": 1,
+        "scorePrediction": null,
+        "result": null,
+        "score": null,
+        "place": null,
+        "dnp": false,
+        "isTeamTBA": false,
+        "isForfeit": false,
+        "isDeleted": false,
+        "hasStats": false,
+        "totalsNeedUpdate": false,
+        "statEnteredOn": null,
+        "bFieldsUpdatedOn": null,
+        "scoresUpdatedOn": null,
+        "teamModifiedOn": null,
+        "homeAwayType": 1,
+        "contestType": 1,
+        "teamCanonicalUrl": "https://www.maxpreps.com/ga/johns-creek/johns-creek-gladiators/basketball/girls/",
+        "name": "Johns Creek",
+        "city": "Johns Creek",
+        "state": "GA",
+        "address": "5575 State Bridge Rd",
+        "address2": null,
+        "zipCode": "30022-8165",
+        "formattedName": "Johns Creek (GA)",
+        "formattedNameWithoutState": "Johns Creek",
+        "mascotUrl": "https://image.maxpreps.io/school-mascot/e/f/a/efadaef4-8fb1-469b-b110-218621e68254.gif?version=637856054400000000&width=1024&height=1024",
+        "mascot": "Gladiators",
+        "color1": "CC0022",
+        "color2": "C8880A",
+        "color3": "FFFFFF",
+        "color4": "222222",
+        "schoolNameAcronym": "JCHS",
+        "utcOffset": -18000,
+        "dstOffset": 3600,
+        "timeZoneId": "EDT",
+        "hasHudlStatsImported": false,
+        "calculatedTeamContestResult": 1,
+        "currentLiveScore": null,
+        "standings": "0-0"
+      },
+      "tournament": null,
+      "videos": []
+    },
+    "contests": [
+      [
+        [
+          [
+            "bdbbf1c2-dc33-41f1-87da-3ae84bbd3d67",
+            "efadaef4-8fb1-469b-b110-218621e68254",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            null,
+            1,
+            null,
+            null,
+            false,
+            false,
+            false,
+            false,
+            1,
+            1,
+            "https://www.maxpreps.com/ga/johns-creek/johns-creek-gladiators/basketball/girls/",
+            "Johns Creek",
+            "Johns Creek",
+            "GA",
+            "5575 State Bridge Rd",
+            "30022-8165",
+            "Johns Creek (GA)",
+            "https://image.maxpreps.io/school-mascot/e/f/a/efadaef4-8fb1-469b-b110-218621e68254.gif?version=637856054400000000&width=1024&height=1024",
+            "Gladiators",
+            "CC0022",
+            "C8880A",
+            "JCHS",
+            "efadaef4-8fb1-469b-b110-218621e68254",
+            "c55a65ce-2c9b-42eb-8fb8-01b6f657fc93",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            "efadaef4-8fb1-469b-b110-218621e68254",
+            null,
+            null,
+            null
+          ],
+          [
+            "a5b1b505-77e2-40ad-8a0c-10a4aac23b30",
+            "52dea55b-3988-4979-b5fd-20376058997f",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            null,
+            2,
+            null,
+            null,
+            false,
+            false,
+            false,
+            false,
+            0,
+            1,
+            "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+            "Centennial",
+            "Roswell",
+            "GA",
+            "9310 Scott Rd",
+            "30076-3417",
+            "Centennial (Roswell, GA)",
+            "https://image.maxpreps.io/school-mascot/5/2/d/52dea55b-3988-4979-b5fd-20376058997f.gif?version=638883757819641160&width=1024&height=1024",
+            "Knights",
+            "034CB2",
+            "222222",
+            "CHS",
+            "52dea55b-3988-4979-b5fd-20376058997f",
+            "c55a65ce-2c9b-42eb-8fb8-01b6f657fc93",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            "52dea55b-3988-4979-b5fd-20376058997f",
+            null,
+            null,
+            null
+          ]
+        ],
+        "c55a65ce-2c9b-42eb-8fb8-01b6f657fc93",
+        "2026-08-04T10:06:12",
+        false,
+        false,
+        "Scrimmage",
+        null,
+        null,
+        null,
+        null,
+        0,
+        "2026-11-06T18:00:00",
+        "00000000-0000-0000-0000-000000000000",
+        "00000000-0000-0000-0000-000000000000",
+        "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+        2,
+        false,
+        true,
+        "https://www.maxpreps.com/ga/basketball/girls/game/centennial-roswell-vs-johns-creek/11-6-2026/?c=c55a65ce-2c9b-42eb-8fb8-01b6f657fc93",
+        false,
+        false,
+        "Game",
+        false,
+        0,
+        "OT",
+        null,
+        null,
+        [],
+        "ContestState is Pregame.",
+        "The Johns Creek varsity basketball team has an away non-conference game @  Centennial (Roswell, GA) on Friday, November 6 @ 6p.",
+        true,
+        false,
+        false,
+        null,
+        null,
+        null,
+        null,
+        [
+          "a5b1b505-77e2-40ad-8a0c-10a4aac23b30",
+          "52dea55b-3988-4979-b5fd-20376058997f",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "",
+          2,
+          null,
+          null,
+          false,
+          false,
+          false,
+          false,
+          0,
+          1,
+          "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+          "Centennial",
+          "Roswell",
+          "GA",
+          "9310 Scott Rd",
+          "30076-3417",
+          "Centennial (Roswell, GA)",
+          "https://image.maxpreps.io/school-mascot/5/2/d/52dea55b-3988-4979-b5fd-20376058997f.gif?version=638883757819641160&width=1024&height=1024",
+          "Knights",
+          "034CB2",
+          "222222",
+          "CHS",
+          "52dea55b-3988-4979-b5fd-20376058997f",
+          "c55a65ce-2c9b-42eb-8fb8-01b6f657fc93",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "52dea55b-3988-4979-b5fd-20376058997f",
+          1,
+          null,
+          ""
+        ],
+        [
+          "bdbbf1c2-dc33-41f1-87da-3ae84bbd3d67",
+          "efadaef4-8fb1-469b-b110-218621e68254",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "",
+          1,
+          null,
+          null,
+          false,
+          false,
+          false,
+          false,
+          1,
+          1,
+          "https://www.maxpreps.com/ga/johns-creek/johns-creek-gladiators/basketball/girls/",
+          "Johns Creek",
+          "Johns Creek",
+          "GA",
+          "5575 State Bridge Rd",
+          "30022-8165",
+          "Johns Creek (GA)",
+          "https://image.maxpreps.io/school-mascot/e/f/a/efadaef4-8fb1-469b-b110-218621e68254.gif?version=637856054400000000&width=1024&height=1024",
+          "Gladiators",
+          "CC0022",
+          "C8880A",
+          "JCHS",
+          "efadaef4-8fb1-469b-b110-218621e68254",
+          "c55a65ce-2c9b-42eb-8fb8-01b6f657fc93",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "efadaef4-8fb1-469b-b110-218621e68254",
+          1,
+          null,
+          ""
+        ],
+        null,
+        null
+      ],
+      [
+        [
+          [
+            "2a2ed113-f8b8-40d0-ae70-a9a2991471c0",
+            "8cc6f48a-a339-4170-905e-6094d15c5532",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            null,
+            1,
+            null,
+            null,
+            false,
+            false,
+            false,
+            false,
+            1,
+            1,
+            "https://www.maxpreps.com/ga/rome/rome-wolves/basketball/girls/",
+            "Rome",
+            "Rome",
+            "GA",
+            "1000 Veterans Memorial Hwy NE",
+            "30161-4973",
+            "Rome (GA)",
+            "https://image.maxpreps.io/school-mascot/8/c/c/8cc6f48a-a339-4170-905e-6094d15c5532.gif?version=636376209000000000&width=1024&height=1024",
+            "Wolves",
+            "CC0022",
+            "C8880A",
+            "RHS",
+            "8cc6f48a-a339-4170-905e-6094d15c5532",
+            "8a0ce3b6-5511-4574-b2ff-d3832f0b65f8",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            "8cc6f48a-a339-4170-905e-6094d15c5532",
+            null,
+            null,
+            null
+          ],
+          [
+            "18c4924b-2bb5-44c5-ad0b-e51c5f14d35f",
+            "52dea55b-3988-4979-b5fd-20376058997f",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            null,
+            2,
+            null,
+            null,
+            false,
+            false,
+            false,
+            false,
+            0,
+            1,
+            "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+            "Centennial",
+            "Roswell",
+            "GA",
+            "9310 Scott Rd",
+            "30076-3417",
+            "Centennial (Roswell, GA)",
+            "https://image.maxpreps.io/school-mascot/5/2/d/52dea55b-3988-4979-b5fd-20376058997f.gif?version=638883757819641160&width=1024&height=1024",
+            "Knights",
+            "034CB2",
+            "222222",
+            "CHS",
+            "52dea55b-3988-4979-b5fd-20376058997f",
+            "8a0ce3b6-5511-4574-b2ff-d3832f0b65f8",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            "52dea55b-3988-4979-b5fd-20376058997f",
+            null,
+            null,
+            null
+          ]
+        ],
+        "8a0ce3b6-5511-4574-b2ff-d3832f0b65f8",
+        "2026-08-25T08:50:32",
+        false,
+        false,
+        "",
+        null,
+        null,
+        null,
+        null,
+        0,
+        "2026-12-05T15:00:00",
+        "00000000-0000-0000-0000-000000000000",
+        "00000000-0000-0000-0000-000000000000",
+        "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+        2,
+        false,
+        true,
+        "https://www.maxpreps.com/ga/basketball/girls/game/centennial-roswell-vs-rome/12-5-2026/?c=8a0ce3b6-5511-4574-b2ff-d3832f0b65f8",
+        false,
+        false,
+        "Game",
+        false,
+        0,
+        "OT",
+        null,
+        null,
+        [],
+        "ContestState is Pregame.",
+        "The Rome varsity basketball team has an away non-conference game @  Centennial (Roswell, GA) on Saturday, December 5 @ 3p.",
+        true,
+        false,
+        false,
+        null,
+        null,
+        null,
+        null,
+        [
+          "18c4924b-2bb5-44c5-ad0b-e51c5f14d35f",
+          "52dea55b-3988-4979-b5fd-20376058997f",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "",
+          2,
+          null,
+          null,
+          false,
+          false,
+          false,
+          false,
+          0,
+          1,
+          "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+          "Centennial",
+          "Roswell",
+          "GA",
+          "9310 Scott Rd",
+          "30076-3417",
+          "Centennial (Roswell, GA)",
+          "https://image.maxpreps.io/school-mascot/5/2/d/52dea55b-3988-4979-b5fd-20376058997f.gif?version=638883757819641160&width=1024&height=1024",
+          "Knights",
+          "034CB2",
+          "222222",
+          "CHS",
+          "52dea55b-3988-4979-b5fd-20376058997f",
+          "8a0ce3b6-5511-4574-b2ff-d3832f0b65f8",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "52dea55b-3988-4979-b5fd-20376058997f",
+          1,
+          null,
+          ""
+        ],
+        [
+          "2a2ed113-f8b8-40d0-ae70-a9a2991471c0",
+          "8cc6f48a-a339-4170-905e-6094d15c5532",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "",
+          1,
+          null,
+          null,
+          false,
+          false,
+          false,
+          false,
+          1,
+          1,
+          "https://www.maxpreps.com/ga/rome/rome-wolves/basketball/girls/",
+          "Rome",
+          "Rome",
+          "GA",
+          "1000 Veterans Memorial Hwy NE",
+          "30161-4973",
+          "Rome (GA)",
+          "https://image.maxpreps.io/school-mascot/8/c/c/8cc6f48a-a339-4170-905e-6094d15c5532.gif?version=636376209000000000&width=1024&height=1024",
+          "Wolves",
+          "CC0022",
+          "C8880A",
+          "RHS",
+          "8cc6f48a-a339-4170-905e-6094d15c5532",
+          "8a0ce3b6-5511-4574-b2ff-d3832f0b65f8",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "8cc6f48a-a339-4170-905e-6094d15c5532",
+          1,
+          null,
+          ""
+        ],
+        null,
+        null
+      ],
+      [
+        [
+          [
+            "81e90d75-15ec-457e-b55d-237d393080ac",
+            "ebf1cab1-b8df-451a-b46d-e0a151747f67",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            null,
+            1,
+            null,
+            null,
+            false,
+            false,
+            false,
+            false,
+            1,
+            0,
+            "https://www.maxpreps.com/ga/alpharetta/chattahoochee-cougars/basketball/girls/",
+            "Chattahoochee",
+            "Alpharetta",
+            "GA",
+            "5230 Taylor Rd",
+            "30022-6015",
+            "Chattahoochee (Alpharetta, GA)",
+            "https://image.maxpreps.io/school-mascot/e/b/f/ebf1cab1-b8df-451a-b46d-e0a151747f67.gif?version=638779693504363280&width=1024&height=1024",
+            "Cougars",
+            "034CB2",
+            "C8880A",
+            "CHS",
+            "ebf1cab1-b8df-451a-b46d-e0a151747f67",
+            "747a9b90-de9e-4899-9534-b683d4a5a611",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            "ebf1cab1-b8df-451a-b46d-e0a151747f67",
+            null,
+            null,
+            null
+          ],
+          [
+            "4f5e9bce-0669-4480-8e30-21d73d9eda77",
+            "52dea55b-3988-4979-b5fd-20376058997f",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            null,
+            2,
+            null,
+            null,
+            false,
+            false,
+            false,
+            false,
+            0,
+            0,
+            "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+            "Centennial",
+            "Roswell",
+            "GA",
+            "9310 Scott Rd",
+            "30076-3417",
+            "Centennial (Roswell, GA)",
+            "https://image.maxpreps.io/school-mascot/5/2/d/52dea55b-3988-4979-b5fd-20376058997f.gif?version=638883757819641160&width=1024&height=1024",
+            "Knights",
+            "034CB2",
+            "222222",
+            "CHS",
+            "52dea55b-3988-4979-b5fd-20376058997f",
+            "747a9b90-de9e-4899-9534-b683d4a5a611",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            "52dea55b-3988-4979-b5fd-20376058997f",
+            null,
+            null,
+            null
+          ]
+        ],
+        "747a9b90-de9e-4899-9534-b683d4a5a611",
+        "2026-08-05T11:26:25",
+        false,
+        false,
+        "",
+        null,
+        null,
+        null,
+        null,
+        0,
+        "2026-12-11T18:00:00",
+        "00000000-0000-0000-0000-000000000000",
+        "00000000-0000-0000-0000-000000000000",
+        "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+        2,
+        false,
+        true,
+        "https://www.maxpreps.com/ga/basketball/girls/game/centennial-roswell-vs-chattahoochee-alpharetta/12-11-2026/?c=747a9b90-de9e-4899-9534-b683d4a5a611",
+        false,
+        false,
+        "Game",
+        false,
+        0,
+        "OT",
+        null,
+        null,
+        [],
+        "ContestState is Pregame.",
+        "The Chattahoochee varsity basketball team has an away conference game @  Centennial (Roswell, GA) on Friday, December 11 @ 6p.",
+        true,
+        false,
+        false,
+        null,
+        null,
+        null,
+        null,
+        [
+          "4f5e9bce-0669-4480-8e30-21d73d9eda77",
+          "52dea55b-3988-4979-b5fd-20376058997f",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "",
+          2,
+          null,
+          null,
+          false,
+          false,
+          false,
+          false,
+          0,
+          0,
+          "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+          "Centennial",
+          "Roswell",
+          "GA",
+          "9310 Scott Rd",
+          "30076-3417",
+          "Centennial (Roswell, GA)",
+          "https://image.maxpreps.io/school-mascot/5/2/d/52dea55b-3988-4979-b5fd-20376058997f.gif?version=638883757819641160&width=1024&height=1024",
+          "Knights",
+          "034CB2",
+          "222222",
+          "CHS",
+          "52dea55b-3988-4979-b5fd-20376058997f",
+          "747a9b90-de9e-4899-9534-b683d4a5a611",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "52dea55b-3988-4979-b5fd-20376058997f",
+          1,
+          null,
+          ""
+        ],
+        [
+          "81e90d75-15ec-457e-b55d-237d393080ac",
+          "ebf1cab1-b8df-451a-b46d-e0a151747f67",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "",
+          1,
+          null,
+          null,
+          false,
+          false,
+          false,
+          false,
+          1,
+          0,
+          "https://www.maxpreps.com/ga/alpharetta/chattahoochee-cougars/basketball/girls/",
+          "Chattahoochee",
+          "Alpharetta",
+          "GA",
+          "5230 Taylor Rd",
+          "30022-6015",
+          "Chattahoochee (Alpharetta, GA)",
+          "https://image.maxpreps.io/school-mascot/e/b/f/ebf1cab1-b8df-451a-b46d-e0a151747f67.gif?version=638779693504363280&width=1024&height=1024",
+          "Cougars",
+          "034CB2",
+          "C8880A",
+          "CHS",
+          "ebf1cab1-b8df-451a-b46d-e0a151747f67",
+          "747a9b90-de9e-4899-9534-b683d4a5a611",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "ebf1cab1-b8df-451a-b46d-e0a151747f67",
+          1,
+          null,
+          ""
+        ],
+        null,
+        null
+      ],
+      [
+        [
+          [
+            "c9f23538-f919-4be2-951d-c11b57556682",
+            "1d429384-9be7-40a6-b642-814036949d54",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            null,
+            1,
+            null,
+            null,
+            false,
+            false,
+            false,
+            false,
+            0,
+            0,
+            "https://www.maxpreps.com/ga/atlanta/st-pius-x-catholic-golden-lions/basketball/girls/",
+            "St. Pius X Catholic",
+            "Atlanta",
+            "GA",
+            "2674 Johnson Rd NE",
+            "30345-1799",
+            "St. Pius X Catholic (Atlanta, GA)",
+            "https://image.maxpreps.io/school-mascot/1/d/4/1d429384-9be7-40a6-b642-814036949d54.gif?version=637498396800000000&width=1024&height=1024",
+            "Golden Lions",
+            "034CB2",
+            "C8880A",
+            "SPXC",
+            "1d429384-9be7-40a6-b642-814036949d54",
+            "334ca57c-203f-4508-872f-e5bf0d37d2cd",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            "1d429384-9be7-40a6-b642-814036949d54",
+            null,
+            null,
+            null
+          ],
+          [
+            "f964cfd4-41fa-4141-9dd3-3fc5f52d9663",
+            "52dea55b-3988-4979-b5fd-20376058997f",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            null,
+            2,
+            null,
+            null,
+            false,
+            false,
+            false,
+            false,
+            1,
+            0,
+            "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+            "Centennial",
+            "Roswell",
+            "GA",
+            "9310 Scott Rd",
+            "30076-3417",
+            "Centennial (Roswell, GA)",
+            "https://image.maxpreps.io/school-mascot/5/2/d/52dea55b-3988-4979-b5fd-20376058997f.gif?version=638883757819641160&width=1024&height=1024",
+            "Knights",
+            "034CB2",
+            "222222",
+            "CHS",
+            "52dea55b-3988-4979-b5fd-20376058997f",
+            "334ca57c-203f-4508-872f-e5bf0d37d2cd",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            "52dea55b-3988-4979-b5fd-20376058997f",
+            null,
+            null,
+            null
+          ]
+        ],
+        "334ca57c-203f-4508-872f-e5bf0d37d2cd",
+        "2026-08-19T11:41:25",
+        false,
+        false,
+        "",
+        null,
+        null,
+        null,
+        null,
+        0,
+        "2027-01-12T18:00:00",
+        "00000000-0000-0000-0000-000000000000",
+        "00000000-0000-0000-0000-000000000000",
+        "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+        2,
+        false,
+        true,
+        "https://www.maxpreps.com/ga/basketball/girls/game/centennial-roswell-vs-st-pius-x-catholic-atlanta/1-12-2027/?c=334ca57c-203f-4508-872f-e5bf0d37d2cd",
+        false,
+        false,
+        "Game",
+        false,
+        0,
+        "OT",
+        null,
+        null,
+        [],
+        "ContestState is Pregame.",
+        "The Centennial varsity basketball team has an away conference game @  St. Pius X Catholic (Atlanta, GA) on Tuesday, January 12 @ 6p.",
+        true,
+        false,
+        false,
+        null,
+        null,
+        null,
+        null,
+        [
+          "f964cfd4-41fa-4141-9dd3-3fc5f52d9663",
+          "52dea55b-3988-4979-b5fd-20376058997f",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "",
+          2,
+          null,
+          null,
+          false,
+          false,
+          false,
+          false,
+          1,
+          0,
+          "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+          "Centennial",
+          "Roswell",
+          "GA",
+          "9310 Scott Rd",
+          "30076-3417",
+          "Centennial (Roswell, GA)",
+          "https://image.maxpreps.io/school-mascot/5/2/d/52dea55b-3988-4979-b5fd-20376058997f.gif?version=638883757819641160&width=1024&height=1024",
+          "Knights",
+          "034CB2",
+          "222222",
+          "CHS",
+          "52dea55b-3988-4979-b5fd-20376058997f",
+          "334ca57c-203f-4508-872f-e5bf0d37d2cd",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "52dea55b-3988-4979-b5fd-20376058997f",
+          1,
+          null,
+          ""
+        ],
+        [
+          "c9f23538-f919-4be2-951d-c11b57556682",
+          "1d429384-9be7-40a6-b642-814036949d54",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "",
+          1,
+          null,
+          null,
+          false,
+          false,
+          false,
+          false,
+          0,
+          0,
+          "https://www.maxpreps.com/ga/atlanta/st-pius-x-catholic-golden-lions/basketball/girls/",
+          "St. Pius X Catholic",
+          "Atlanta",
+          "GA",
+          "2674 Johnson Rd NE",
+          "30345-1799",
+          "St. Pius X Catholic (Atlanta, GA)",
+          "https://image.maxpreps.io/school-mascot/1/d/4/1d429384-9be7-40a6-b642-814036949d54.gif?version=637498396800000000&width=1024&height=1024",
+          "Golden Lions",
+          "034CB2",
+          "C8880A",
+          "SPXC",
+          "1d429384-9be7-40a6-b642-814036949d54",
+          "334ca57c-203f-4508-872f-e5bf0d37d2cd",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "1d429384-9be7-40a6-b642-814036949d54",
+          1,
+          null,
+          ""
+        ],
+        null,
+        null
+      ],
+      [
+        [
+          [
+            "9a9eac04-b81c-4861-aead-cb87fe15489f",
+            "ebf1cab1-b8df-451a-b46d-e0a151747f67",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            null,
+            1,
+            null,
+            null,
+            false,
+            false,
+            false,
+            false,
+            0,
+            0,
+            "https://www.maxpreps.com/ga/alpharetta/chattahoochee-cougars/basketball/girls/",
+            "Chattahoochee",
+            "Alpharetta",
+            "GA",
+            "5230 Taylor Rd",
+            "30022-6015",
+            "Chattahoochee (Alpharetta, GA)",
+            "https://image.maxpreps.io/school-mascot/e/b/f/ebf1cab1-b8df-451a-b46d-e0a151747f67.gif?version=638779693504363280&width=1024&height=1024",
+            "Cougars",
+            "034CB2",
+            "C8880A",
+            "CHS",
+            "ebf1cab1-b8df-451a-b46d-e0a151747f67",
+            "79bb9f2d-d42c-4adb-854d-0ce9fc2b3803",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            "ebf1cab1-b8df-451a-b46d-e0a151747f67",
+            null,
+            null,
+            null
+          ],
+          [
+            "81c9ee19-5999-47ac-bea1-9bb2e81523e8",
+            "52dea55b-3988-4979-b5fd-20376058997f",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            null,
+            2,
+            null,
+            null,
+            false,
+            false,
+            false,
+            false,
+            1,
+            0,
+            "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+            "Centennial",
+            "Roswell",
+            "GA",
+            "9310 Scott Rd",
+            "30076-3417",
+            "Centennial (Roswell, GA)",
+            "https://image.maxpreps.io/school-mascot/5/2/d/52dea55b-3988-4979-b5fd-20376058997f.gif?version=638883757819641160&width=1024&height=1024",
+            "Knights",
+            "034CB2",
+            "222222",
+            "CHS",
+            "52dea55b-3988-4979-b5fd-20376058997f",
+            "79bb9f2d-d42c-4adb-854d-0ce9fc2b3803",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            "52dea55b-3988-4979-b5fd-20376058997f",
+            null,
+            null,
+            null
+          ]
+        ],
+        "79bb9f2d-d42c-4adb-854d-0ce9fc2b3803",
+        "2026-08-05T11:44:37",
+        false,
+        false,
+        "",
+        null,
+        null,
+        null,
+        null,
+        0,
+        "2027-01-26T18:00:00",
+        "00000000-0000-0000-0000-000000000000",
+        "00000000-0000-0000-0000-000000000000",
+        "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+        2,
+        false,
+        true,
+        "https://www.maxpreps.com/ga/basketball/girls/game/centennial-roswell-vs-chattahoochee-alpharetta/1-26-2027/?c=79bb9f2d-d42c-4adb-854d-0ce9fc2b3803",
+        false,
+        false,
+        "Game",
+        false,
+        0,
+        "OT",
+        null,
+        null,
+        [],
+        "ContestState is Pregame.",
+        "The Centennial varsity basketball team has an away conference game @  Chattahoochee (Alpharetta, GA) on Tuesday, January 26 @ 6p.",
+        true,
+        false,
+        false,
+        null,
+        null,
+        null,
+        null,
+        [
+          "81c9ee19-5999-47ac-bea1-9bb2e81523e8",
+          "52dea55b-3988-4979-b5fd-20376058997f",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "",
+          2,
+          null,
+          null,
+          false,
+          false,
+          false,
+          false,
+          1,
+          0,
+          "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+          "Centennial",
+          "Roswell",
+          "GA",
+          "9310 Scott Rd",
+          "30076-3417",
+          "Centennial (Roswell, GA)",
+          "https://image.maxpreps.io/school-mascot/5/2/d/52dea55b-3988-4979-b5fd-20376058997f.gif?version=638883757819641160&width=1024&height=1024",
+          "Knights",
+          "034CB2",
+          "222222",
+          "CHS",
+          "52dea55b-3988-4979-b5fd-20376058997f",
+          "79bb9f2d-d42c-4adb-854d-0ce9fc2b3803",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "52dea55b-3988-4979-b5fd-20376058997f",
+          1,
+          null,
+          ""
+        ],
+        [
+          "9a9eac04-b81c-4861-aead-cb87fe15489f",
+          "ebf1cab1-b8df-451a-b46d-e0a151747f67",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "",
+          1,
+          null,
+          null,
+          false,
+          false,
+          false,
+          false,
+          0,
+          0,
+          "https://www.maxpreps.com/ga/alpharetta/chattahoochee-cougars/basketball/girls/",
+          "Chattahoochee",
+          "Alpharetta",
+          "GA",
+          "5230 Taylor Rd",
+          "30022-6015",
+          "Chattahoochee (Alpharetta, GA)",
+          "https://image.maxpreps.io/school-mascot/e/b/f/ebf1cab1-b8df-451a-b46d-e0a151747f67.gif?version=638779693504363280&width=1024&height=1024",
+          "Cougars",
+          "034CB2",
+          "C8880A",
+          "CHS",
+          "ebf1cab1-b8df-451a-b46d-e0a151747f67",
+          "79bb9f2d-d42c-4adb-854d-0ce9fc2b3803",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "ebf1cab1-b8df-451a-b46d-e0a151747f67",
+          1,
+          null,
+          ""
+        ],
+        null,
+        null
+      ],
+      [
+        [
+          [
+            "9bef4e7e-1324-4900-a82f-2419eb9225bc",
+            "1d429384-9be7-40a6-b642-814036949d54",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            null,
+            1,
+            null,
+            null,
+            false,
+            false,
+            false,
+            false,
+            1,
+            0,
+            "https://www.maxpreps.com/ga/atlanta/st-pius-x-catholic-golden-lions/basketball/girls/",
+            "St. Pius X Catholic",
+            "Atlanta",
+            "GA",
+            "2674 Johnson Rd NE",
+            "30345-1799",
+            "St. Pius X Catholic (Atlanta, GA)",
+            "https://image.maxpreps.io/school-mascot/1/d/4/1d429384-9be7-40a6-b642-814036949d54.gif?version=637498396800000000&width=1024&height=1024",
+            "Golden Lions",
+            "034CB2",
+            "C8880A",
+            "SPXC",
+            "1d429384-9be7-40a6-b642-814036949d54",
+            "0bbd4cb1-3b69-4e09-bf50-a3798e0fcbcc",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            "1d429384-9be7-40a6-b642-814036949d54",
+            null,
+            null,
+            null
+          ],
+          [
+            "3a14e779-bee5-4dc6-9853-1b0def6e69a6",
+            "52dea55b-3988-4979-b5fd-20376058997f",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            null,
+            2,
+            null,
+            null,
+            false,
+            false,
+            false,
+            false,
+            0,
+            0,
+            "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+            "Centennial",
+            "Roswell",
+            "GA",
+            "9310 Scott Rd",
+            "30076-3417",
+            "Centennial (Roswell, GA)",
+            "https://image.maxpreps.io/school-mascot/5/2/d/52dea55b-3988-4979-b5fd-20376058997f.gif?version=638883757819641160&width=1024&height=1024",
+            "Knights",
+            "034CB2",
+            "222222",
+            "CHS",
+            "52dea55b-3988-4979-b5fd-20376058997f",
+            "0bbd4cb1-3b69-4e09-bf50-a3798e0fcbcc",
+            "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+            "52dea55b-3988-4979-b5fd-20376058997f",
+            null,
+            null,
+            null
+          ]
+        ],
+        "0bbd4cb1-3b69-4e09-bf50-a3798e0fcbcc",
+        "2026-08-19T11:48:39",
+        false,
+        false,
+        "",
+        null,
+        null,
+        null,
+        null,
+        0,
+        "2027-02-05T18:00:00",
+        "00000000-0000-0000-0000-000000000000",
+        "00000000-0000-0000-0000-000000000000",
+        "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+        2,
+        false,
+        true,
+        "https://www.maxpreps.com/ga/basketball/girls/game/centennial-roswell-vs-st-pius-x-catholic-atlanta/2-5-2027/?c=0bbd4cb1-3b69-4e09-bf50-a3798e0fcbcc",
+        false,
+        false,
+        "Game",
+        false,
+        0,
+        "OT",
+        null,
+        null,
+        [],
+        "ContestState is Pregame.",
+        "The St. Pius X Catholic varsity basketball team has an away conference game @  Centennial (Roswell, GA) on Friday, February 5 @ 6p.",
+        true,
+        false,
+        false,
+        null,
+        null,
+        null,
+        null,
+        [
+          "3a14e779-bee5-4dc6-9853-1b0def6e69a6",
+          "52dea55b-3988-4979-b5fd-20376058997f",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "",
+          2,
+          null,
+          null,
+          false,
+          false,
+          false,
+          false,
+          0,
+          0,
+          "https://www.maxpreps.com/ga/roswell/centennial-knights/basketball/girls/",
+          "Centennial",
+          "Roswell",
+          "GA",
+          "9310 Scott Rd",
+          "30076-3417",
+          "Centennial (Roswell, GA)",
+          "https://image.maxpreps.io/school-mascot/5/2/d/52dea55b-3988-4979-b5fd-20376058997f.gif?version=638883757819641160&width=1024&height=1024",
+          "Knights",
+          "034CB2",
+          "222222",
+          "CHS",
+          "52dea55b-3988-4979-b5fd-20376058997f",
+          "0bbd4cb1-3b69-4e09-bf50-a3798e0fcbcc",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "52dea55b-3988-4979-b5fd-20376058997f",
+          1,
+          null,
+          ""
+        ],
+        [
+          "9bef4e7e-1324-4900-a82f-2419eb9225bc",
+          "1d429384-9be7-40a6-b642-814036949d54",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "",
+          1,
+          null,
+          null,
+          false,
+          false,
+          false,
+          false,
+          1,
+          0,
+          "https://www.maxpreps.com/ga/atlanta/st-pius-x-catholic-golden-lions/basketball/girls/",
+          "St. Pius X Catholic",
+          "Atlanta",
+          "GA",
+          "2674 Johnson Rd NE",
+          "30345-1799",
+          "St. Pius X Catholic (Atlanta, GA)",
+          "https://image.maxpreps.io/school-mascot/1/d/4/1d429384-9be7-40a6-b642-814036949d54.gif?version=637498396800000000&width=1024&height=1024",
+          "Golden Lions",
+          "034CB2",
+          "C8880A",
+          "SPXC",
+          "1d429384-9be7-40a6-b642-814036949d54",
+          "0bbd4cb1-3b69-4e09-bf50-a3798e0fcbcc",
+          "e3e91f97-0b3e-4627-9b25-52d957e3aad5",
+          "1d429384-9be7-40a6-b642-814036949d54",
+          1,
+          null,
+          ""
+        ],
+        null,
+        null
+      ]
+    ],
+    "tournaments": [],
+    "pageTitle": "Schedule - Centennial Knights (Roswell, GA) Girls Basketball 26-27",
+    "pageDescription": "View the 26-27 Centennial girls varsity basketball team schedule.",
+    "teamAdConfig": null
+  }
+}
