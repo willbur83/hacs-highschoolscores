@@ -4,9 +4,11 @@ A Home Assistant custom integration for exposing public high school sports sched
 
 ## Status
 
-Early feasibility and data-source exploration.
+**Phase 2 (complete):** fixture-driven MaxPreps Python client in `custom_components/maxpreps/`. School search, team enumeration, and head-to-head schedule decoding are implemented and tested against committed fixtures only. Football and baseball share one contest parser; volleyball is a regression fixture.
 
-Initial engineering work is focused on understanding and normalizing the public MaxPreps data model before building the Home Assistant integration layer.
+**Not yet available:** Home Assistant integration, HACS install metadata, config flow, entities, cards, coordinators, or live MaxPreps HTTP polling. Game `date` values are timezone-naive local datetimes from the payload — not offset-correct kickoff times.
+
+See [docs/PHASE2_PLAN.md](docs/PHASE2_PLAN.md) Implementation Notes and [docs/PHASE2_PRODUCT_DRIFT.md](docs/PHASE2_PRODUCT_DRIFT.md) for implementation vs product gaps awaiting owner review.
 
 ## Development
 

@@ -4,6 +4,7 @@ import pytest
 
 from custom_components.maxpreps.exceptions import ContestSchemaError
 from custom_components.maxpreps.models import GameStatus
+from custom_components.maxpreps.parsing.contests import CONTEST_ROW_ARITY
 from custom_components.maxpreps.parsing.schedule import parse_schedule_page_props
 from tests.helpers.fixtures import load_schedule_page_props
 from tests.test_search import (
@@ -175,3 +176,69 @@ def test_bainbridge_and_pike_county_schedules_decode():
         assert schedule.team_season.school_id == school_id
         assert len(schedule.games) == _non_deleted_contest_count(page_props)
         assert schedule.team_record is not None
+
+
+def test_wrong_contests_arity_raises_through_adapter():
+    page_props = copy.deepcopy(
+        load_schedule_page_props(f"{CENTENNIAL}/schedule-26-27.json")
+    )
+    page_props["contests"][0] = page_props["contests"][0][: CONTEST_ROW_ARITY - 1]
+
+    with pytest.raises(
+        ContestSchemaError,
+        match=rf"contests\[0\] must have length {CONTEST_ROW_ARITY}",
+    ):
+        parse_schedule_page_props(page_props)
+
+
+@pytest.mark.parametrize(
+    ("fixture_path", "expected_game_count"),
+    [
+        (f"{CENTENNIAL}/schedule-26-27.json", 10),
+        (f"{CENTENNIAL}/baseball-schedule-26-27.json", 30),
+    ],
+)
+def test_full_schedule_decodes_without_featured(fixture_path: str, expected_game_count: int):
+    page_props = copy.deepcopy(load_schedule_page_props(fixture_path))
+    page_props.pop("featuredGameData", None)
+
+    schedule = parse_schedule_page_props(page_props)
+
+    assert len(schedule.games) == expected_game_count
+    assert all(game.status is not GameStatus.DELETED for game in schedule.games)
+
+
+def test_contradictory_featured_raises_through_adapter():
+    page_props = copy.deepcopy(
+        load_schedule_page_props(f"{CENTENNIAL}/schedule-26-27.json")
+    )
+    page_props["featuredGameData"]["date"] = "2099-01-01T00:00:00"
+
+    with pytest.raises(
+        ContestSchemaError,
+        match=r"featuredGameData 'date' does not match contests\[\]\[11\]",
+    ):
+        parse_schedule_page_props(page_props)
+
+
+def test_unknown_contest_state_on_one_row_preserves_other_games():
+    page_props = copy.deepcopy(
+        load_schedule_page_props(f"{CENTENNIAL}/schedule-26-27.json")
+    )
+    unknown_row = copy.deepcopy(page_props["contests"][2])
+    unknown_row[15] = 99
+    unknown_row[28] = "Unexpected contest state."
+    page_props["contests"][2] = unknown_row
+
+    schedule = parse_schedule_page_props(page_props)
+
+    assert len(schedule.games) == 10
+    unknown_game = next(game for game in schedule.games if game.id == unknown_row[1])
+    assert unknown_game.status == GameStatus.UNKNOWN
+    assert unknown_game.status_message == "Unexpected contest state."
+
+    scheduled_game = next(
+        game for game in schedule.games if game.id == page_props["contests"][3][1]
+    )
+    assert scheduled_game.status == GameStatus.SCHEDULED
+    assert RIVERWOOD_CONTEST_ID not in {game.id for game in schedule.games}

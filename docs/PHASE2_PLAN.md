@@ -1036,3 +1036,52 @@ None.
 
 PRODUCT.md not edited. Demo intentionally differs from PRODUCT §30 example on search query, date timezone, and explicit `26-27` team pick (documented above; full drift report deferred to Slice 12).
 
+## Implementation Notes — Slice 12 (fail-safe lock, drift report, completion gate)
+
+### What landed
+
+- `tests/test_schedule.py` — adapter-level fragility coverage: wrong `contests[]` arity through `parse_schedule_page_props`; full Centennial football and baseball schedules decode with `featuredGameData` removed (in-memory deep copy only); contradictory `featuredGameData` raises through adapter; one unknown `contestState` on a multi-row schedule preserves other decoded games (deleted still dropped; unknown not dropped)
+- Reused existing row-level and `check_featured_game_consistency` tests in `tests/test_contests.py`; `NextDataNotFoundError` / no ASPX wording in `tests/test_next_data.py` and `tests/test_client.py` (unchanged)
+- `docs/PHASE2_PRODUCT_DRIFT.md` — owner-review drift report (PRODUCT untouched)
+- `README.md` — Phase 2 client status and test/demo commands
+
+No production parser/client refactors. HTTP 403/429 no-retry: **not tested in code** — Phase 2 uses `FixtureTransport` only; no live transport exists to exercise rate-limit behavior without violating the no-live-HTTP invariant.
+
+### Decisions
+
+- **403/429 skip:** Documented only; adding httpx or a live probe would contradict Phase 2 fixture-only transport policy.
+- **Fragility mutations:** All missing/contradictory `featuredGameData` and unknown-state cases use `copy.deepcopy` on loaded fixtures in tests; committed fixtures unchanged.
+- **Drift doc item 10 (gate):** Report written for owner review; not claimed as reviewed.
+
+### Test command and result
+
+```
+pip install -e ".[dev]"
+pytest
+python scripts/demo_client.py --fixtures
+```
+
+Result: **pass** (112 tests); demo exits 0.
+
+### Deviations
+
+None.
+
+### PRODUCT.md drift check
+
+PRODUCT.md not edited. Confirmed mismatches recorded in `docs/PHASE2_PRODUCT_DRIFT.md` for owner review.
+
+### Phase 2 completion gate (§7)
+
+1. Slices 0–12 merged, tests green, Implementation Notes filled, drift report written, commits pushed to existing `origin`. — **PASS** (this slice).
+2. Fixture pipeline matches PRODUCT §30 *intent* (search → teams → schedule → normalize) using research-correct search and identity; tests/demo pick `26-27` teams explicitly. — **PASS** (`tests/test_golden_path.py`, `scripts/demo_client.py --fixtures`).
+3. Football + baseball share one contest decoder; baseball ≥1 validating row; three additional schools’ football fixtures pass; volleyball regression present. — **PASS** (baseball 30 non-deleted contests; Bainbridge, Pike County, St. Edward football goldens; volleyball client regression).
+4. Composite identity tests prove `sport_season_id` is not a global team key. — **PASS** (`tests/test_golden_path.py` shared football `sport_season_id`, four distinct `school_id` values).
+5. Naive datetimes only; no TZ inference. — **PASS** (`Game.date` naive; offset-aware input raises `ContestSchemaError`).
+6. `contests[]` is schedule source; missing `featuredGameData` does not fail well-shaped payload; contradictory featured fails loudly. — **PASS** (Slice 12 adapter tests + prior `test_contests.py` / `test_schedule.py`).
+7. Unknown schema/enum/missing Next.js data fail safely without false ASPX diagnosis; no ASPX/tennis/golf/track parsers. — **PASS** (`NextDataNotFoundError`; tennis/track canaries; no legacy classifier).
+8. No HA files (`manifest.json`, `config_flow.py`, `coordinator.py`, `sensor.py`). — **PASS**.
+9. CI/tests make zero live MaxPreps requests. — **PASS** (`FixtureTransport` only).
+10. Product owner has reviewed `docs/PHASE2_PRODUCT_DRIFT.md` (open items still open). — **PENDING OWNER REVIEW** (document written; owner has not reviewed yet).
+11. External technical review of client boundaries can be done from Implementation Notes without reverse-engineering commits. — **PASS** (slice notes + drift doc + README).
+
