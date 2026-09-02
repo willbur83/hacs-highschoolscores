@@ -18,15 +18,10 @@ def parse_search_page_props(page_props: dict[str, Any]) -> list[School]:
     if not isinstance(raw_results, list):
         raise SearchSchemaError("initialSchoolResults must be a list")
 
-    schools: list[School] = []
-    for index, row in enumerate(raw_results):
-        school = _parse_school_row(row, index)
-        if school is not None:
-            schools.append(school)
-    return schools
+    return [_parse_school_row(row, index) for index, row in enumerate(raw_results)]
 
 
-def _parse_school_row(row: Any, index: int) -> School | None:
+def _parse_school_row(row: Any, index: int) -> School:
     if not isinstance(row, dict):
         raise SearchSchemaError(f"initialSchoolResults[{index}] must be an object")
 
@@ -34,7 +29,9 @@ def _parse_school_row(row: Any, index: int) -> School | None:
     for field in _REQUIRED_STRING_FIELDS:
         raw_value = row.get(field)
         if not isinstance(raw_value, str) or not raw_value.strip():
-            return None
+            raise SearchSchemaError(
+                f"initialSchoolResults[{index}] missing required field {field!r}"
+            )
         values[field] = raw_value.strip()
 
     zip_code = _optional_string(row.get("zip"))

@@ -27,13 +27,23 @@ def _find_school(schools: list[School], school_id: str) -> School:
     raise AssertionError(f"school_id {school_id!r} not found")
 
 
-def test_parse_centennial_fixture():
+def test_parse_centennial_fixture_raises_on_blank_city():
     page_props = load_search_page_props(f"{CENTENNIAL}/search-centennial.json")
-    schools = parse_search_page_props(page_props)
+    with pytest.raises(SearchSchemaError, match=r"initialSchoolResults\[28\] missing required field 'city'"):
+        parse_search_page_props(page_props)
 
-    # Two international rows in the fixture have blank city and are omitted.
-    assert len(schools) == len(page_props["initialSchoolResults"]) - 2
-    target = _find_school(schools, CENTENNIAL_ROSWELL_ID)
+
+def test_parse_centennial_roswell_row():
+    page_props = load_search_page_props(f"{CENTENNIAL}/search-centennial.json")
+    roswell_row = next(
+        row
+        for row in page_props["initialSchoolResults"]
+        if row["schoolId"] == CENTENNIAL_ROSWELL_ID
+    )
+    schools = parse_search_page_props({"initialSchoolResults": [roswell_row]})
+
+    assert len(schools) == 1
+    target = schools[0]
     assert target.canonical_url == CENTENNIAL_ROSWELL_URL
     assert target.name == "Centennial"
     assert target.city == "Roswell"
@@ -121,7 +131,7 @@ def test_career_results_are_ignored():
     assert all(school.name != "Example Athlete" for school in schools)
 
 
-def test_malformed_row_missing_required_field_is_omitted():
+def test_malformed_row_missing_required_field_raises():
     page_props = {
         "initialSchoolResults": [
             {
@@ -139,9 +149,8 @@ def test_malformed_row_missing_required_field_is_omitted():
             },
         ]
     }
-    schools = parse_search_page_props(page_props)
-    assert len(schools) == 1
-    assert schools[0].school_id == CENTENNIAL_ROSWELL_ID
+    with pytest.raises(SearchSchemaError, match=r"initialSchoolResults\[1\] missing required field 'state'"):
+        parse_search_page_props(page_props)
 
 
 def test_malformed_initial_school_results_type():

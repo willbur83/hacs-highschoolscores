@@ -649,7 +649,7 @@ Slice 3 adds HTML extraction only. PRODUCT.md not edited.
 
 - `custom_components/maxpreps/exceptions.py` — `SearchSchemaError` for invalid `initialSchoolResults` container shape
 - `custom_components/maxpreps/parsing/search.py` — `parse_search_page_props(page_props)` → `list[School]` from `initialSchoolResults`
-- `tests/test_search.py` — four committed search fixtures, synthetic empty/null results, career-results ignored, malformed-container error, omitted-row behavior
+- `tests/test_search.py` — four committed search fixtures, synthetic empty/null results, career-results ignored, malformed-container and malformed-row errors
 
 No HTTP client, query-string construction, `St.` retry, athlete search, or research-envelope branches in production parsers.
 
@@ -668,7 +668,7 @@ No HTTP client, query-string construction, `St.` retry, athlete search, or resea
 
 - **Missing/null/empty list:** `initialSchoolResults` absent, `null`, or `[]` → `[]` (approved plan: “Null/missing → empty list”).
 - **Container shape:** `initialSchoolResults` present but not a list → `SearchSchemaError`. Row not an object → `SearchSchemaError`.
-- **Row-level required fields:** `schoolId`, `canonicalUrl`, `name`, `city`, `state` must be non-blank strings. Rows missing any required field are **omitted** (no partial `School` objects). Centennial fixture includes two international rows with blank `city`; they are skipped, yielding 30 schools from 32 payload rows.
+- **Row-level required fields:** `schoolId`, `canonicalUrl`, `name`, `city`, `state` must be non-blank strings. Any row missing a required field → `SearchSchemaError` naming the row index and field (no partial `School` objects, no silent omission).
 - **Production input:** already-unwrapped `pageProps` dict. Test helpers (`load_search_page_props`) unwrap fixture envelopes.
 
 ### Test command and result
@@ -678,11 +678,11 @@ pip install -e ".[dev]"
 pytest
 ```
 
-Result: **pass** (30 tests).
+Result: **pass** (31 tests).
 
 ### Deviations
 
-None.
+- **Centennial search fixture does not fully parse** under the current `School` model: two international rows at indices 28 and 30 have blank `city` (and index 28 also has whitespace-only `state`). Parser raises `SearchSchemaError` at the first such row rather than omitting them. This surfaces open evidence that MaxPreps returns schools without a non-blank `city`; whether `city` should become optional is deferred to product owner — not solved by silently discarding rows.
 
 ### PRODUCT.md drift check
 
