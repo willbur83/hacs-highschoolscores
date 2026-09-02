@@ -1,10 +1,11 @@
 import pytest
 
 from custom_components.maxpreps.client import MaxPrepsClient
-from custom_components.maxpreps.exceptions import NextDataNotFoundError
+from custom_components.maxpreps.exceptions import NextDataNotFoundError, SearchSchemaError
 from custom_components.maxpreps.models import GameStatus, School, TeamSeason
 from custom_components.maxpreps.urls import build_schedule_url, build_search_url
-from tests.helpers.fixture_transport import FixtureTransport
+from tests.helpers.fixture_transport import FixtureTransport, FixtureUrlNotMappedError
+from tests.helpers.fixtures import wrap_page_props_in_html
 from tests.test_schedule import (
     BASEBALL_SPORT_SEASON_ID,
     FOOTBALL_SPORT_SEASON_ID,
@@ -27,6 +28,33 @@ CENTENNIAL_HIGH_SCHOOL_SEARCH_URL = build_search_url("Centennial High School")
 SAINT_EDWARD_SEARCH_URL = build_search_url("Saint Edward")
 ST_EDWARD_SEARCH_URL = build_search_url("St. Edward")
 MOUNT_SAINT_JOSEPH_SEARCH_URL = build_search_url("Mount Saint Joseph")
+
+
+class _SaintSearchOnlyTransport:
+    """Serve a fixed HTML body for the Saint Edward search URL only."""
+
+    def __init__(self, html: str) -> None:
+        self._html = html
+        self.requested_urls: list[str] = []
+
+    def fetch(self, url: str) -> str:
+        self.requested_urls.append(url)
+        if url != SAINT_EDWARD_SEARCH_URL:
+            raise AssertionError(f"unexpected search URL during error test: {url}")
+        return self._html
+
+
+class _RaisingSaintSearchTransport:
+    """Simulate an unmapped search URL at the transport layer."""
+
+    def __init__(self) -> None:
+        self.requested_urls: list[str] = []
+
+    def fetch(self, url: str) -> str:
+        self.requested_urls.append(url)
+        raise FixtureUrlNotMappedError(f"No fixture mapped for URL: {url}")
+
+
 CENTENNIAL_FOOTBALL_CANONICAL = (
     "https://www.maxpreps.com/ga/roswell/centennial-knights/football/"
 )
@@ -180,6 +208,37 @@ def test_search_schools_mount_saint_joseph_no_saint_retry(
     assert schools == []
     assert transport.requested_urls == [MOUNT_SAINT_JOSEPH_SEARCH_URL]
     assert ST_EDWARD_SEARCH_URL not in transport.requested_urls
+
+
+@pytest.mark.parametrize(
+    ("transport", "expected_error"),
+    [
+        pytest.param(
+            _SaintSearchOnlyTransport(
+                wrap_page_props_in_html({"initialSchoolResults": "not-a-list"})
+            ),
+            SearchSchemaError,
+            id="parser_schema_error",
+        ),
+        pytest.param(
+            _SaintSearchOnlyTransport("<!DOCTYPE html><html><body></body></html>"),
+            NextDataNotFoundError,
+            id="parser_next_data_missing",
+        ),
+        pytest.param(
+            _RaisingSaintSearchTransport(),
+            FixtureUrlNotMappedError,
+            id="transport_fetch_error",
+        ),
+    ],
+)
+def test_search_schools_saint_errors_do_not_retry(transport, expected_error):
+    client = MaxPrepsClient(transport)
+
+    with pytest.raises(expected_error):
+        client.search_schools("Saint Edward")
+
+    assert transport.requested_urls == [SAINT_EDWARD_SEARCH_URL]
 
 
 def test_centennial_pipeline_teams_and_schedules(

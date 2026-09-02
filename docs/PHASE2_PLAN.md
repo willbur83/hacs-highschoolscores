@@ -971,13 +971,13 @@ None.
 - `custom_components/maxpreps/urls.py` — `is_saint_retry_candidate`, `rewrite_saint_query` (leading standalone `Saint` + whitespace only; case-insensitive)
 - `MaxPrepsClient.search_schools` — when first response is empty and query is a saint retry candidate, one retry with leading `Saint` rewritten to `St.` (remainder unchanged); no retry for non-empty first responses, queries already using `St.`, or `Saint` not at the start (e.g. `Mount Saint Joseph`)
 - `tests/helpers/fixture_transport.py` — `build_search_url` overrides: `Saint Edward` → empty `initialSchoolResults`; `St. Edward` → committed `search-st-edward.json`; `Centennial High School` and `Mount Saint Joseph` → empty (qualifier / non-leading saint cases)
-- `tests/test_client.py` — saint retry (2 fetches), `St. Edward` single fetch, Centennial High School empty one fetch, Centennial no retry, Mount Saint Joseph no retry
+- `tests/test_client.py` — saint retry (2 fetches), `St. Edward` single fetch, Centennial High School empty one fetch, Centennial no retry, Mount Saint Joseph no retry; parametrized negative test that transport/parser errors do not trigger Saint retry
 
 No faceted `state=` search, ranking, autocomplete, or pasted URLs.
 
 ### Decisions
 
-- **Retry trigger:** empty/null `initialSchoolResults` on first fetch **and** query matches `^Saint\s` (case-insensitive)
+- **Retry trigger:** first `search_schools` parse returns [] and the query matches `^Saint\s` case-insensitively.
 - **Rewrite:** only the leading `Saint` token → `St.`; city/“High School” qualifiers are not retried
 - **Fixture transport:** client-built search URLs (`+` encoding) mapped explicitly; committed fixture `source_url` values (`%20`) unchanged
 
@@ -988,7 +988,7 @@ pip install -e ".[dev]"
 pytest
 ```
 
-Result: **pass** (95 tests).
+Result: **pass** (98 tests).
 
 ### Deviations
 
