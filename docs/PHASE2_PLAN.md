@@ -108,3 +108,48 @@ None.
 ### PRODUCT.md drift check
 
 Slice 1 is scaffold-only. PRODUCT §22 proposes HA files (`manifest.json`, `config_flow.py`, `coordinator.py`, `sensor.py`, translations) — those remain for later slices; not added here and PRODUCT.md not edited.
+
+---
+
+## Implementation Notes — Slice 2 (normalized models)
+
+### What landed
+
+- `custom_components/maxpreps/models.py` — `School`, `TeamSeason`, `Game`, `Schedule` dataclasses; `GameStatus` and `HomeAway` `StrEnum`s
+- `tests/test_models.py` — synthetic constructor tests (no fixture parsing)
+
+No parsers, HTTP client, HA entities, or timezone localization.
+
+### Field choices
+
+| Model | Fields | Notes |
+|-------|--------|-------|
+| **School** | `school_id`, `canonical_url`, `name`, `city`, `state`; optional `zip`, `mascot`, `mascot_url` | Identity is `school_id` + `canonical_url` (secondary). No ranking or URL slugs. |
+| **TeamSeason** | `school_id`, `sport_season_id`, `canonical_url`, `sport`, `gender`, `level`, `year`, `season`; optional `all_season_id`, `is_published` | One `sportSeasons` row. No `team_id` field — MaxPreps `teamId` is the school UUID. `display_label` is a derived `{gender} {level} {sport}` property, not an identity key. |
+| **Game** | `id` (contest UUID), naive `date`, `status`, `team_name`, `opponent_name`, `home_away`; optional scores, `result`, `venue`, `game_url`, `opponent_id`, `status_message` | `status` limited to `deleted` / `scheduled` / `final` / `unknown`. No HA PRE/IN/POST/OFF. |
+| **Schedule** | `team_season`, `games`, optional `team_logo`, `team_record` | No relevant-game selection. |
+
+### Composite team-season identity
+
+`TeamSeason.identity_key()` returns `(school_id, sport_season_id)`. Equality and hashing use that pair so the same `sport_season_id` at different schools are distinct. `sport_season_id` alone is not treated as globally unique.
+
+### Naive-date decision
+
+`Game.date` is a timezone-naive `datetime`. Slice 2 does not attach `tzinfo`, school timezone, state timezone, or JSON-LD offset. Timezone localization is deferred to a later slice.
+
+### Test command and result
+
+```
+pip install -e ".[dev]"
+pytest
+```
+
+Result: **pass** (package smoke import + model tests).
+
+### Deviations
+
+None.
+
+### PRODUCT.md drift check
+
+Slice 2 implements normalized models only. PRODUCT §30 example JSON uses offset timestamps (`2026-08-20T16:30:00-04:00`) — models store naive datetimes instead. PRODUCT §10 `get_schedule(team_id)` / `get_team(team_id)` naming is not implemented; internal identity uses `school_id` + `sport_season_id`, not a `team_id` field. PRODUCT.md not edited.
