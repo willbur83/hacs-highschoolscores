@@ -23,3 +23,15 @@ class SportSeasonsSchemaError(MaxPrepsError):
 
 class ContestSchemaError(MaxPrepsError):
     """Schedule contests[] rows did not match the expected positional schema."""
+
+
+class CurrentCohortError(MaxPrepsError):
+    """Current school-year cohort could not be determined from team-season rows."""
+
+
+class CurrentCohortEmptyError(CurrentCohortError):
+    """No team-season rows were provided."""
+
+
+class CurrentCohortAmbiguousError(CurrentCohortError):
+    """Team-season rows did not yield an unambiguous current cohort."""

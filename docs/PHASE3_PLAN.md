@@ -848,3 +848,55 @@ Each slice note should include: what landed, decisions, pytest command/result, d
 **PRODUCT drift check**
 
 - None. No product behavior implemented; `PRODUCT.md` untouched.
+
+## Slice 1 — Current-season and supported-format helpers (Spike B)
+
+**What landed**
+
+- `custom_components/maxpreps/selection.py` — pure helpers over `list[TeamSeason]`:
+  - `is_supported_format`, `selectable_team_seasons`, `in_current_cohort`, `current_cohort_year`
+  - `canonical_url_year_segment` / `canonical_url_year_segments` (isolated `YY-YY` path-segment parsing)
+- `custom_components/maxpreps/const.py` — `SUPPORTED_SPORTS` allowlist (`Football`, `Baseball`, `Basketball`, `Volleyball`)
+- `custom_components/maxpreps/exceptions.py` — `CurrentCohortError`, `CurrentCohortEmptyError`, `CurrentCohortAmbiguousError`
+- `tests/test_selection.py` — four-school fixture regressions + ambiguity synthetics
+- `tests/helpers/team_season_builders.py` — synthetic `TeamSeason` factory for synthetics
+
+**Conservative current-cohort rule (no owner checkpoint required)**
+
+Given school-home `sportSeasons[]` rows (input order preserved; no mutation):
+
+1. **Empty input** → `CurrentCohortEmptyError` (not `None`, not an empty selectable list).
+2. **Uniform `year`** on all rows → that year is the cohort, unless any row’s `canonical_url` contains a `YY-YY` path segment that **contradicts** the row’s `year` → `CurrentCohortAmbiguousError`.
+3. **Multiple years:**
+   - Tied modal counts → `CurrentCohortAmbiguousError`.
+   - No strict majority (`count ≤ n/2`) → `CurrentCohortAmbiguousError`.
+   - Otherwise let `majority_year` be the unique mode.
+   - If adjacent school years are present (start years differ by 1) and any minority year is **not** clearly older than `majority_year` → `CurrentCohortAmbiguousError` (mid-rollover guard).
+   - Each majority-year row: a single `YY-YY` URL segment must match the row’s `year` or be absent; mismatch or multiple segments → `CurrentCohortAmbiguousError`.
+   - Each minority-year row must be a **historical leftover**: clearly older than `majority_year` **and** exactly one `YY-YY` path segment in `canonical_url` matching the row’s `year`. Otherwise → `CurrentCohortAmbiguousError`.
+4. Return `majority_year`. No wall-clock, sport→term table, or URL-only cohort inference.
+
+`selectable_team_seasons` = `in_current_cohort` ∩ `SUPPORTED_SPORTS`. Soccer and other unvalidated sports may remain in `in_current_cohort` but are omitted from selectable output.
+
+**Decisions**
+
+- Q2 not decided; multi-term JV soccer remains in cohort tests only.
+- `get_school_teams` unchanged — still returns every parsed row.
+- URL year segment = path component matching `^\d{2}-\d{2}$` (not loose substring search).
+
+**Pytest**
+
+| Layer | Command | Result |
+|-------|---------|--------|
+| Client (`[dev]`, Python 3.12) | `pip install -e ".[dev]" && pytest` | 137 passed, 1 skipped (`test_init` without HA) |
+| Client demo | `python scripts/demo_client.py --fixtures` | OK |
+
+**Deviations**
+
+- Uniform-year cohort still validates contradictory URL segments (required by ambiguity synthetic where all rows share `26-27` but one URL embeds `25-26`).
+- Tied-modal check runs before the strict-majority check so 50/50 splits surface as tied-modal, not a generic no-majority message.
+- School-year ordering uses numeric start-year parsing (`(\d{1,2})-(\d{1,2})` → int), not lexical string compare; malformed `year` values raise `CurrentCohortAmbiguousError`.
+
+**PRODUCT drift check**
+
+- None. `PRODUCT.md` untouched. Allowlist matches approved §3.4; no config flow or UI behavior added.
