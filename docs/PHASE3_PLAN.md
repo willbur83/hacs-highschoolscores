@@ -1072,3 +1072,21 @@ What owner review still requires (do not treat Slice 4 notes as the forward cont
 - Production applicable year is July 1–June 30 (HA local), not the Slice 1 modal helper. Config flow still used `selectable_team_seasons` at Slice 4; Slice 5 switches picker + coordinator to `year == applicable_school_year` ∩ allowlist.
 
 A narrow **Slice 4a** lands aggregated picker labels + a grouping helper before Slice 5. Owner PRODUCT updates for §3.2 / §27 H / §27 J landed in this documentation sweep, not in Slice 4’s commit.
+
+## Slice 4a
+
+**Goal:** Config-flow picker labels list every MaxPreps term + school year for multi-term programs while persisted subscriptions remain `{sport, gender, level}` only.
+
+**Delivered**
+
+- `custom_components/maxpreps/programs.py`: `SchoolYearProgram` value object and `group_school_year_programs()` grouping helper.
+- Label format: `{gender} {level} {sport} ({terms} {year})` with terms ordered Fall → Winter → Spring → Summer → other names (case-insensitive), deduplicated.
+- `config_flow.py` uses grouped programs instead of collapse-to-first + `TeamSeason.display_label`.
+- `TeamSeason.display_label` unchanged (short model label without parenthetical).
+- `tests/test_programs.py` helper unit tests; `tests/test_config_flow.py` updated for parenthetical labels and subscription-key sport parsing.
+
+**Persist shape:** unchanged — `options[CONF_SUBSCRIPTIONS]` entries are `{sport, gender, level}` only.
+
+**Not in this slice:** July 1 applicable-school-year switching, coordinator, options-flow UI, parsers, live MaxPreps HTTP.
+
+**Tests:** Layer 1 `pip install -e ".[dev]" && pytest && python scripts/demo_client.py --fixtures`: 186 passed; `test_ha_transport` teardown thread assertion (phacc `verify_cleanup` vs `homeassistant==2025.1.4` `_run_safe_shutdown_loop`); demo_client OK. Layer 2 HA `2026.9.0` pins not run on host (Python 3.12 only).

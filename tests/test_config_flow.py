@@ -50,6 +50,11 @@ SAINT_EDWARD_SEARCH_URL = build_search_url("Saint Edward")
 ST_EDWARD_SEARCH_URL = build_search_url("St. Edward")
 FOOTBALL_SUBSCRIPTION_KEY = "\x1e".join(("Football", "Boys", "Varsity"))
 FRESHMAN_BASEBALL_SUBSCRIPTION_KEY = "\x1e".join(("Baseball", "Boys", "Freshman"))
+VARSITY_BASEBALL_SUBSCRIPTION_KEY = "\x1e".join(("Baseball", "Boys", "Varsity"))
+
+
+def _sport_from_subscription_key(key: str) -> str:
+    return key.split("\x1e", maxsplit=1)[0]
 
 
 def _get_selector(result: dict, field_name: str):
@@ -185,13 +190,14 @@ async def test_centennial_subscriptions_are_allowlisted_only(
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "subscriptions"
 
-    labels = list(_selector_options(result, "subscriptions").values())
+    options = _selector_options(result, "subscriptions")
+    labels = list(options.values())
 
     assert ALLOWLISTED_SPORTS.issubset(
-        {label.split(" ", maxsplit=2)[-1] for label in labels}
+        {_sport_from_subscription_key(key) for key in options}
     )
-    for label in labels:
-        sport = label.rsplit(" ", maxsplit=1)[-1]
+    for key in options:
+        sport = _sport_from_subscription_key(key)
         assert sport in ALLOWLISTED_SPORTS
         assert sport not in EXCLUDED_SPORTS
 
@@ -329,14 +335,17 @@ async def test_pike_county_excludes_historical_and_non_allowlisted(
     assert result["step_id"] == "subscriptions"
     assert PIKE_COUNTY_GA_URL in transport.requested_urls
 
-    labels = list(_selector_options(result, "subscriptions").values())
+    options = _selector_options(result, "subscriptions")
+    labels = list(options.values())
 
-    for label in labels:
-        sport = label.rsplit(" ", maxsplit=1)[-1]
+    for key in options:
+        sport = _sport_from_subscription_key(key)
         assert sport in ALLOWLISTED_SPORTS
 
     assert "11-12" not in labels
-    assert not any(sport in label for sport in EXCLUDED_SPORTS)
+    assert not any(
+        excluded in label for label in labels for excluded in EXCLUDED_SPORTS
+    )
 
 
 @pytest.mark.asyncio
@@ -379,8 +388,8 @@ async def test_centennial_subscriptions_include_gender_distinct_basketball(
 
     labels = list(_selector_options(result, "subscriptions").values())
 
-    assert "Boys Varsity Basketball" in labels
-    assert "Girls Varsity Basketball" in labels
+    assert any(label.startswith("Boys Varsity Basketball") for label in labels)
+    assert any(label.startswith("Girls Varsity Basketball") for label in labels)
 
 
 @pytest.mark.asyncio
@@ -398,10 +407,81 @@ async def test_duplicate_subscription_key_collapses_to_one_option(
         result["flow_id"], {"school": CENTENNIAL_ROSWELL_ID}
     )
 
-    labels = list(_selector_options(result, "subscriptions").values())
-    values = list(_selector_options(result, "subscriptions").keys())
+    options = _selector_options(result, "subscriptions")
+    labels = list(options.values())
+    values = list(options.keys())
 
-    freshman_baseball_labels = [label for label in labels if label.endswith("Freshman Baseball")]
-    assert freshman_baseball_labels == ["Boys Freshman Baseball"]
+    freshman_baseball_labels = [
+        label for label in labels if label.startswith("Boys Freshman Baseball")
+    ]
+    assert freshman_baseball_labels == ["Boys Freshman Baseball (Fall, Spring 26-27)"]
     assert FRESHMAN_BASEBALL_SUBSCRIPTION_KEY in values
     assert len(labels) == 16
+
+
+@pytest.mark.asyncio
+async def test_varsity_football_label_includes_term_and_year(
+    hass, enable_custom_integrations, fixture_client
+) -> None:
+    """Varsity football option label shows the fixture row's season and school year."""
+    _, _ = fixture_client
+
+    result = await _init_user(hass, enable_custom_integrations)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"query": "Centennial"}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"school": CENTENNIAL_ROSWELL_ID}
+    )
+
+    options = _selector_options(result, "subscriptions")
+    assert options[FOOTBALL_SUBSCRIPTION_KEY] == "Boys Varsity Football (Fall 26-27)"
+
+
+@pytest.mark.asyncio
+async def test_varsity_baseball_label_includes_term_and_year(
+    hass, enable_custom_integrations, fixture_client
+) -> None:
+    """Varsity baseball option label shows the fixture row's season and school year."""
+    _, _ = fixture_client
+
+    result = await _init_user(hass, enable_custom_integrations)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"query": "Centennial"}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"school": CENTENNIAL_ROSWELL_ID}
+    )
+
+    options = _selector_options(result, "subscriptions")
+    assert options[VARSITY_BASEBALL_SUBSCRIPTION_KEY] == "Boys Varsity Baseball (Spring 26-27)"
+
+
+@pytest.mark.asyncio
+async def test_freshman_baseball_subscription_stores_program_identity_only(
+    hass, enable_custom_integrations, fixture_client
+) -> None:
+    """Selecting multi-term freshman baseball persists sport/gender/level only."""
+    _, _ = fixture_client
+
+    result = await _init_user(hass, enable_custom_integrations)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"query": "Centennial"}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"school": CENTENNIAL_ROSWELL_ID}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {"subscriptions": [FRESHMAN_BASEBALL_SUBSCRIPTION_KEY]},
+    )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    entry = result["result"]
+    assert entry.options[CONF_SUBSCRIPTIONS] == [
+        {
+            CONF_SPORT: "Baseball",
+            CONF_GENDER: "Boys",
+            CONF_LEVEL: "Freshman",
+        }
+    ]

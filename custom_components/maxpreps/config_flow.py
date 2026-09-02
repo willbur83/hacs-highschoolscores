@@ -33,6 +33,7 @@ from custom_components.maxpreps.exceptions import (
     MaxPrepsError,
 )
 from custom_components.maxpreps.models import School, TeamSeason
+from custom_components.maxpreps.programs import SchoolYearProgram, group_school_year_programs
 from custom_components.maxpreps.selection import selectable_team_seasons
 
 _LOGGER = logging.getLogger(__name__)
@@ -57,28 +58,13 @@ def _format_school_label(school: School) -> str:
     return label
 
 
-def _subscription_key(team_season: TeamSeason) -> str:
-    return _SUBSCRIPTION_KEY_SEP.join(
-        (team_season.sport, team_season.gender, team_season.level)
-    )
+def _subscription_key(program: SchoolYearProgram) -> str:
+    return _SUBSCRIPTION_KEY_SEP.join((program.sport, program.gender, program.level))
 
 
-def _config_flow_selectable(team_seasons: list[TeamSeason]) -> list[TeamSeason]:
-    """Return one allowlisted current-cohort row per (sport, gender, level) subscription key.
-
-    When MaxPreps lists multiple current-year rows for the same program (e.g. Boys
-    Freshman Baseball Spring and Fall), keep the first row in school-home order.
-    """
-    selectable = selectable_team_seasons(team_seasons)
-    seen_keys: set[tuple[str, str, str]] = set()
-    collapsed: list[TeamSeason] = []
-    for team_season in selectable:
-        key = (team_season.sport, team_season.gender, team_season.level)
-        if key in seen_keys:
-            continue
-        seen_keys.add(key)
-        collapsed.append(team_season)
-    return collapsed
+def _config_flow_programs(team_seasons: list[TeamSeason]) -> list[SchoolYearProgram]:
+    """Return one allowlisted program per (sport, gender, level) subscription key."""
+    return group_school_year_programs(selectable_team_seasons(team_seasons))
 
 
 class MaxPrepsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -89,7 +75,7 @@ class MaxPrepsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def __init__(self) -> None:
         self._search_results: dict[str, School] = {}
         self._selected_school: School | None = None
-        self._subscription_options: dict[str, TeamSeason] = {}
+        self._subscription_options: dict[str, SchoolYearProgram] = {}
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -149,7 +135,7 @@ class MaxPrepsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 try:
                     client = client_factory.create_async_client(self.hass)
                     team_seasons = await client.get_school_teams(school)
-                    selectable = _config_flow_selectable(team_seasons)
+                    programs = _config_flow_programs(team_seasons)
                 except CurrentCohortEmptyError:
                     return self.async_abort(reason="current_cohort_empty")
                 except CurrentCohortAmbiguousError:
@@ -162,13 +148,12 @@ class MaxPrepsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     )
                     errors["base"] = "school_load_failed"
                 else:
-                    if not selectable:
+                    if not programs:
                         return self.async_abort(reason="no_supported_sports")
 
                     self._selected_school = school
                     self._subscription_options = {
-                        _subscription_key(team_season): team_season
-                        for team_season in selectable
+                        _subscription_key(program): program for program in programs
                     }
                     return await self.async_step_subscriptions()
 
@@ -214,15 +199,15 @@ class MaxPrepsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             else:
                 subscriptions: list[dict[str, str]] = []
                 for key in selected_keys:
-                    team_season = self._subscription_options.get(key)
-                    if team_season is None:
+                    program = self._subscription_options.get(key)
+                    if program is None:
                         errors[CONF_SUBSCRIPTIONS] = "invalid"
                         break
                     subscriptions.append(
                         {
-                            CONF_SPORT: team_season.sport,
-                            CONF_GENDER: team_season.gender,
-                            CONF_LEVEL: team_season.level,
+                            CONF_SPORT: program.sport,
+                            CONF_GENDER: program.gender,
+                            CONF_LEVEL: program.level,
                         }
                     )
                 else:
@@ -249,9 +234,9 @@ class MaxPrepsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         subscription_options = [
             selector.SelectOptionDict(
                 value=key,
-                label=team_season.display_label,
+                label=program.display_label,
             )
-            for key, team_season in self._subscription_options.items()
+            for key, program in self._subscription_options.items()
         ]
 
         return self.async_show_form(
