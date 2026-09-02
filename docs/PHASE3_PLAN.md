@@ -2,11 +2,25 @@
 
 This file has two parts:
 
-1. **Approved plan** — the Phase 3 plan as approved after planning review (including owner corrections to current-season detection, supported-format allowlist, coordinator failure isolation, logo fallback, Q1, and schedule-attribute hypothesis). It records intent, not what was later implemented.
-2. **Implementation Notes** — what completed slices actually did. Differences from the plan belong there, not as silent edits to the approved plan text.
+1. **Approved plan** — the Phase 3 plan as approved after planning review, **plus owner amendments dated 2026-09-02 (post-Slice 4)** that supersede earlier open questions on subscription identity, multi-term programs, picker labels, and school-year rollover. Remaining slices follow the amended plan.
+2. **Implementation Notes** — what completed slices actually did. Do not rewrite historical notes as though later owner decisions existed at the time. Differences from the then-current plan belong there.
 
 Do not treat Implementation Notes as amendments to the approved plan.
 Do not rewrite historical Phase 2 notes in [docs/PHASE2_PLAN.md](PHASE2_PLAN.md).
+
+### Owner amendments (2026-09-02, post-Slice 4)
+
+These decisions supersede Q2, the “no wall-clock cohort” constraint, singular “resolve one TeamSeason per subscription,” and any “omit or pick one term when keys collide” behavior.
+
+- **Subscription identity** is the school-year program `{sport, gender, level}` (plus the school config entry). Do not persist `season`, `sport_season_id`, `all_season_id`, year, or team-season `canonical_url` as subscription identity. `all_season_id` may be provider matching metadata only.
+- **Multiple MaxPreps terms in one school year are one subscription.** Example: Centennial Boys Freshman Baseball Fall 26-27 and Spring 26-27 (distinct `sportSeasonId` / `canonicalUrl`, same `allSeasonId`) are one program. Do not omit the program, do not pick one term, do not expose a term picker, do not create separate Fall/Spring subscriptions.
+- A subscription **resolves to one or more** current-school-year `TeamSeason` rows matching `{sport, gender, level}`. Coordinator and later UI must not assume one row / one schedule URL.
+- **Picker labels** show informational term(s) and school year, e.g. `Boys Varsity Football (Fall 26-27)`, `Boys Freshman Baseball (Fall, Spring 26-27)`. The parenthetical is not a filter. Build aggregated labels in the config/options flow; do not globally change `TeamSeason.display_label` unless a later slice proves that is the model-level behavior.
+- **Term order** in labels: Fall, Winter, Spring, Summer, then any unknown term names sorted case-insensitive. This is conventional US school-year order, not a sport→season table.
+- **Runtime:** gather every matching `TeamSeason` for the applicable school year and fetch each term’s schedule. Preserve term/source internally so a later expanded view can section Fall / Spring. Do not flatten away term distinction. Do not build the card in Slice 5.
+- **Applicable school year** is a wall-clock product rule: **July 1 through June 30** in Home Assistant’s configured local timezone (`2026-07-01`–`2027-06-30` → `26-27`). This supersedes the earlier ban on any wall-clock current-cohort rule. Distinguish (1) applicable school year, (2) provider rows present for that year, (3) whether those schedules are published. Do not invent a schedule because the calendar rolled over.
+- **Rollover:** subscriptions survive without reconfiguration. Re-resolve the same `{sport, gender, level}` against the new year’s rows. Until new-year schedules exist, keep prior data and check conservatively (daily is acceptable) then return to ~12h polling. Slice 11 owns the daily-until-published behavior; Slice 5 must not destroy last-good data when the new year is unpublished.
+- **Scope unchanged:** evidence-based allowlist; no historical browsing, term picker, meet sports, live scores, YAML, or pasted provider IDs.
 
 ---
 
@@ -143,9 +157,9 @@ Entry `data` (identity; stable):
 
 Entry `options` (subscriptions; mutable):
 
-- `subscriptions`: list of program keys `{sport, gender, level}` and, when a current-year program has multiple season terms, `season` (see section 6 Q2)
+- `subscriptions`: list of program keys `{sport, gender, level}` only (Q2 decided 2026-09-02). Never persist `season`, `sport_season_id`, `all_season_id`, year, or team-season URL as identity.
 
-Do **not** use rotating `sport_season_id` as the config-entry unique ID or as the entity unique ID. Resolve the current `TeamSeason` at coordinator refresh from school-home `sportSeasons[]`.
+Do **not** use rotating `sport_season_id` as the config-entry unique ID or as the entity unique ID. At coordinator refresh, resolve **all** school-home `sportSeasons[]` rows whose `{sport, gender, level}` match the subscription **and** whose `year` equals the applicable school year (July 1–June 30). One subscription may map to multiple `TeamSeason` rows (multi-term programs).
 
 HA subentries (one subentry per sport) are a technically valid alternative with different UX. They are **not** the recommended default. See section 6 Q4.
 
@@ -164,9 +178,9 @@ Entity unique ID (stable across school-year rollover):
 {school_id}:{gender}:{level}:{sport}
 ```
 
-If Q2 decides that multi-term programs are separate subscriptions, append `:{season}`.
+Do **not** append `:{season}`. Multi-term programs are one entity / one subscription.
 
-`has_entity_name = True`. Translated name from `display_label` placeholders (e.g. `Boys Varsity Football`), producing entity IDs in the spirit of `sensor.centennial_boys_varsity_football` without hard-coding slugs as identity.
+`has_entity_name = True`. Translated name from `display_label` placeholders (e.g. `Boys Varsity Football`), producing entity IDs in the spirit of `sensor.centennial_boys_varsity_football` without hard-coding slugs as identity. Config-flow option labels may add informational `(Fall, Spring 26-27)` context; that is not part of the entity unique ID.
 
 **State (product checkpoint Q1 — do not implement until decided):**
 
@@ -176,7 +190,7 @@ Regardless of Q1, attributes should expose **both** `last_game` and `next_game` 
 
 **Attributes (minimum contract for Phase 4 and automations):**
 
-School/program chrome: `school_id`, `school_name`, `sport`, `gender`, `level`, `season`, `year`, `display_label`, `team_record` (omit if untrustworthy), `team_logo`, `attribution`.
+School/program chrome: `school_id`, `school_name`, `sport`, `gender`, `level`, `year`, `display_label`, `team_record` (omit if untrustworthy), `team_logo`, `attribution`. Do not assume a single `season` string: a program may have multiple provider terms. Later slices may expose `terms` / per-term schedules on the coordinator contract; Slice 5 must keep that structure internally even if entities are not built yet.
 
 `last_game` / `next_game` objects, when present:
 
@@ -188,7 +202,17 @@ Do not create one HA entity per contest.
 
 ### 3.3 Current-season detection (Spike B / Slice 1)
 
-Do **not** hardcode Football=Fall / Baseball=Spring or a June-30 rollover. Do **not** treat four-school fixture patterns as a proven production current-season rule.
+**Production applicable school year (owner, 2026-09-02):** July 1 through June 30 in Home Assistant’s configured local timezone. Example: `2026-07-01` through `2027-06-30` is `26-27`. This is the user-facing school year for subscriptions, config-flow filtering, and coordinator resolve.
+
+Still do **not** hardcode Football=Fall / Baseball=Spring (term labels come from provider rows). Do **not** treat four-school fixture patterns as a proven production current-season rule.
+
+The Slice 1 conservative **modal-year** helper remains test/regression evidence for leftover rows (Pike `11-12`) and ambiguity synthetics. It is **not** the production answer to “which school year applies.” Config flow and coordinator must filter allowlisted rows to `year == applicable_school_year`, not fail-closed on adjacent years when both `26-27` and `27-28` exist around rollover.
+
+Distinguish:
+
+1. Applicable school year (calendar rule above).
+2. Provider `sportSeasons[]` rows whose `year` equals that string.
+3. Whether schedule pages for those rows are published (missing/`NextDataNotFoundError`/empty `contests[]` ≠ “invent a season”).
 
 **Candidate signals** (existing research/fixtures; not yet a production algorithm):
 
@@ -208,13 +232,14 @@ Do **not** hardcode Football=Fall / Baseball=Spring or a June-30 rollover. Do **
 - mid-rollover mix of adjacent school years (e.g. `26-27` + `27-28`)
 - historical leftovers that omit a year segment, or current-looking rows that include one
 
-**Exit before config flow (Slice 4) relies on the helper:** either a **conservative current-cohort algorithm** that survives those tests, **or** a tightly defined owner checkpoint. No wall-clock or sport→term fallback without owner approval.
+**Slice 4 already shipped** against the Slice 1 helper. Remaining slices follow the July 1 applicable-year rule (owner 2026-09-02). The Slice 1 helper may still exclude historical leftovers in tests; production matching is `year == applicable_school_year` ∩ allowlist.
 
-Standing constraints once an algorithm exists:
+Standing constraints:
 
-- Normal UI lists only current-cohort rows whose sport is on the supported-format allowlist (section 3.4).
-- Subscription identity is the **program** `(sport, gender, level)` plus `season` only when two current-cohort rows share that program (see Q2).
-- At refresh/rollover: re-fetch school home; apply the Slice 1 algorithm; match subscriptions by program fields; prefer `all_season_id` when present **and** still consistent with sport/gender/level; update resolved `sport_season_id`, `canonical_url`, `year`, `season`.
+- Normal UI lists only allowlisted programs that have **at least one** provider row for the applicable school year. Omit unvalidated sports; do not gray them out.
+- Subscription identity is the **program** `{sport, gender, level}` only. Multiple terms in that year are one option / one entity.
+- Picker/options labels aggregate term names + year as informational context (see owner amendments).
+- At refresh/rollover: re-fetch school home; match subscriptions by `{sport, gender, level}` against **all** rows for the applicable year; keep every matching `TeamSeason` (do not pick one term). `all_season_id` may corroborate program class but is not identity. If the new year has no rows yet, keep last-good data and do not delete the subscription.
 
 ### 3.4 Supported-format allowlist
 
@@ -260,8 +285,10 @@ MVP: conservative fixed interval, about **two coordinator cycles per day** (`tim
 One cycle per school:
 
 1. Fetch school home (shared).
-2. Resolve current `TeamSeason` for each subscription.
-3. Fetch each subscribed schedule.
+2. Resolve **all** `TeamSeason` rows for each subscription `{sport, gender, level}` whose `year` equals the applicable school year (July 1–June 30).
+3. Fetch **each** matching term’s schedule (one HTTP GET per `TeamSeason.canonical_url` schedule join). Keep term/source on the snapshot. Do not arbitrarily drop terms or concatenate games into a term-less list as the only stored form.
+
+MVP interval remains ~12h. After school-year rollover, if the applicable year has no published rows/schedules yet, Slice 11 may poll daily until they appear, then return to ~12h. Slice 5 must still isolate per-program failures and retain last-good snapshots when the new year is unpublished.
 
 Entities must not poll independently (`should_poll` False via `CoordinatorEntity`).
 
@@ -383,11 +410,11 @@ Implementation slices that **execute** remaining spike work are in section 7. Th
 
 **Extra evidence required:** no live HTTP. Slice 1 must add **synthetic** fixtures covering rollover and partial-population ambiguity (mixed years without a clear majority; tied modal years; modal year vs URL year-segment disagreement; mid-rollover adjacent years; leftovers without a year segment and current-looking rows with one). Four-school committed fixtures remain regression evidence for candidate signals, not proof.
 
-**Exit criterion:** a conservative current-cohort helper that survives those tests **or** a tightly defined owner checkpoint **before Slice 4**. No wall-clock or sport→term fallback without owner approval.
+**Exit criterion:** a conservative current-cohort helper that survives those tests **or** a tightly defined owner checkpoint **before Slice 4**. *(Slice 1 shipped the modal helper; Slice 4 used it. 2026-09-02 owner amendment: production applicable year is July 1–June 30; see section 3.3.)*
 
-**Technical decisions:** candidate signals listed above; production algorithm is Slice 1’s job (section 3.3).
+**Technical decisions:** candidate signals listed above; Slice 1 helper remains leftover/ambiguity evidence; production year is the owner calendar rule.
 
-**Product-owner review:** Q2 (multi-term display); any Slice 1 stop/report; any request for a calendar/sport-term fallback.
+**Product-owner review:** Q2 **decided** 2026-09-02 (one subscription per program; all terms retained). Calendar school-year boundary **decided** (July 1–June 30).
 
 ### Spike C — production transport
 
@@ -519,10 +546,13 @@ Do not resolve these silently in a coding slice.
 
 ### Q2 — Multi-term current programs
 
-- **Question:** When the current cohort contains two terms for the same sport/gender/level (Centennial Boys JV Soccer Spring + Winter), does the user see two subscriptions or one program with an automatic term pick?
-- **Why it matters:** Entity unique IDs and rollover matching. Football/baseball acceptance does not hit this, but soccer/softball schools will.
-- **Choices:** (A) Two selectable rows, unique ID includes `season` — **planning recommendation** (no silent drop). (B) One program; helper picks a term by unspecified “current” marker (no such marker on school home). (C) Hide multi-term sports until a marker exists.
-- **Decide by:** Slice 4 if an allowlisted sport is multi-term in fixtures; otherwise before the first allowlisted multi-term sport is exposed. Football/baseball/basketball/volleyball at Centennial are single-term in committed fixtures, so Q2 does not block Slice 4 for those sports.
+**Decided (owner, 2026-09-02).** Not A/B/C as originally sketched.
+
+- **Question (historical):** When one school year contains two MaxPreps terms for the same sport/gender/level, are those two subscriptions, one picked term, or hidden?
+- **Decision:** They are **one school-year program subscription** `{sport, gender, level}` that **resolves to all matching `TeamSeason` rows**. Fixture evidence: Centennial Boys Freshman Baseball Spring 26-27 and Fall 26-27 (different `sportSeasonId` / `canonicalUrl`, same `allSeasonId`).
+- **Do not:** persist `season` on the subscription; append `:{season}` to entity unique IDs; expose a term picker; omit the program when keys collide; arbitrarily select one term; flatten away term distinction in coordinator data.
+- **UI:** one selectable option; label includes informational terms + year (`Boys Freshman Baseball (Fall, Spring 26-27)`).
+- **Scope:** does not add soccer/softball to the allowlist. JV soccer remains non-selectable until that sport is evidence-validated.
 
 ### Q3 — Selector allowlist vs denylist
 
@@ -530,10 +560,7 @@ Do not resolve these silently in a coding slice.
 
 ### Q4 — Options flow vs subentries for sports
 
-- **Question:** Add/remove sports via entry options, or HA subentries?
-- **Why it matters:** UX of “Configure” vs nested “Add sport”.
-- **Choices:** (A) OptionsFlowWithReload — **planning recommendation**. (B) Subentries per program (more HA-2025+, more moving parts).
-- **Decide by:** Slice 4. If silent, implement A.
+**Decided (Slice 4, silent A):** OptionsFlowWithReload; one config entry per school; subscriptions in `entry.options`. Options-flow UI is Slice 7. Not subentries.
 
 ### Q5 — Logo fallback UX (if automatic logos fail)
 
@@ -548,7 +575,7 @@ Do not resolve these silently in a coding slice.
 
 Optimize for clean boundaries, not fewest slices. Each slice: one objective; tests; PRODUCT drift check; Implementation Notes; leave the tree green.
 
-**Git protocol:** Confirm existing `origin` / `main`. Commit and push completed slices to the existing GitHub remote when the owner has authorized commits for that work. Never `git init`, rewrite remotes, skip hooks, or force-push `main`. Public-repo hygiene on every staged diff.
+**Git protocol:** Confirm existing `origin` / `main`. Remaining Phase 3 slices: after tests are green and public-repo hygiene on the staged diff passes, commit and push without waiting for another owner OK. Never `git init`, rewrite remotes, skip hooks, or force-push `main`. Public-repo hygiene on every staged diff.
 
 **Live MaxPreps:** Automated tests remain fixtures-only. Owner-supervised live traffic is allowed only for Slice 0 HA sandbox clicks, Slice 9 optional logo HEAD, and Slice 12 optional observation. No live calls in CI.
 
@@ -586,15 +613,15 @@ Optimize for clean boundaries, not fewest slices. Each slice: one objective; tes
 - **Objective:** UI flow from short-name search to a school config entry with subscriptions.
 - **Touch:** `config_flow.py`, `strings.json` / translations, `const.py`.
 - **Flow:** `user` (query) → results picker (`School Name | City, State` · mascot; degrade location) → filtered multi-select → `async_create_entry`.
-- **Tests:** empty query; no results; Saint retry still happens in client; pick Centennial Roswell; duplicate `school_id` abort; subscriptions stored; selector options are allowlisted sports only (football/baseball/basketball/volleyball as present in current-cohort rows); tennis/soccer/lacrosse/flag football/softball absent; Pike historical not in schema options; Q2/Q4 applied as decided (Q2 does not block single-term allowlisted sports).
+- **Tests:** empty query; no results; Saint retry still happens in client; pick Centennial Roswell; duplicate `school_id` abort; subscriptions stored; selector options are allowlisted sports only (football/baseball/basketball/volleyball as present); tennis/soccer/lacrosse/flag football/softball absent; Pike historical not in schema options; Q4 = options not subentries; multi-term allowlisted programs are **one** option (not omitted). *(Post-Slice-4 owner amendment: option labels must show term(s)+year — corrective slice before Slice 5.)*
 - **Do not:** YAML; pasted URLs; grayed-out unsupported sports; historical year picker.
 
 ### Slice 5 — Coordinator
 
-- **Objective:** One coordinator per school entry; school-home + subscribed schedules; rollover resolve using the Slice 1 algorithm; **entry-wide vs per-program** failure isolation.
-- **Touch:** `coordinator.py`; `__init__.py` `async_setup_entry` / unload; `runtime_data`.
-- **Tests:** success snapshot; **one sport schema/transport error updates that program’s error/availability only and does not mark sibling sports unavailable or drop their refreshed data**; school-home/discovery failure raises `UpdateFailed` and retains the last successful **entry** snapshot; first-setup discovery failure → `ConfigEntryNotReady`; unresolved subscription → documented per-program unavailable payload; interval constant ~12h.
-- **Do not:** per-entity fetch; adaptive polling; live HTTP; treat a single schedule failure as entry-wide `UpdateFailed`.
+- **Objective:** One coordinator per school entry; school-home + **all term schedules** for each subscribed `{sport, gender, level}` in the **applicable school year (July 1–June 30)**; **entry-wide vs per-program** failure isolation. Snapshot must retain per-term `TeamSeason` / `Schedule` (not one flattened term-less list as the only structure).
+- **Touch:** `coordinator.py`; `__init__.py` `async_setup_entry` / unload; `runtime_data`; small `applicable_school_year` helper; switch config-flow selectable filter from Slice 1 modal cohort to `year == applicable_school_year` ∩ allowlist (same grouping helper as the label corrective slice).
+- **Tests:** success snapshot with football **and** multi-term freshman baseball (two schedule fetches, both terms present); **one term or one sport** schema/transport error does not mark sibling sports unavailable or drop their refreshed data; school-home/discovery failure raises `UpdateFailed` and retains the last successful **entry** snapshot; first-setup discovery failure → `ConfigEntryNotReady`; unresolved subscription (no rows for applicable year) → documented per-program unavailable payload **without** deleting the subscription; interval constant ~12h; do not invent games when the new year is unpublished.
+- **Do not:** per-entity fetch; adaptive/game-day polling; live HTTP; treat a single schedule failure as entry-wide `UpdateFailed`; pick one term; persist `season` on the config entry; build sensors or the card; implement Slice 11 daily-until-published (keep last-good + 12h is enough here).
 
 ### Slice 6 — Device and team sensors (Spike E)
 
@@ -607,7 +634,7 @@ Optimize for clean boundaries, not fewest slices. Each slice: one objective; tes
 
 - **Objective:** HA-native subscription edits with reload and stable IDs for remaining entities.
 - **Touch:** `config_flow.py` options handler (`OptionsFlowWithReload` unless Q4 chose subentries).
-- **Tests:** add baseball to football-only entry; remove a sport; entity registry unique IDs of remaining sensors unchanged; cannot add tennis or other non-allowlisted sports; cannot add Pike `11-12`.
+- **Tests:** add baseball to football-only entry; remove a sport; entity registry unique IDs of remaining sensors unchanged; cannot add tennis or other non-allowlisted sports; cannot add Pike `11-12`; multi-term programs still one option with aggregated term/year label.
 - **Do not:** require YAML or manual entity editing.
 
 ### Slice 8 — Multi-school behavior
@@ -631,9 +658,9 @@ Optimize for clean boundaries, not fewest slices. Each slice: one objective; tes
 
 ### Slice 11 — Rollover
 
-- **Objective:** Subscriptions survive school-year change without entity unique_id churn.
-- **Tests:** synthetic sportSeasons where the **Slice 1 current-cohort algorithm** selects a new year and football `sport_season_id` / `canonical_url` change; entity unique_id unchanged; coordinator fetches the new schedule URL (mapped in test transport). If Slice 1 exited with an owner checkpoint instead of an algorithm, this slice follows that checkpoint — do not invent modal-year behavior here.
-- **Do not:** require reconfiguration; persist only `ssid` as identity.
+- **Objective:** Subscriptions survive the July 1 school-year boundary without entity unique_id churn or user reconfiguration.
+- **Tests:** freeze/synthetic clock across July 1; applicable year becomes `27-28`; football `{sport, gender, level}` still matches; entity unique_id unchanged; coordinator fetches new-year schedule URL(s) when mapped. When new-year rows/schedules are unpublished, last-good prior-year snapshot is retained and refresh may run daily until they appear, then return to ~12h. Multi-term programs still resolve to **all** matching new-year rows (not one term).
+- **Do not:** require reconfiguration; persist only `ssid` as identity; invent a schedule because the calendar rolled over; use the Slice 1 modal-year helper as the production year.
 
 ### Slice 12 — Optional game-day observation script (Spike H)
 
@@ -666,7 +693,7 @@ S2 → S12 observation (optional, parallel after S2)
 S7 + S8 + S9 + S10 + S11 → S13 wrap-up
 ```
 
-Q1 **must** be decided before Slice 6 lands sensors (no silent default). Q2 before exposing a multi-term allowlisted program (does not block Slice 4 for current single-term allowlisted sports). Q4 before Slice 4. Q5 in Slice 9 if automatic logos fail. Q3 is decided (allowlist). Slice 4 depends on Slice 1 having an algorithm **or** an owner checkpoint.
+Q1 **must** be decided before Slice 6 lands sensors (no silent default). Q2 **decided** (one program subscription → one or more `TeamSeason` rows). Q4 **decided** (options). Q5 in Slice 9 if automatic logos fail. Q3 is decided (allowlist). Production applicable year is July 1–June 30 (not the Slice 1 modal helper).
 
 ---
 
@@ -680,8 +707,8 @@ Recommend Phase 4 card work **only if** all of the following are true. Do not ch
 4. Multiple schools work as separate config entries/devices.
 5. Multiple subscribed sports per school work.
 6. Adding/removing sports uses HA options (or owner-chosen Q4 equivalent), not YAML or manual entity edits.
-7. Current-season selection uses the Slice 1 conservative algorithm (or an explicit owner checkpoint from Slice 1); historical Pike-style rows are not normal subscriptions.
-8. Season rollover updates resolved `sport_season_id` / URLs without changing entity unique IDs (Slice 11 tests), using the Slice 1 algorithm/checkpoint — not an ad hoc modal-year rule.
+7. Current-season selection uses the applicable school year (July 1–June 30) ∩ allowlist; historical Pike-style rows (`year` ≠ applicable year) are not normal subscriptions. Slice 1 modal helper is leftover/ambiguity evidence, not the production year.
+8. Season rollover re-resolves `{sport, gender, level}` against the new year’s provider rows (one or more `TeamSeason` per subscription) without changing entity unique IDs (Slice 11 tests). Unpublished new-year schedules do not destroy last-good data or require reconfiguration.
 9. Production async transport exists; entities do not fetch; coordinator polling is conservative (~2 cycles/day).
 10. Entry-wide school-home/discovery failure does not wipe last successful entry data. A single subscribed-sport fetch/parse failure does not make sibling sports unavailable; the failed program preserves last good data and exposes per-program error/availability.
 11. Stable device identifiers `(domain, school_id)` and program entity unique IDs.
@@ -713,7 +740,7 @@ Coverage list for Layer 2 (minimum):
 - Multiple schools
 - Multiple sports under one school
 - Options add/remove
-- Current-season selection (Slice 1 algorithm or documented checkpoint)
+- Current-season selection (applicable school year July 1–June 30 ∩ allowlist; Slice 1 helper is not the production year)
 - Historical rows excluded from normal subscriptions
 - Coordinator success / **entry-wide** failure / **per-program** failure isolation / recovery
 - Malformed provider data
@@ -744,7 +771,9 @@ Do not assert against live MaxPreps availability.
 - Automated tests must not perform live MaxPreps HTTP
 - Do not invent `contestState` mappings, timezone offsets, or sport→calendar tables
 - Do not treat a denylist of “likely” sports as the selector; use the evidence-based allowlist in the approved Phase 3 plan
-- Do not treat one subscribed-sport fetch/parse failure as entry-wide unavailability
+- Do not treat one subscribed-sport fetch/parse failure as entry-wide unavailability (including one term of a multi-term program)
+- A subscription `{sport, gender, level}` may resolve to multiple `TeamSeason` rows; do not pick one term or persist `season` as identity
+- Applicable school year is July 1–June 30 (HA local date); do not invent schedules when that year is unpublished
 - Do not add YAML as a required user configuration path
 - Do not start a custom Lovelace card in Phase 3
 - Public-repo hygiene still applies
@@ -764,7 +793,7 @@ Do **not** duplicate the entire Phase 3 plan in the rule. Keep it short enough t
 | `README.md` | Slice 13 — Phase 3 status, test commands, timezone/live-score/unsupported-format limitations |
 | `custom_components/maxpreps/strings.json` + `translations/en.json` | Config/entity copy |
 | Implementation Notes below | Each coding slice |
-| [docs/PRODUCT.md](PRODUCT.md) | **Not in Phase 3 coding slices.** Owner-driven update for drift section A remains separate |
+| [docs/PRODUCT.md](PRODUCT.md) | Owner-driven. Post-Slice-4 (2026-09-02): §3.2 program subscriptions, §27 H school year, §27 J identity. Drift section A search/client signatures remain a separate owner edit. |
 | `hacs.json` | Phase 5 unless later evidence shows HA cannot load without it (unexpected) |
 
 Unpublished operator Compose/secrets remain outside this repository.
@@ -997,14 +1026,15 @@ Given school-home `sportSeasons[]` rows (input order preserved; no mutation):
 - `data`: stable school identity (no `sport_season_id`)
 - `options.subscriptions`: `[{sport, gender, level}, …]` only — no season, no rotating provider IDs
 
-**Q2 (still open)**
+**Q2 (decided)**
 
 - Subscription key remains `{sport, gender, level}` without season.
-- Centennial Boys Freshman Baseball has Spring + Fall rows in fixtures (Q2 multi-term). Config flow omits **all** rows sharing a duplicate subscription key (neither collapses nor exposes a term picker) until owner disposition.
-- Varsity football/baseball/basketball/volleyball at Centennial remain single-term and selectable.
+- When multiple current-cohort rows share the same key (Centennial Boys Freshman Baseball Spring + Fall), they are **one user-facing school-year program**. Spring/Fall are provider partitions, not competing subscriptions.
+- Config flow collapses duplicate keys to **one** selectable row (first in school-home order). Coordinator refresh (Slice 5) resolves the live `TeamSeason` from school-home rows for that subscription.
 
 **Decisions**
 
+- Q2 → one subscription per `(sport, gender, level)`; multi-term provider rows collapsed at config-flow display, not exposed as separate subscriptions and not omitted entirely.
 - Q4 silent → one config entry per school; subscriptions in `entry.options` (not HA subentries). Options-flow UI deferred to Slice 7.
 - Saint retry stays in `AsyncMaxPrepsClient`; config flow does not reimplement it.
 - Invalid school selector values outside the current search-result mapping are rejected by HA `SelectSelector` validation (`InvalidData`) before `get_school_teams` runs.
@@ -1019,8 +1049,26 @@ Given school-home `sportSeasons[]` rows (input order preserved; no mutation):
 
 **Deviations**
 
-- Q2 multi-term allowlisted programs omitted from subscription selector (both Spring/Fall Freshman Baseball at Centennial) rather than aborting the whole school setup.
+- None beyond the post-land Q2 correction: duplicate subscription keys collapse to one option (replacing the interim “omit entire duplicate-key group” behavior).
 
 **PRODUCT drift check**
 
 - None. `PRODUCT.md` untouched. No coordinator, entities, options-flow UI, parser changes, or live HTTP.
+
+## Post-Slice-4 owner clarification (2026-09-02)
+
+The Slice 4 notes above describe what shipped at `d645bc7`. They are **not** rewritten.
+
+What that commit already got right:
+
+- Persisted subscriptions are `{sport, gender, level}` only.
+- Duplicate keys are **one** option (collapse), not omitted entirely (the interim omit-all behavior was already replaced).
+- Q4 = one school entry; subscriptions in `options`.
+
+What owner review still requires (do not treat Slice 4 notes as the forward contract):
+
+- Option labels still use a **single** row’s `TeamSeason.display_label` (`Boys Freshman Baseball`), not aggregated `(Fall, Spring 26-27)`. Collapse-to-first is the wrong internal model for labels even though persist shape is correct.
+- The note “Coordinator refresh resolves the live `TeamSeason`” (singular) is **superseded**. Slice 5 must resolve **all** matching rows for the applicable school year and keep per-term schedules.
+- Production applicable year is July 1–June 30 (HA local), not the Slice 1 modal helper. Config flow still used `selectable_team_seasons` at Slice 4; Slice 5 switches picker + coordinator to `year == applicable_school_year` ∩ allowlist.
+
+A narrow **Slice 4a** lands aggregated picker labels + a grouping helper before Slice 5. Owner PRODUCT updates for §3.2 / §27 H / §27 J landed in this documentation sweep, not in Slice 4’s commit.

@@ -48,7 +48,7 @@ Not PRODUCT drift against Phase 2 code. These stay open for a future slice; Phas
 
 7. **HA entity model** — config-entry scope, schedule representation, adaptive polling, notifications vs state triggers (PRODUCT §27).
 8. **HA lifecycle (`PRE` / `IN` / `POST` / `OFF`)** — Phase 2 normalizes provider state to `scheduled | final | deleted | unknown`. Mapping to HA-facing lifecycle is **Phase 3 product/design**, not current client drift. **Owner decision:** open HA-layer design.
-9. **Default team-season cohort / school-year rollover / historical-season UX** — `get_school_teams` returns all `sportSeasons[]` rows; tests and demo explicitly pick `year == "26-27"`. Default-season policy belongs in config flow / UI, not Phase 2 client.
+9. **Default team-season cohort / school-year rollover / historical-season UX** — `get_school_teams` returns all `sportSeasons[]` rows; tests and demo explicitly pick `year == "26-27"`. Default-season policy belongs in config flow / UI, not Phase 2 client. **Phase 3 owner decision (2026-09-02):** applicable school year is July 1–June 30; subscriptions are `{sport, gender, level}` and may match multiple provider terms. See [PHASE3_PLAN.md](PHASE3_PLAN.md) owner amendments and [PRODUCT.md](PRODUCT.md) §3.2 / §27 H / §27 J. This bullet is not rewritten as a Phase 2 result.
 10. **UI for unsupported sports** — tennis/golf/track enumerated on school home; schedule fetch fails with `NextDataNotFoundError` when Next.js schedule data is absent. **Owner decision:** intentionally deferred; not a Phase 2 defect.
 
 ### Phase 2 implementation boundaries (document, do not treat as PRODUCT weakness)

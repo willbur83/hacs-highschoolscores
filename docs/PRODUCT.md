@@ -249,6 +249,34 @@ User may select one or more teams.
 
 The integration should not require separate setup flows for each selected team unless Home Assistant architecture strongly favors that implementation.
 
+### Subscriptions are school-year programs (decided 2026-09-02)
+
+A user subscription is:
+
+```
+school + sport + gender + level
+```
+
+Examples: Centennial Boys Varsity Football; Centennial Boys Freshman Baseball.
+
+It is **not** an individual MaxPreps `sportSeasonId`, Spring/Fall term, or team-season URL. Persist `{sport, gender, level}` only.
+
+When MaxPreps lists multiple terms in the same school year for that program (for example Boys Freshman Baseball Fall 26-27 and Spring 26-27), those are **one subscription**. Do not make the user pick Fall vs Spring. Do not omit the program because multiple terms exist.
+
+The setup picker should show informational term(s) and school year, for example:
+
+```
+Boys Varsity Football (Fall 26-27)
+Boys Varsity Baseball (Spring 26-27)
+Boys Freshman Baseball (Fall, Spring 26-27)
+```
+
+The parenthetical is context only. It does not create extra subscriptions.
+
+At refresh, the integration gathers **all** matching current-school-year team-season rows and their schedules, preserving term/source so a later expanded schedule view can section by term. Do not flatten away the term distinction internally.
+
+Supported sports in the picker remain the evidence-based head-to-head allowlist; this decision does not add soccer, softball, or individual/meet sports.
+
 ---
 
 # 4. Home Assistant Device and Entity Model
@@ -1263,24 +1291,14 @@ Potentially valuable but not core.
 
 ## H. Multiple Seasons
 
-Need to determine:
+**Decided (2026-09-02).**
 
-- current season automatically
-    
-- prior season support
-    
-- next season behavior
-    
-- rollover timing
-    
-- manual season selection
-    
+- **Applicable school year:** July 1 through June 30 in the Home Assistant instance’s local timezone. `2026-07-01`–`2027-06-30` is `26-27`.
+- Subscriptions automatically follow that school year. No annual reconfiguration. No historical year picker in v1.
+- Provider rows and published schedules for that year are separate from the calendar rule. Do not invent a schedule merely because the calendar rolled over. Until the new year is published, keep prior data and check conservatively (daily is acceptable), then return to the normal low-frequency refresh.
+- MaxPreps Spring/Fall (or Winter) terms inside one school year are **not** separate user seasons; see §3.2 program subscriptions.
 
-Initial assumption:
-
-> Automatically use MaxPreps current/default season.
-
-Historical season selection can come later.
+Prior-season browsing and manual season selection remain out of scope.
 
 ---
 
@@ -1294,15 +1312,13 @@ Do not use display name or URL slug as the sole identity if MaxPreps exposes a s
 
 ## J. Team Identity
 
-Same issue for teams.
-
-Need to determine whether:
+**Decided (2026-09-02) for user-facing subscriptions:**
 
 ```
 school + sport + gender + level
 ```
 
-is sufficient or whether MaxPreps exposes a stable team/season ID that should be stored.
+School identity remains MaxPreps `schoolId`. Do not persist MaxPreps `sportSeasonId`, `allSeasonId`, term, year, or team-season URL as the subscription key. Those remain provider-side metadata used to fetch and match rows for the applicable school year (one or more `TeamSeason` rows per subscription).
 
 ---
 

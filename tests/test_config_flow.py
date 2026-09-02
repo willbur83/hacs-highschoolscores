@@ -49,6 +49,7 @@ CENTENNIAL_HIGH_SCHOOL_SEARCH_URL = build_search_url("Centennial High School")
 SAINT_EDWARD_SEARCH_URL = build_search_url("Saint Edward")
 ST_EDWARD_SEARCH_URL = build_search_url("St. Edward")
 FOOTBALL_SUBSCRIPTION_KEY = "\x1e".join(("Football", "Boys", "Varsity"))
+FRESHMAN_BASEBALL_SUBSCRIPTION_KEY = "\x1e".join(("Baseball", "Boys", "Freshman"))
 
 
 def _get_selector(result: dict, field_name: str):
@@ -380,3 +381,27 @@ async def test_centennial_subscriptions_include_gender_distinct_basketball(
 
     assert "Boys Varsity Basketball" in labels
     assert "Girls Varsity Basketball" in labels
+
+
+@pytest.mark.asyncio
+async def test_duplicate_subscription_key_collapses_to_one_option(
+    hass, enable_custom_integrations, fixture_client
+) -> None:
+    """Spring/Fall rows for the same program collapse to one subscription option."""
+    _, transport = fixture_client
+
+    result = await _init_user(hass, enable_custom_integrations)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"query": "Centennial"}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"school": CENTENNIAL_ROSWELL_ID}
+    )
+
+    labels = list(_selector_options(result, "subscriptions").values())
+    values = list(_selector_options(result, "subscriptions").keys())
+
+    freshman_baseball_labels = [label for label in labels if label.endswith("Freshman Baseball")]
+    assert freshman_baseball_labels == ["Boys Freshman Baseball"]
+    assert FRESHMAN_BASEBALL_SUBSCRIPTION_KEY in values
+    assert len(labels) == 16

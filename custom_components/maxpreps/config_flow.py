@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
 import logging
 from typing import Any
 
@@ -65,24 +64,21 @@ def _subscription_key(team_season: TeamSeason) -> str:
 
 
 def _config_flow_selectable(team_seasons: list[TeamSeason]) -> list[TeamSeason]:
-    """Return allowlisted current-cohort rows with unique (sport, gender, level) keys.
+    """Return one allowlisted current-cohort row per (sport, gender, level) subscription key.
 
-    Rows that share a subscription key (Q2 multi-term programs) are omitted until
-    owner disposition adds season to the key or a term picker.
+    When MaxPreps lists multiple current-year rows for the same program (e.g. Boys
+    Freshman Baseball Spring and Fall), keep the first row in school-home order.
     """
     selectable = selectable_team_seasons(team_seasons)
-    grouped: dict[tuple[str, str, str], list[TeamSeason]] = defaultdict(list)
+    seen_keys: set[tuple[str, str, str]] = set()
+    collapsed: list[TeamSeason] = []
     for team_season in selectable:
-        grouped[(team_season.sport, team_season.gender, team_season.level)].append(
-            team_season
-        )
-
-    unique_keys = {key for key, rows in grouped.items() if len(rows) == 1}
-    return [
-        team_season
-        for team_season in selectable
-        if (team_season.sport, team_season.gender, team_season.level) in unique_keys
-    ]
+        key = (team_season.sport, team_season.gender, team_season.level)
+        if key in seen_keys:
+            continue
+        seen_keys.add(key)
+        collapsed.append(team_season)
+    return collapsed
 
 
 class MaxPrepsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
