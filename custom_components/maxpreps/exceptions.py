@@ -35,3 +35,27 @@ class CurrentCohortEmptyError(CurrentCohortError):
 
 class CurrentCohortAmbiguousError(CurrentCohortError):
     """Team-season rows did not yield an unambiguous current cohort."""
+
+
+class TransportError(MaxPrepsError):
+    """Base exception for transport-layer failures."""
+
+
+class TransportHttpError(TransportError):
+    """HTTP response whose final status was not successful."""
+
+    def __init__(self, message: str, *, status_code: int) -> None:
+        super().__init__(message)
+        self.status_code = status_code
+
+
+class TransportTimeoutError(TransportError):
+    """Request or read timed out."""
+
+
+class TransportResponseTooLargeError(TransportError):
+    """Response body exceeded the configured size cap."""
+
+
+class TransportInvalidResponseError(TransportError):
+    """HTTP succeeded but the body was empty or not plausibly HTML."""

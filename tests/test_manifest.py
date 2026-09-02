@@ -36,3 +36,11 @@ def test_manifest_required_keys():
         assert key in manifest, f"missing manifest key: {key}"
     assert manifest["domain"] == DOMAIN
     assert manifest["version"] == "0.0.0"
+
+
+def test_version_constant_matches_manifest():
+    """Integration VERSION constant stays aligned with manifest.json."""
+    from custom_components.maxpreps.const import VERSION
+
+    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    assert VERSION == manifest["version"]

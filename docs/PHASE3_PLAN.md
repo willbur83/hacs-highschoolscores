@@ -900,3 +900,43 @@ Given school-home `sportSeasons[]` rows (input order preserved; no mutation):
 **PRODUCT drift check**
 
 - None. `PRODUCT.md` untouched. Allowlist matches approved §3.4; no config flow or UI behavior added.
+
+## Slice 2 — Production async transport (Spike C)
+
+**What landed**
+
+- `custom_components/maxpreps/transport.py` — added `AsyncTransport` protocol; sync `Transport` unchanged
+- `custom_components/maxpreps/async_transport.py` — `AiohttpTransport` with bounded streaming read, HTML validation, `asyncio.timeout`, per-request `User-Agent`
+- `custom_components/maxpreps/ha_transport.py` — `create_ha_transport(hass)` using `async_get_clientsession` (lazy HA import)
+- `custom_components/maxpreps/const.py` — `VERSION`, `USER_AGENT`, `REQUEST_TIMEOUT_SECONDS`, `MAX_RESPONSE_BYTES`
+- `custom_components/maxpreps/exceptions.py` — `TransportError`, `TransportHttpError`, `TransportTimeoutError`, `TransportResponseTooLargeError`, `TransportInvalidResponseError`
+- `tests/helpers/async_fixture_transport.py` — `AsyncFixtureTransport` wrapping `FixtureTransport`
+- `tests/test_async_transport.py` — fake-session coverage for 200/403/429/500/timeout/oversize/invalid HTML/network client error; fixture-mapped URL; no live network
+- `tests/test_ha_transport.py` — HA shared-session factory smoke (skipped without `[ha]`)
+- `tests/test_manifest.py` — `VERSION` constant matches `manifest.json`
+- `pyproject.toml` — added `pytest-asyncio` to `[dev]` (required by existing `asyncio_mode = "auto"`)
+
+**Decisions**
+
+- **User-Agent:** `HomeAssistant-MaxPreps/0.0.0 (+https://github.com/willbur83/hacs-highschoolscores)` — per-request header only; session default headers not mutated
+- **Timeout:** 20 seconds via `asyncio.timeout`
+- **Size cap:** 5 MiB (`MAX_RESPONSE_BYTES`); enforced while streaming (`iter_chunked`); `Content-Length` used as early rejection when present
+- **HTML validation:** non-empty body with `text/html` content type, or absent/nonstandard content type with `<!doctype html` / `<html` prefix check
+- **Retries:** none — 403, 429, timeout, and other failures raise on first attempt (optional transient retry remains off)
+- **No httpx** production dependency; no `__NEXT_DATA__` parsing or challenge-page detection at transport layer
+
+**Pytest**
+
+| Layer | Command | Result |
+|-------|---------|--------|
+| Client (`[dev]`, Python 3.12) | `pip install -e ".[dev]" && pytest` | 152 passed, 2 skipped (`test_init`, `test_ha_transport` without HA) |
+| Client demo | `python scripts/demo_client.py --fixtures` | OK |
+| HA smoke (`[ha]`, Python 3.14) | `pip install pytest-homeassistant-custom-component==0.13.362 && pip install homeassistant==2026.9.0 && pip install -e . && pytest tests/test_manifest.py tests/test_init.py tests/test_ha_transport.py` | 5 passed |
+
+**Deviations**
+
+- Added `pytest-asyncio>=0.24` to `[dev]` so async transport tests and the pre-existing `asyncio_mode = "auto"` config work on a clean `[dev]` install.
+
+**PRODUCT drift check**
+
+- None. `PRODUCT.md` untouched. No async client facade, config flow, coordinator, or parser changes.

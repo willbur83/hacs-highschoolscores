@@ -10,6 +10,7 @@ requires-python = ">=3.12"
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
+    "pytest-asyncio>=0.24",
 ]
 ha = [
     "homeassistant==2026.9.0",
