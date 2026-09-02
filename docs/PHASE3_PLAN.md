@@ -168,17 +168,18 @@ HA subentries (one subentry per sport) are a technically valid alternative with 
 **Recommendation (validates the product hypothesis against HA conventions):**
 
 - **Device:** the school. `DeviceInfo.identifiers = {(DOMAIN, school_id)}`. Name from `School.name`. `configuration_url` = payload school `canonical_url`.
-- **Entity:** one `sensor` per subscribed program, associated with that device.
+- **Entity:** one `sensor` per subscribed **program**, associated with that device. A program is `{sport, gender, level}` — not a MaxPreps term and not a `TeamSeason` row. Multi-term programs (e.g. Freshman Baseball Fall+Spring) are still **one** entity.
+- **Coordinator data contract (canonical):** `MaxPrepsCoordinatorData` holds `programs[]` each with `terms[]`. Each term carries a `TeamSeason`, optional `Schedule`, and refresh status. Slice 6+ entities **must** bind to a `ProgramSnapshot` (and the school on `MaxPrepsCoordinatorData`), not to a single `TeamSeason` / `Schedule`.
 - **Coordinator:** owns all network I/O for the entry. Entities are `CoordinatorEntity` and never fetch.
 - **Manifest:** `integration_type: service`, `iot_class: cloud_polling`, `config_flow: true`, custom-integration `version` required.
 
-Entity unique ID (stable across school-year rollover):
+Entity unique ID (stable across school-year rollover and provider-ID churn — same identity as the subscription):
 
 ```
 {school_id}:{gender}:{level}:{sport}
 ```
 
-Do **not** append `:{season}`. Multi-term programs are one entity / one subscription.
+Do **not** put any of the following in the unique ID: `sport_season_id` / `sportSeasonId`, `season` / term, `year`, team-season `canonical_url`. Do not mint one entity per `terms[]` row.
 
 `has_entity_name = True`. Translated name from `display_label` placeholders (e.g. `Boys Varsity Football`), producing entity IDs in the spirit of `sensor.centennial_boys_varsity_football` without hard-coding slugs as identity. Config-flow option labels may add informational `(Fall, Spring 26-27)` context; that is not part of the entity unique ID.
 
@@ -196,7 +197,7 @@ School/program chrome: `school_id`, `school_name`, `sport`, `gender`, `level`, `
 
 - `id`, naive `date` ISO string, `status`, `opponent_name`, `opponent_id`, `home_away`, `team_score`, `opponent_score`, `result`, `venue`, `game_url`, optional `opponent_logo`
 
-**Full-season `schedule` on a sensor attribute is a hypothesis, not the locked contract.** Spike E (executed in Slice 6 before landing the entity schema) must verify the HA-native implications of serializing a 10–30+ game list into entity attributes even if those attributes are unrecorded: state-machine size, recorder/history side effects, more-info UX, and frontend consumers. Evaluate keeping the full `Schedule` on coordinator / `runtime_data` and exposing only concise attributes (`last_game`, `next_game`, chrome). Put bulky/volatile fields that *are* exposed on the entity in `_unrecorded_attributes`. Entity **state** remains short (HA state is not a document store).
+**Entity state is compact.** Never serialize the full schedule (or `terms[]`) into HA entity **state**. The source of truth for the full school-year schedule remains `MaxPrepsCoordinatorData.programs[].terms[]` (coordinator / `runtime_data`) for the future card. Slice 6 exposes concise `last_game` / `next_game` attributes derived **across terms** of that program. Spike E may keep additional schedule material on unrecorded attributes only after checking HA implications; default is coordinator data, not state.
 
 Do not create one HA entity per contest.
 
@@ -625,10 +626,10 @@ Optimize for clean boundaries, not fewest slices. Each slice: one objective; tes
 
 ### Slice 6 — Device and team sensors (Spike E)
 
-- **Objective:** School device + one sensor per subscription; last+next; **Spike E verification** of whether the full schedule belongs on entity attributes vs coordinator/`runtime_data`. **Blocked on Q1.**
-- **Touch:** `sensor.py`; `__init__.py` forward setup; translations; Slice 6 Implementation Notes for Spike E disposition.
-- **Tests:** unique IDs; `device_info` identifiers; `has_entity_name`; football+baseball entities for one school; deleted games absent; unknown status preserved; naive dates have no offset; last+next present when derivable; schedule exposure matches the Spike E-chosen contract (do **not** assume `_unrecorded_attributes` includes `schedule` until Spike E exits); per-program availability when one sport failed in Slice 5 isolation tests.
-- **Do not:** land sensors without owner Q1 disposition; calendar; custom card; PRE/IN/POST/OFF unless Q1 explicitly chose B; one entity per contest.
+- **Objective:** School device + **one sensor per program** (`ProgramSnapshot`); last+next derived across `terms[]`; compact entity state; full schedule stays on `MaxPrepsCoordinatorData.programs[].terms[]`. Do not invent PRE/IN/POST/OFF (Q1-B).
+- **Touch:** `sensor.py`; `__init__.py` forward setup / unload platforms; `manifest.json` `sensor` platform; translations; Slice 6 Implementation Notes for Spike E disposition.
+- **Tests:** unique ID `{school_id}:{gender}:{level}:{sport}` (freshman baseball is **one** entity despite two terms; ID has no ssid/season/year/URL); `device_info` identifiers `(DOMAIN, school_id)`; `has_entity_name`; football+baseball (+ freshman baseball) for one school; deleted games absent from last/next; unknown status preserved; naive dates have no offset; last+next present when derivable across terms; state is a short string (not JSON/schedule); per-program availability when one sport or one term failed in Slice 5 isolation; unique ID unchanged if term `sport_season_id` / URL / year change in the snapshot.
+- **Do not:** one entity per `TeamSeason` / term / contest; unique ID from provider IDs; serialize `terms[]` into state; calendar; custom card; PRE/IN/POST/OFF.
 
 ### Slice 7 — Options flow: add/remove sports
 
@@ -1135,3 +1136,32 @@ Target Layer 2 (`homeassistant==2026.9.0`, Python 3.14): not yet run on this hos
 **Deferred:** sensors (Slice 6), options-flow UI (Slice 7), daily-until-published rollover polling (Slice 11), Lovelace card, PRE/IN/POST/OFF entity states.
 
 **PRODUCT drift check:** None. `PRODUCT.md` untouched. No parser/signature/`display_label` changes, no live MaxPreps HTTP.
+
+## Slice 6
+
+**Goal:** School device + one sensor per subscribed `{sport, gender, level}` program (`ProgramSnapshot`); compact entity state; `last_game` / `next_game` attributes derived across `terms[]`; full schedule remains on coordinator data only (Spike E).
+
+**Delivered**
+
+- `custom_components/maxpreps/program_sensor.py`: pure helpers for unique ID, availability, last/next derivation (provider-naive datetime ordering only; no wall-clock past/future filtering), compact `native_value`, and game attribute serialization.
+- `custom_components/maxpreps/sensor.py`: `MaxPrepsProgramSensor` (`CoordinatorEntity` + `SensorEntity`, `should_poll` False); one entity per `coordinator.data.programs[]` row; `DeviceInfo` identifiers `{(DOMAIN, school_id)}` with school `configuration_url`.
+- `custom_components/maxpreps/__init__.py`: `async_forward_entry_setups` / `async_unload_platforms` for `Platform.SENSOR`.
+- `const.py`: `ATTRIBUTION`.
+- `strings.json` / `translations/en.json`: entity name template `{gender} {level} {sport}`.
+- `tests/test_sensor.py`: device/entity wiring, three-program count (football + varsity baseball + freshman baseball ⇒ three sensors), unique ID stability, last/next across terms, deleted/unknown handling, per-program availability, no live HTTP.
+- `docs/PHASE3_PLAN.md` §3.2 canonical coordinator/entity contract language (post-Slice-5) committed with this slice if still uncommitted.
+
+**Unique ID:** `{school_id}:{gender}:{level}:{sport}` — e.g. Centennial Boys Freshman Baseball is **one** entity even when `terms[]` has Fall + Spring with different `sport_season_id` / `canonical_url` / year. Forbidden in unique ID: `sport_season_id`, season/term, year, team-season URL.
+
+**Entity state (Q1 still open — Q1-B not implemented):** compact `native_value` uses only `scheduled | final | unknown`. When `next_game` exists ⇒ `scheduled`; else when `last_game` exists ⇒ `final`; else `unknown`. No PRE/IN/POST/OFF. Entity availability (not state) reflects per-program data presence; stale last-good term data keeps the sensor available.
+
+**Spike E disposition:** Full school-year schedule source of truth stays on `MaxPrepsCoordinatorData.programs[].terms[]` (coordinator / `runtime_data`) for the Phase 4 card. Entity **state** is never a JSON schedule or `terms[]` dump. Slice 6 exposes concise `last_game` / `next_game` attributes only; no full games list on attributes; no `_unrecorded_attributes` bulk schedule copy.
+
+**Tests**
+
+- Layer 1 (`[dev]`, Python 3.12): full non-HA suite green; HA tests skipped via `importorskip`.
+- Layer 2 (`homeassistant==2026.9.0`, Python 3.14, `pytest-homeassistant-custom-component==0.13.362`, two-step install): include `tests/test_sensor.py` with existing HA suite; zero live HTTP.
+
+**Deferred:** options-flow UI (Slice 7), calendar, custom card, logos (Slice 9), PRE/IN/POST/OFF (Q1), daily-until-published rollover polling (Slice 11).
+
+**PRODUCT drift check:** None. `PRODUCT.md` untouched.

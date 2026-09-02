@@ -3,6 +3,7 @@
 from datetime import timedelta
 
 DOMAIN = "maxpreps"
+ATTRIBUTION = "Data provided by MaxPreps"
 
 # Keep in sync with manifest.json "version".
 VERSION = "0.0.0"

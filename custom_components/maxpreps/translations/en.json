@@ -1,4 +1,11 @@
 {
+  "entity": {
+    "sensor": {
+      "program": {
+        "name": "{gender} {level} {sport}"
+      }
+    }
+  },
   "config": {
     "abort": {
       "already_configured": "This school is already configured.",

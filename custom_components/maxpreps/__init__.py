@@ -20,14 +20,20 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up MaxPreps from a config entry."""
+    from homeassistant.const import Platform
+
     from custom_components.maxpreps.coordinator import MaxPrepsDataUpdateCoordinator
 
     coordinator = MaxPrepsDataUpdateCoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
+
+    await hass.config_entries.async_forward_entry_setups(entry, [Platform.SENSOR])
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    return True
+    from homeassistant.const import Platform
+
+    return await hass.config_entries.async_unload_platforms(entry, [Platform.SENSOR])
