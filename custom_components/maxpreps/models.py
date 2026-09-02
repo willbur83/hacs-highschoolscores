@@ -25,8 +25,8 @@ class School:
     school_id: str
     canonical_url: str
     name: str
-    city: str
-    state: str
+    city: str | None = None
+    state: str | None = None
     zip: str | None = None
     mascot: str | None = None
     mascot_url: str | None = None

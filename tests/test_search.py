@@ -27,10 +27,21 @@ def _find_school(schools: list[School], school_id: str) -> School:
     raise AssertionError(f"school_id {school_id!r} not found")
 
 
-def test_parse_centennial_fixture_raises_on_blank_city():
+def test_parse_centennial_fixture():
     page_props = load_search_page_props(f"{CENTENNIAL}/search-centennial.json")
-    with pytest.raises(SearchSchemaError, match=r"initialSchoolResults\[28\] missing required field 'city'"):
-        parse_search_page_props(page_props)
+    schools = parse_search_page_props(page_props)
+
+    assert len(schools) == len(page_props["initialSchoolResults"])
+    roswell = _find_school(schools, CENTENNIAL_ROSWELL_ID)
+    assert roswell.canonical_url == CENTENNIAL_ROSWELL_URL
+    assert roswell.city == "Roswell"
+    assert roswell.state == "GA"
+
+    incomplete_location = [school for school in schools if school.city is None]
+    assert incomplete_location, "expected at least one row with blank city preserved"
+    welland = _find_school(schools, "e283add5-4dde-4aa5-876b-65e2fc628a43")
+    assert welland.city is None
+    assert welland.state is None
 
 
 def test_parse_centennial_roswell_row():
@@ -144,12 +155,12 @@ def test_malformed_row_missing_required_field_raises():
             {
                 "schoolId": "bad-row-uuid",
                 "canonicalUrl": "https://www.maxpreps.com/example/",
-                "name": "Incomplete",
                 "city": "Roswell",
+                "state": "GA",
             },
         ]
     }
-    with pytest.raises(SearchSchemaError, match=r"initialSchoolResults\[1\] missing required field 'state'"):
+    with pytest.raises(SearchSchemaError, match=r"initialSchoolResults\[1\] missing required field 'name'"):
         parse_search_page_props(page_props)
 
 

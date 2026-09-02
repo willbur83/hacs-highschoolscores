@@ -216,6 +216,8 @@ Potential additional inputs if needed:
 
 Results should clearly disambiguate schools.
 
+The Home Assistant school picker should show each result approximately as **`School Name | City, State`**, with an optional mascot when present (for example `Centennial | Roswell, GA · Knights`). When MaxPreps omits city or state, the picker degrades gracefully (state-only, city-only, or “Location unavailable”) rather than dropping the school or failing the search.
+
 Example:
 
 ```

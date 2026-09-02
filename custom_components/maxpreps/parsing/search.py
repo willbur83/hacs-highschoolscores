@@ -7,7 +7,7 @@ from typing import Any
 from custom_components.maxpreps.exceptions import SearchSchemaError
 from custom_components.maxpreps.models import School
 
-_REQUIRED_STRING_FIELDS = ("schoolId", "canonicalUrl", "name", "city", "state")
+_REQUIRED_STRING_FIELDS = ("schoolId", "canonicalUrl", "name")
 
 
 def parse_search_page_props(page_props: dict[str, Any]) -> list[School]:
@@ -34,6 +34,8 @@ def _parse_school_row(row: Any, index: int) -> School:
             )
         values[field] = raw_value.strip()
 
+    city = _optional_string(row.get("city"))
+    state = _optional_string(row.get("state"))
     zip_code = _optional_string(row.get("zip"))
     mascot = _optional_string(row.get("mascot"))
     mascot_url = _optional_string(row.get("mascotUrl"))
@@ -42,8 +44,8 @@ def _parse_school_row(row: Any, index: int) -> School:
         school_id=values["schoolId"],
         canonical_url=values["canonicalUrl"],
         name=values["name"],
-        city=values["city"],
-        state=values["state"],
+        city=city,
+        state=state,
         zip=zip_code,
         mascot=mascot,
         mascot_url=mascot_url,

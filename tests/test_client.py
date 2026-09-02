@@ -1,7 +1,7 @@
 import pytest
 
 from custom_components.maxpreps.client import MaxPrepsClient
-from custom_components.maxpreps.exceptions import NextDataNotFoundError, SearchSchemaError
+from custom_components.maxpreps.exceptions import NextDataNotFoundError
 from custom_components.maxpreps.models import GameStatus, School, TeamSeason
 from custom_components.maxpreps.urls import build_schedule_url, build_search_url
 from tests.helpers.fixture_transport import FixtureTransport
@@ -105,14 +105,17 @@ def test_search_schools_bainbridge(client: MaxPrepsClient, transport: FixtureTra
     assert target.canonical_url == BAINBRIDGE_GA_URL
 
 
-def test_centennial_search_fetches_url_but_raises_on_blank_city(
+def test_search_schools_centennial(
     client: MaxPrepsClient,
     transport: FixtureTransport,
 ):
-    with pytest.raises(SearchSchemaError, match=r"missing required field 'city'"):
-        client.search_schools("Centennial")
+    schools = client.search_schools("Centennial")
 
     assert CENTENNIAL_SEARCH_URL in transport.requested_urls
+    roswell = next(school for school in schools if school.school_id == CENTENNIAL_ROSWELL_ID)
+    assert roswell.canonical_url == CENTENNIAL_ROSWELL_URL
+    assert roswell.city == "Roswell"
+    assert roswell.state == "GA"
 
 
 def test_centennial_pipeline_teams_and_schedules(

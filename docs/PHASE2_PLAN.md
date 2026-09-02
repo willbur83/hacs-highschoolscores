@@ -927,3 +927,39 @@ Result: **pass** (89 tests).
 ### PRODUCT.md drift check
 
 PRODUCT.md not edited. PRODUCT §10 `get_schedule(team_id)` and `state=` search not implemented. Default cohort / search-result selection remain later config-flow work. Participant invariant unchanged: configured school via `teams[*]` participant `[1] == school_id`; `row[37]`/`row[38]` are selected-school/opponent score views only.
+
+## Implementation Notes — Search city/state optionality (pre-Slice 10 corrective)
+
+### What landed
+
+- `School.city` and `School.state` are `str | None = None` (same pattern as `zip`)
+- Search parser required identity fields: `schoolId`, `canonicalUrl`, `name` only; blank/missing `city`/`state` map to `None` via `_optional_string` and do not drop the row or fail the whole search
+- Centennial committed fixture (`search-centennial.json`) now fully parses (32 rows); Roswell present; incomplete-location rows preserved (e.g. index 28 Welland: `city is None`, whitespace-only `state` → `None`)
+- `search_schools("Centennial")` succeeds through `MaxPrepsClient`; pipeline tests can start from that search result
+- `docs/PRODUCT.md` §3 Step 1: picker display `School Name | City, State` with optional mascot; missing location degrades in UI, not discovery
+
+### Decisions
+
+- **Required search identity:** `schoolId`, `canonicalUrl`, `name` — missing/blank still `SearchSchemaError`
+- **Optional display metadata:** `city`, `state` — blank or whitespace-only → `None`; row kept
+- **No Centennial or international special cases** in parser or client
+- Resolves Slice 9 “blank-city drift” without rewriting Slice 4 or Slice 9 historical plan notes in place
+
+### Test command and result
+
+```
+pip install -e ".[dev]"
+pytest
+```
+
+(Result recorded at commit time.)
+
+Result: **pass** (90 tests).
+
+### Deviations
+
+None.
+
+### PRODUCT.md drift check
+
+§3 Step 1 picker wording updated for incomplete location. PRODUCT §30 qualified search example string unchanged (known separate drift: short name vs full qualified query).

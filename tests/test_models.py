@@ -25,6 +25,16 @@ def test_school_construction():
     assert school.name == "Centennial"
 
 
+def test_school_optional_location_defaults_to_none():
+    school = School(
+        school_id="e283add5-4dde-4aa5-876b-65e2fc628a43",
+        canonical_url="https://www.maxpreps.com/international/unknown/centennial-welland-ontario-/",
+        name="Centennial (Welland, Ontario)",
+    )
+    assert school.city is None
+    assert school.state is None
+
+
 def test_team_season_display_label():
     team_season = TeamSeason(
         school_id="52dea55b-3988-4979-b5fd-20376058997f",
