@@ -1,10 +1,36 @@
 {
   "config": {
     "abort": {
-      "not_implemented": "MaxPreps setup is not available yet."
+      "already_configured": "This school is already configured.",
+      "current_cohort_ambiguous": "MaxPreps returned conflicting current-season programs for this school.",
+      "current_cohort_empty": "MaxPreps returned no team programs for this school.",
+      "no_supported_sports": "No supported sports are available for the current season at this school."
+    },
+    "error": {
+      "invalid": "Invalid selection.",
+      "no_results": "No schools matched that name. Try a shorter name without city or state.",
+      "required": "Required.",
+      "school_load_failed": "Could not load programs for the selected school.",
+      "search_failed": "School search failed. Try again later."
     },
     "step": {
+      "school": {
+        "data": {
+          "school": "School"
+        },
+        "title": "Select school"
+      },
+      "subscriptions": {
+        "data": {
+          "subscriptions": "Sports"
+        },
+        "title": "Subscribe to sports"
+      },
       "user": {
+        "data": {
+          "query": "School name"
+        },
+        "description": "Search MaxPreps by short school name (for example, Centennial).",
         "title": "MaxPreps"
       }
     }

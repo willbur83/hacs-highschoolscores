@@ -972,3 +972,55 @@ Given school-home `sportSeasons[]` rows (input order preserved; no mutation):
 **PRODUCT drift check**
 
 - None. `PRODUCT.md` untouched. No config flow, coordinator, entities, parser changes, or live HTTP.
+
+## Slice 4 — Config flow: school search + sport subscription
+
+**What landed**
+
+- `custom_components/maxpreps/config_flow.py` — three-step flow: `user` (short-name search) → `school` (results picker) → `subscriptions` (multi-select)
+- `custom_components/maxpreps/client_factory.py` — `create_async_client(hass)` via `create_ha_transport` (Slice 5 coordinator reuse)
+- `custom_components/maxpreps/const.py` — config entry data/options keys (`school_id`, `canonical_url`, `name`, optional `city`/`state`/`mascot`/`mascot_url`; `subscriptions` list of `{sport, gender, level}`)
+- `custom_components/maxpreps/strings.json` + `translations/en.json` — search/school/subscriptions steps, errors, abort reasons
+- `tests/test_config_flow.py` — fixture-transport coverage for empty query, no results, Centennial Roswell picker/subscriptions, duplicate abort, Saint retry, Pike County, invalid selector, zero sports
+
+**Flow steps**
+
+| Step | Purpose |
+|------|---------|
+| `user` | Short-name query; empty → field error (no fetch); zero results → `no_results`; transport/parser → `search_failed` |
+| `school` | Picker label `Name \| City, State` · mascot (location degraded when city/state absent); `async_set_unique_id` + `_abort_if_unique_id_configured` before school-home fetch; stale selector values rejected by HA schema (no fetch) |
+| `subscriptions` | Multi-select of `TeamSeason.display_label`; at least one required; `async_create_entry` with identity in `data`, subscriptions in `options` |
+
+**Entry shape (Q4 = options, not subentries)**
+
+- `unique_id` = `school_id`
+- `data`: stable school identity (no `sport_season_id`)
+- `options.subscriptions`: `[{sport, gender, level}, …]` only — no season, no rotating provider IDs
+
+**Q2 (still open)**
+
+- Subscription key remains `{sport, gender, level}` without season.
+- Centennial Boys Freshman Baseball has Spring + Fall rows in fixtures (Q2 multi-term). Config flow omits **all** rows sharing a duplicate subscription key (neither collapses nor exposes a term picker) until owner disposition.
+- Varsity football/baseball/basketball/volleyball at Centennial remain single-term and selectable.
+
+**Decisions**
+
+- Q4 silent → one config entry per school; subscriptions in `entry.options` (not HA subentries). Options-flow UI deferred to Slice 7.
+- Saint retry stays in `AsyncMaxPrepsClient`; config flow does not reimplement it.
+- Invalid school selector values outside the current search-result mapping are rejected by HA `SelectSelector` validation (`InvalidData`) before `get_school_teams` runs.
+
+**Pytest**
+
+| Layer | Command | Result |
+|-------|---------|--------|
+| Client (`[dev]`, Python 3.12) | `pip install -e ".[dev]" && pytest` | 159 passed (`test_config_flow` / `test_init` / `test_ha_transport` skipped without HA import) |
+| Client demo | `python scripts/demo_client.py --fixtures` | OK |
+| HA smoke (`[ha]` pins, Python 3.14 required) | `pip install -e ".[ha]" && pytest tests/test_manifest.py tests/test_init.py tests/test_ha_transport.py tests/test_config_flow.py` | Not run on pinned `2026.9.0` here (host has Python 3.12 only). Dev check: `pytest-homeassistant-custom-component==0.13.205` + `homeassistant==2025.1.4` → 17 passed (config flow + manifest + init + ha_transport) |
+
+**Deviations**
+
+- Q2 multi-term allowlisted programs omitted from subscription selector (both Spring/Fall Freshman Baseball at Centennial) rather than aborting the whole school setup.
+
+**PRODUCT drift check**
+
+- None. `PRODUCT.md` untouched. No coordinator, entities, options-flow UI, parser changes, or live HTTP.

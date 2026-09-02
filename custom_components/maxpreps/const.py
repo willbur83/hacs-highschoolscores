@@ -21,3 +21,22 @@ SUPPORTED_SPORTS: frozenset[str] = frozenset(
         "Volleyball",
     }
 )
+
+# Config entry data keys (stable school identity).
+CONF_SCHOOL_ID = "school_id"
+CONF_CANONICAL_URL = "canonical_url"
+CONF_NAME = "name"
+CONF_CITY = "city"
+CONF_STATE = "state"
+CONF_MASCOT = "mascot"
+CONF_MASCOT_URL = "mascot_url"
+
+# Config entry options keys (mutable subscriptions).
+CONF_SUBSCRIPTIONS = "subscriptions"
+CONF_SPORT = "sport"
+CONF_GENDER = "gender"
+CONF_LEVEL = "level"
+
+# Config flow form field names.
+CONF_QUERY = "query"
+CONF_SCHOOL = "school"
