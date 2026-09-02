@@ -1,0 +1,22 @@
+---
+alwaysApply: true
+---
+
+# Public repo hygiene
+
+Before every commit or push, inspect the **staged** diff. Do not rely on capture redaction or intent alone.
+
+Staged files must contain none of:
+
+- Cookies, `Set-Cookie`, `Authorization`, `Bearer`, API keys, or `*_token` secrets
+- Email addresses or redaction leftovers that imply leaked addresses
+- Local paths: `/srv/`, `/home/`, `/Users/`, Windows user paths, or `captures/private/`
+- Request/response header dumps beyond harmless public metadata already used in research fixtures (`status_code`, `content_type`, `source_url`)
+- `User-Agent` in committed fixtures
+- Raw HTML unexpectedly embedded in JSON
+
+**IP rule:** staged files must contain no private/local infrastructure IPs (including RFC1918) or unexpected IP literals. If any IPv4 string is present, inspect it manually and confirm it is legitimate public upstream data before committing — do not delete harmless public MaxPreps payload strings after that review.
+
+Explicitly grep staged content for `/srv/` (`capture.py` does not strip it).
+
+If a leak is found: strip it, restage, and re-inspect before committing.

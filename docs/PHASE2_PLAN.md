@@ -70,3 +70,41 @@ Fixture extraction was a one-off local Python inspect/`__NEXT_DATA__` parse (not
 ### PRODUCT.md drift check
 
 Slice 0 did **not** change product behavior and did **not** edit `docs/PRODUCT.md`. PRODUCT.md still lists baseball as an example entity / exploration sport / Layer 1 fixture name, but has no baseball-specific schedule or parser text. That gap is not a reason to edit PRODUCT.md in this slice.
+
+---
+
+## Implementation Notes — Slice 1 (HA-free package scaffold)
+
+### What landed
+
+- `pyproject.toml` — Python ≥3.12, optional `dev` extra with pytest, `[tool.pytest.ini_options] pythonpath = ["."]`, `[tool.setuptools.packages.find] include = ["custom_components*"]` (excludes gitignored `captures/` from editable install discovery)
+- `custom_components/maxpreps/__init__.py` — package placeholder (one-line docstring only)
+- `tests/test_package.py` — smoke test that `custom_components.maxpreps` imports
+- `README.md` — minimal Development section edits: GitHub repo URL (replacing local machine path), how to run pytest
+- `.cursor/rules/public-repo-hygiene.mdc` — `alwaysApply: true` staged-diff inspection rule for commits/pushes
+
+No `models.py`, `client.py`, `parsing/`, `transport.py`, HA integration files, HTTP clients, or new fixtures.
+
+### Decisions
+
+- **Python ≥3.12** — matches modern HA / dev tooling expectations; no runtime dependencies beyond the stdlib for the package itself.
+- **pytest via `[tool.pytest.ini_options] pythonpath`** — lets tests `import custom_components.maxpreps` without conftest or `PYTHONPATH` hacks.
+- **No httpx / requests / playwright** — Slice 1 is scaffold-only; HTTP transport belongs in a later slice when the client facade is implemented.
+- **Hygiene rule** — standing repo policy so later slices do not restate pre-commit inspection in every prompt.
+
+### Test command and result
+
+```
+pip install -e ".[dev]"
+pytest
+```
+
+Result: **pass** (1 smoke import test).
+
+### Deviations
+
+None.
+
+### PRODUCT.md drift check
+
+Slice 1 is scaffold-only. PRODUCT §22 proposes HA files (`manifest.json`, `config_flow.py`, `coordinator.py`, `sensor.py`, translations) — those remain for later slices; not added here and PRODUCT.md not edited.

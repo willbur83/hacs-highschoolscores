@@ -10,11 +10,16 @@ Initial engineering work is focused on understanding and normalizing the public 
 
 ## Development
 
-Source repository:
-
-`/srv/data/projects/hacs-highschoolscores`
+Source repository: https://github.com/willbur83/hacs-highschoolscores
 
 Runtime development data and secrets are intentionally kept outside this repository.
+
+### Tests
+
+```bash
+pip install -e ".[dev]"
+pytest
+```
 
 ## License
 
