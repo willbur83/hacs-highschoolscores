@@ -687,3 +687,55 @@ Result: **pass** (31 tests).
 ### PRODUCT.md drift check
 
 Slice 4 implements school search parsing only. PRODUCT §30 example search string `"Centennial High School, Roswell GA"` does not match observed MaxPreps behavior — short name plus picker from `initialSchoolResults[]` (research Slices 02, 16–16b). Qualifiers such as city or “High School” return zero schools. PRODUCT.md not edited.
+
+---
+
+## Implementation Notes — Slice 5 (`sportSeasons` parser; all rows)
+
+### What landed
+
+- `custom_components/maxpreps/exceptions.py` — `SportSeasonsSchemaError` for invalid `sportSeasons` row shape
+- `custom_components/maxpreps/parsing/sport_seasons.py` — `parse_sport_seasons(rows)` → `list[TeamSeason]` from an already-extracted `sportSeasons` list
+- `tests/test_sport_seasons.py` — four committed `sport-seasons-26-27.json` fixtures via `load_sport_seasons`, composite football identity, Pike County `11-12` leftovers, Centennial multi-term JV soccer, tennis/golf enumeration
+
+No HTTP client, `get_school_teams`, year/cohort filtering, `teamSeasonPickerData`, schedule fetch, or research-envelope branches in production parsers.
+
+### Field mapping
+
+| MaxPreps (`sportSeasons[]`) | `TeamSeason` |
+|-----------------------------|--------------|
+| `schoolId` | `school_id` |
+| `sportSeasonId` | `sport_season_id` |
+| `allSeasonId` | `all_season_id` (optional) |
+| `canonicalUrl` | `canonical_url` |
+| `sport`, `gender`, `level`, `year`, `season` | same |
+| `isPublished` | `is_published` (optional; stored only, not filtered) |
+
+`display_label` is the existing derived property `{gender} {level} {sport}` — not stored. `teamId` is not used; rows key on `schoolId` + `sportSeasonId`.
+
+### Decisions
+
+- **All rows returned:** Production parser maps every input row with no year filtering, no collapse on `(sport, gender, level)`, and no `is_published` filtering. Pike County’s two `11-12` soccer rows are included.
+- **Multi-term duplicates kept:** Centennial Boys JV Soccer appears for both Spring and Winter as separate `TeamSeason` objects.
+- **Composite identity:** Boys Varsity Football `sport_season_id` `2286cd80-c46d-4739-8dd1-92a67ca8daa7` is identical across all four schools; `school_id` differs; `identity_key()` / equality treat them as distinct. `all_season_id` `22e2b335-334e-4d4d-9f67-a0f716bb1ccd` is stored for Boys Varsity Football across schools but is not school/team identity.
+- **Enumeration is generic:** Tennis and golf rows remain in the parsed list; this does not establish schedule/parser support or v1 product scope for those sports.
+- **No cohort policy:** Most-frequent-year, max `YY-YY`, current-year helpers, and ambiguous-cohort errors are not implemented. Tests that need `26-27` football filter `year == "26-27"` in the test, not in production.
+- **Row-level required fields:** `schoolId`, `sportSeasonId`, `canonicalUrl`, `sport`, `gender`, `level`, `year`, `season` must be non-blank strings. Missing/blank → `SportSeasonsSchemaError` naming index and field (no silent omission).
+- **Production input:** already-extracted `list[dict]`. Test helpers (`load_sport_seasons`) unwrap fixture envelopes.
+
+### Test command and result
+
+```
+pip install -e ".[dev]"
+pytest
+```
+
+Result: **pass** (41 tests).
+
+### Deviations
+
+None.
+
+### PRODUCT.md drift check
+
+Default user-visible season / cohort selection is later Home Assistant config-flow work — not implemented in this slice. PRODUCT.md not edited.

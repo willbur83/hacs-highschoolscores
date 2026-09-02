@@ -15,3 +15,7 @@ class MalformedNextDataError(MaxPrepsError):
 
 class SearchSchemaError(MaxPrepsError):
     """School search pageProps did not match the expected schema."""
+
+
+class SportSeasonsSchemaError(MaxPrepsError):
+    """School-home sportSeasons rows did not match the expected schema."""
