@@ -32,7 +32,7 @@ These tests exercise parsers, models, and `MaxPrepsClient` with `FixtureTranspor
 pip install pytest-homeassistant-custom-component==0.13.362
 pip install homeassistant==2026.9.0
 pip install -e .
-pytest tests/test_manifest.py tests/test_init.py tests/test_ha_transport.py tests/test_config_flow.py
+pytest tests/test_manifest.py tests/test_init.py tests/test_ha_transport.py tests/test_config_flow.py tests/test_programs.py tests/test_coordinator.py
 ```
 
 Smoke tests verify `manifest.json`, `DOMAIN`, and that the integration loads and unloads via `enable_custom_integrations` with no network I/O.
@@ -59,7 +59,7 @@ Recommended container settings:
 
 Enable custom integrations in the container configuration when loading unpublished components from the bind mount (for example `homeassistant:` → `customize:` is not required; use the developer/custom-integration settings appropriate to your Core version).
 
-After the container starts, confirm Home Assistant discovers and loads the custom integration without import or manifest errors (check the Core log for the expected custom-integration warning). Slice 4 implements school search and sport subscription in the config flow; coordinator and entities are not yet wired.
+After the container starts, confirm Home Assistant discovers and loads the custom integration without import or manifest errors (check the Core log for the expected custom-integration warning). Slice 4 implements school search and sport subscription in the config flow; Slice 5 wires the coordinator (no entities yet). Options-flow edits (Slice 7) are not.
 
 ## What Slice 0 does not include
 

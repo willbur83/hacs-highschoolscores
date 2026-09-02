@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import date
 from unittest.mock import patch
 
 import pytest
@@ -74,15 +75,25 @@ def _selector_options(result: dict, field_name: str) -> dict[str, str]:
     }
 
 
+FROZEN_APPLICABLE_DATE = date(2026, 9, 2)
+FUTURE_APPLICABLE_DATE = date(2027, 7, 1)
+
+
 @pytest.fixture
 def fixture_client():
     """Inject AsyncFixtureTransport-backed client into the config flow."""
     transport = AsyncFixtureTransport()
     client = AsyncMaxPrepsClient(transport)
 
-    with patch(
-        "custom_components.maxpreps.config_flow.client_factory.create_async_client",
-        return_value=client,
+    with (
+        patch(
+            "custom_components.maxpreps.school_year.homeassistant_local_date",
+            return_value=FROZEN_APPLICABLE_DATE,
+        ),
+        patch(
+            "custom_components.maxpreps.config_flow.client_factory.create_async_client",
+            return_value=client,
+        ),
     ):
         yield client, transport
 
@@ -485,3 +496,33 @@ async def test_freshman_baseball_subscription_stores_program_identity_only(
             CONF_LEVEL: "Freshman",
         }
     ]
+
+
+@pytest.mark.asyncio
+async def test_applicable_year_without_provider_rows_aborts_no_supported_sports(
+    hass, enable_custom_integrations
+) -> None:
+    """When the applicable year has no provider rows, abort no_supported_sports."""
+    transport = AsyncFixtureTransport()
+    client = AsyncMaxPrepsClient(transport)
+
+    with (
+        patch(
+            "custom_components.maxpreps.school_year.homeassistant_local_date",
+            return_value=FUTURE_APPLICABLE_DATE,
+        ),
+        patch(
+            "custom_components.maxpreps.config_flow.client_factory.create_async_client",
+            return_value=client,
+        ),
+    ):
+        result = await _init_user(hass, enable_custom_integrations)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {"query": "Centennial"}
+        )
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {"school": CENTENNIAL_ROSWELL_ID}
+        )
+
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "no_supported_sports"

@@ -27,14 +27,12 @@ from custom_components.maxpreps.const import (
     CONF_SUBSCRIPTIONS,
     DOMAIN,
 )
-from custom_components.maxpreps.exceptions import (
-    CurrentCohortAmbiguousError,
-    CurrentCohortEmptyError,
-    MaxPrepsError,
-)
+from custom_components.maxpreps.exceptions import MaxPrepsError
 from custom_components.maxpreps.models import School, TeamSeason
 from custom_components.maxpreps.programs import SchoolYearProgram, group_school_year_programs
-from custom_components.maxpreps.selection import selectable_team_seasons
+from custom_components.maxpreps.school_year import applicable_school_year
+from custom_components.maxpreps import school_year
+from custom_components.maxpreps.selection import team_seasons_for_applicable_year
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -62,9 +60,14 @@ def _subscription_key(program: SchoolYearProgram) -> str:
     return _SUBSCRIPTION_KEY_SEP.join((program.sport, program.gender, program.level))
 
 
-def _config_flow_programs(team_seasons: list[TeamSeason]) -> list[SchoolYearProgram]:
-    """Return one allowlisted program per (sport, gender, level) subscription key."""
-    return group_school_year_programs(selectable_team_seasons(team_seasons))
+def _config_flow_programs(
+    hass: Any, team_seasons: list[TeamSeason]
+) -> list[SchoolYearProgram]:
+    """Return one allowlisted program per (sport, gender, level) for the applicable year."""
+    local_date = school_year.homeassistant_local_date(hass)
+    applicable_year = applicable_school_year(local_date)
+    filtered = team_seasons_for_applicable_year(team_seasons, applicable_year)
+    return group_school_year_programs(filtered)
 
 
 class MaxPrepsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -135,11 +138,7 @@ class MaxPrepsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 try:
                     client = client_factory.create_async_client(self.hass)
                     team_seasons = await client.get_school_teams(school)
-                    programs = _config_flow_programs(team_seasons)
-                except CurrentCohortEmptyError:
-                    return self.async_abort(reason="current_cohort_empty")
-                except CurrentCohortAmbiguousError:
-                    return self.async_abort(reason="current_cohort_ambiguous")
+                    programs = _config_flow_programs(self.hass, team_seasons)
                 except MaxPrepsError:
                     errors["base"] = "school_load_failed"
                 except Exception:  # noqa: BLE001

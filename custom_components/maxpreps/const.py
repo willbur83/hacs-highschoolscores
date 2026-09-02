@@ -1,5 +1,7 @@
 """Constants for the MaxPreps integration."""
 
+from datetime import timedelta
+
 DOMAIN = "maxpreps"
 
 # Keep in sync with manifest.json "version".
@@ -36,6 +38,9 @@ CONF_SUBSCRIPTIONS = "subscriptions"
 CONF_SPORT = "sport"
 CONF_GENDER = "gender"
 CONF_LEVEL = "level"
+
+# Coordinator polling (Phase 3 §3.6).
+UPDATE_INTERVAL = timedelta(hours=12)
 
 # Config flow form field names.
 CONF_QUERY = "query"

@@ -129,6 +129,18 @@ def selectable_team_seasons(team_seasons: list[TeamSeason]) -> list[TeamSeason]:
     ]
 
 
+def team_seasons_for_applicable_year(
+    team_seasons: list[TeamSeason],
+    applicable_year: str,
+) -> list[TeamSeason]:
+    """Return allowlisted rows whose ``year`` equals ``applicable_year``."""
+    return [
+        team_season
+        for team_season in team_seasons
+        if is_supported_format(team_season) and team_season.year == applicable_year
+    ]
+
+
 def _school_year_start(year: str) -> int:
     match = _SCHOOL_YEAR.fullmatch(year)
     if match is None:

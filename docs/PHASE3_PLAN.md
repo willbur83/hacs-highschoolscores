@@ -1089,4 +1089,49 @@ A narrow **Slice 4a** lands aggregated picker labels + a grouping helper before 
 
 **Not in this slice:** July 1 applicable-school-year switching, coordinator, options-flow UI, parsers, live MaxPreps HTTP.
 
-**Tests:** Layer 1 `pip install -e ".[dev]" && pytest && python scripts/demo_client.py --fixtures`: 186 passed; `test_ha_transport` teardown thread assertion (phacc `verify_cleanup` vs `homeassistant==2025.1.4` `_run_safe_shutdown_loop`); demo_client OK. Layer 2 HA `2026.9.0` pins not run on host (Python 3.12 only).
+**Tests:** Layer 1 (`[dev]`, Python 3.12): 186 passed; fixture demo OK.
+
+Legacy HA dev check (`homeassistant==2025.1.4`): functional HA tests passed, but pytest-homeassistant-custom-component teardown hit a pre-existing background-thread cleanup assertion. This environment is not the Phase 3 compatibility target.
+
+Target Layer 2 (`homeassistant==2026.9.0`, Python 3.14): not yet run on this host.
+
+## Slice 5
+
+**Goal:** One `DataUpdateCoordinator` per school entry; resolve each subscribed `{sport, gender, level}` to **all** matching `TeamSeason` rows for the applicable school year; fetch each term’s schedule; entry-wide vs per-program/per-term failure isolation; 12h polling.
+
+**Delivered**
+
+- `custom_components/maxpreps/school_year.py`: pure `applicable_school_year(date)` (July 1–June 30) and `homeassistant_local_date(hass)` via `get_time_zone(hass.config.time_zone)`.
+- `custom_components/maxpreps/selection.py`: `team_seasons_for_applicable_year()` (allowlist ∩ `year == applicable_year`).
+- `custom_components/maxpreps/coordinator.py`: `MaxPrepsDataUpdateCoordinator`, per-program `ProgramSnapshot`, per-term `TermSnapshot` with `TermRefreshStatus` (`refreshed` / `stale` / `error`) and `ProgramResolutionStatus` (`resolved` / `unresolved`).
+- `config_flow.py`: picker filter switched from Slice 1 modal cohort to applicable year ∩ allowlist; removed `CurrentCohortAmbiguousError` abort path.
+- `__init__.py`: `async_setup_entry` stores coordinator on `entry.runtime_data`, first refresh, unload (lazy HA imports to keep Layer 1 import-safe).
+- `const.py`: `UPDATE_INTERVAL = timedelta(hours=12)`.
+- Tests: `tests/test_school_year.py`, `tests/test_coordinator.py`, config-flow date freeze + future-year `no_supported_sports`; `tests/test_init.py` fixture-injected entry.
+
+**Snapshot shape:** `MaxPrepsCoordinatorData` holds `programs[]` each with `terms[]` carrying `team_season`, optional `schedule`, status, typed error metadata, and `last_success_at`. Freshman baseball keeps **two** `TeamSeason` rows (Fall + Spring) with separate schedule fetches — never collapsed to `[0]`.
+
+**Preflight (before coordinator wiring)**
+
+- Interpreter: Python 3.14.6 (`ghcr.io/home-assistant/home-assistant:2026.9.0` image; host has no native `python3.14`).
+- Commands (two-step install per `HA_DEVELOPMENT.md`):
+
+  ```bash
+  python3 -m pip install pytest-homeassistant-custom-component==0.13.362
+  python3 -m pip install homeassistant==2026.9.0
+  python3 -m pip install -e .
+  PYTHONPATH=<repo> python3 -m pytest --import-mode=importlib --rootdir=<repo> \
+    tests/test_manifest.py tests/test_init.py tests/test_ha_transport.py \
+    tests/test_config_flow.py tests/test_programs.py
+  ```
+
+- Preflight result: **28 passed** (green before coordinator). HA-compat fix during Slice 5: `homeassistant_local_date` must pass `get_time_zone(hass.config.time_zone)` to `dt_util.now`, not `hass.config`.
+
+**Tests (post-coordinator)**
+
+- Layer 1 (`[dev]`, Python 3.12 Docker): **172 passed**, 4 skipped (HA tests); `python scripts/demo_client.py --fixtures` OK.
+- Layer 2 (`homeassistant==2026.9.0`, Python 3.14.6 Docker, `PYTHONPATH` + `--import-mode=importlib`): preflight 28 passed; full slice suite including `test_coordinator.py` **41 passed**.
+
+**Deferred:** sensors (Slice 6), options-flow UI (Slice 7), daily-until-published rollover polling (Slice 11), Lovelace card, PRE/IN/POST/OFF entity states.
+
+**PRODUCT drift check:** None. `PRODUCT.md` untouched. No parser/signature/`display_label` changes, no live MaxPreps HTTP.
