@@ -640,3 +640,50 @@ None.
 ### PRODUCT.md drift check
 
 Slice 3 adds HTML extraction only. PRODUCT.md not edited.
+
+---
+
+## Implementation Notes — Slice 4 (school search parser)
+
+### What landed
+
+- `custom_components/maxpreps/exceptions.py` — `SearchSchemaError` for invalid `initialSchoolResults` container shape
+- `custom_components/maxpreps/parsing/search.py` — `parse_search_page_props(page_props)` → `list[School]` from `initialSchoolResults`
+- `tests/test_search.py` — four committed search fixtures, synthetic empty/null results, career-results ignored, malformed-container error, omitted-row behavior
+
+No HTTP client, query-string construction, `St.` retry, athlete search, or research-envelope branches in production parsers.
+
+### Field mapping
+
+| MaxPreps (`initialSchoolResults[]`) | `School` |
+|-------------------------------------|----------|
+| `schoolId` | `school_id` |
+| `canonicalUrl` | `canonical_url` |
+| `name`, `city`, `state` | same |
+| `zip`, `mascot`, `mascotUrl` | `zip`, `mascot`, `mascot_url` (optional; blank strings → `None`) |
+
+`ranking` is ignored. `initialCareerResults` / athletes are ignored.
+
+### Decisions
+
+- **Missing/null/empty list:** `initialSchoolResults` absent, `null`, or `[]` → `[]` (approved plan: “Null/missing → empty list”).
+- **Container shape:** `initialSchoolResults` present but not a list → `SearchSchemaError`. Row not an object → `SearchSchemaError`.
+- **Row-level required fields:** `schoolId`, `canonicalUrl`, `name`, `city`, `state` must be non-blank strings. Rows missing any required field are **omitted** (no partial `School` objects). Centennial fixture includes two international rows with blank `city`; they are skipped, yielding 30 schools from 32 payload rows.
+- **Production input:** already-unwrapped `pageProps` dict. Test helpers (`load_search_page_props`) unwrap fixture envelopes.
+
+### Test command and result
+
+```
+pip install -e ".[dev]"
+pytest
+```
+
+Result: **pass** (30 tests).
+
+### Deviations
+
+None.
+
+### PRODUCT.md drift check
+
+Slice 4 implements school search parsing only. PRODUCT §30 example search string `"Centennial High School, Roswell GA"` does not match observed MaxPreps behavior — short name plus picker from `initialSchoolResults[]` (research Slices 02, 16–16b). Qualifiers such as city or “High School” return zero schools. PRODUCT.md not edited.

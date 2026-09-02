@@ -11,3 +11,7 @@ class NextDataNotFoundError(MaxPrepsError):
 
 class MalformedNextDataError(MaxPrepsError):
     """__NEXT_DATA__ was present but could not be parsed as valid Next.js JSON."""
+
+
+class SearchSchemaError(MaxPrepsError):
+    """School search pageProps did not match the expected schema."""
