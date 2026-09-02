@@ -1,6 +1,6 @@
-# MaxPreps for Home Assistant
+# High School Sports for Home Assistant
 
-A Home Assistant custom integration for exposing public MaxPreps school sports schedules and results as native Home Assistant data.
+A Home Assistant custom integration for exposing public high school sports schedules and results as native Home Assistant data.
 
 ## Status
 
