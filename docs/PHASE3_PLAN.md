@@ -940,3 +940,35 @@ Given school-home `sportSeasons[]` rows (input order preserved; no mutation):
 **PRODUCT drift check**
 
 - None. `PRODUCT.md` untouched. No async client facade, config flow, coordinator, or parser changes.
+
+## Slice 3 — Async client facade
+
+**What landed**
+
+- `custom_components/maxpreps/async_client.py` — `AsyncMaxPrepsClient` taking `AsyncTransport`; mirrors sync `MaxPrepsClient` method signatures (`search_schools`, `get_school_teams`, `get_schedule`) with `async def` / `await`
+- `MaxPrepsClient` unchanged (sync-only); no async methods added to the sync class
+- Shared `extract_sport_seasons` in `custom_components/maxpreps/school_home.py` (used by both facades; no second parser or URL grammar)
+- `tests/test_async_client.py` — Centennial search → teams → football/baseball pipeline, Saint retry / single-fetch / error-no-retry, tennis `NextDataNotFoundError`, girls basketball gender path, sync-vs-async equivalence for Centennial football; `AsyncFixtureTransport` only
+- Async tests reuse constants and helpers from `tests/test_client.py` (`_centennial_roswell_school`, `_find_team`, URL constants) — no parallel async-only golden constants
+
+**Decisions**
+
+- **Shape:** separate `AsyncMaxPrepsClient` class (approved plan §3.5) rather than `async_` methods on `MaxPrepsClient`
+- **Parse sharing:** thin duplicated orchestration (await fetch → `extract_page_props` → existing parsers); sport-season row extraction via shared `school_home.extract_sport_seasons`
+- **Saint retry:** same empty-result-only retry as sync; parser/transport errors on first fetch do not retry
+- **Not wired:** no `__init__.py`, config flow, coordinator, or HA imports in the async client module
+
+**Pytest**
+
+| Layer | Command | Result |
+|-------|---------|--------|
+| Client (`[dev]`, Python 3.12) | `pip install -e ".[dev]" && pytest` | 162 passed, 2 skipped (`test_init`, `test_ha_transport` without HA) |
+| Client demo | `python scripts/demo_client.py --fixtures` | OK |
+
+**Deviations**
+
+- None.
+
+**PRODUCT drift check**
+
+- None. `PRODUCT.md` untouched. No config flow, coordinator, entities, parser changes, or live HTTP.
