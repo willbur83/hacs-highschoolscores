@@ -830,3 +830,51 @@ None.
 ### PRODUCT.md drift check
 
 PRODUCT.md not edited. Timezone-naive dates preserved per Phase 2 charter; no HA PRE/IN/POST or live-score states added.
+
+## Implementation Notes — Slice 8 (schedule pageProps → `Schedule`)
+
+### What landed
+
+- `custom_components/maxpreps/parsing/schedule.py` — `parse_schedule_page_props(page_props) -> Schedule`; sole schedule entry point
+- `tests/test_schedule.py` — Centennial football (11 rows → 10 games, Riverwood absent, record `"2-0"`, identity from `teamContext.data`); baseball (30 user-visible games, record `None`); St. Edward without `pageProps.query`; volleyball/basketball regression; Bainbridge/Pike County; empty `contests[]`; synthetic participant-order swap locking school_id orientation
+- `custom_components/maxpreps/parsing/__init__.py` — export `parse_schedule_page_props`
+
+No HTTP client, relevant-game picking, standings-page fetch, JSON-LD, or `Game` field changes.
+
+### Pipeline
+
+1. `TeamSeason` from `teamContext.data`: `teamId` → `school_id`; required `sportSeasonId`, `canonicalUrl`, `sport`, `gender`, `level`, `year`, `season`; optional `allSeasonId` / `isPublished` when present on `data`
+2. `validate_contests_shape(contests)` — missing/not-a-list → `ContestSchemaError`
+3. Optional `check_featured_game_consistency` when `featuredGameData` present; absent featured is not a failure
+4. Every row decoded via `decode_contest_row(row, school_id)`; **`Schedule.games` excludes `GameStatus.DELETED` only** (scheduled, final, unknown retained)
+5. `team_logo` ← `teamContext.data.schoolMascotUrl` (URL string only; no image fetch)
+6. `team_record` ← `teamContext.standingsData.overallStanding.overallWinLossTies` when present; missing/`overallStanding` null → `None`
+
+`pageProps.query` is never read. No URL reconstruction or tracking fallback chain.
+
+### Decisions
+
+- **Adapter is the only schedule entry point:** production parsing consumes already-unwrapped `pageProps`; fixture envelope unwrapping stays in test helpers
+- **`contests[]` is the schedule source;** `featuredGameData` is an optional consistency check only — not used as the game list
+- **Deleted rows:** decoded then dropped from `games` (Riverwood `contestState` 1 absent from Centennial football output)
+- **Identity from page chrome:** `teamId` → `school_id`; `sport_season_id` from `teamContext.data`, not inferred from contest rows or `query`
+- **Participant orientation unchanged:** `decode_contest_row(row, school_id)` matches participant `[1]` (`teamId`) to configured school; `row[37]`/`row[38]` remain selected-school/opponent score views — not used to discover identity
+- **Logo URLs only:** hotlink reliability unproven (no CDN `HEAD` test)
+- **Neutral=`2` and `[37]`/`[38]` scores:** evidence tiers unchanged from Slice 7 (inferred, not upgraded)
+
+### Test command and result
+
+```
+pip install -e ".[dev]"
+pytest
+```
+
+Result: **pass** (82 tests).
+
+### Deviations
+
+None.
+
+### PRODUCT.md drift check
+
+PRODUCT.md not edited. Schedule adapter drops deleted games per product expectation; no live/postponed states or HA attributes added.
