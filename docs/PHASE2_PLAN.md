@@ -878,3 +878,52 @@ None.
 ### PRODUCT.md drift check
 
 PRODUCT.md not edited. Schedule adapter drops deleted games per product expectation; no live/postponed states or HA attributes added.
+
+## Implementation Notes — Slice 9 (`MaxPrepsClient` and injectable transport)
+
+### What landed
+
+- `custom_components/maxpreps/transport.py` — `Transport` protocol (`fetch(url) -> str`)
+- `custom_components/maxpreps/urls.py` — `build_search_url`, `build_schedule_url` (safe `schedule/` join only)
+- `custom_components/maxpreps/client.py` — `MaxPrepsClient(transport)` with `search_schools`, `get_school_teams`, `get_schedule`
+- `tests/helpers/fixture_transport.py` — `FixtureTransport` maps committed fixture `source_url` values to synthetic HTML; records `requested_urls`; unknown URL → `FixtureUrlNotMappedError`
+- `tests/test_client.py` — Centennial pipeline (search URL fetch + Slice 4 blank-city drift), Bainbridge search, football/baseball schedules, optional girls basketball path preservation, tennis `NextDataNotFoundError` (no ASPX/legacy wording)
+
+No live transport, HTTP library dependency, caching, `St.` retry, or PRODUCT §10 `team_id` methods.
+
+### Transport and fetch URLs
+
+- **Fixture transport only** in tests; production client depends on injectable `Transport`, not httpx/requests/stdlib HTTP.
+- **Search:** `GET https://www.maxpreps.com/search/?q={query.lower()}&q2={query}` (percent-encoded; no `state=` facet; no saint-name retry — Slice 10).
+- **School teams:** `GET school.canonical_url` (payload URL; no reconstruction).
+- **Schedule:** safe join of `team.canonical_url` with child `schedule/` only — trailing-slash base so `urljoin` cannot drop the last segment (`…/football/` + `schedule/` → `…/football/schedule/`; `…/basketball/girls/` preserved). `sport_season_id` is identity metadata, **not** a fetch key.
+- **Fixture wrapping (tests only):** search → `load_search_page_props`; school home → `{"schoolContext": {"sportSeasons": load_sport_seasons(...)}}`; schedule Next.js → `load_schedule_page_props`; tennis/track (`pageProps` null) → HTML without `__NEXT_DATA__`.
+
+### Client pipeline
+
+1. `search_schools` → `extract_page_props` → `parse_search_page_props`
+2. `get_school_teams` → `extract_page_props` → `schoolContext.sportSeasons` (schema errors if missing/wrong type) → `parse_sport_seasons` — **all rows**, no year filter
+3. `get_schedule` → `extract_page_props` → `parse_schedule_page_props` (parser unchanged; `decode_contest_row` / participant `[1] == school_id` orientation; `row[37]`/`row[38]` score views only)
+
+### Decisions
+
+- **Centennial search Slice 4 drift:** `search_schools("Centennial")` still raises `SearchSchemaError` on blank city in the committed fixture; tests assert the search URL is fetched and continue the pipeline from the known Roswell `School` (`CENTENNIAL_ROSWELL_ID` / URL). No ranking, city/state filtering, or Centennial special-casing.
+- **Missing `schoolContext` / `sportSeasons`:** `SportSeasonsSchemaError` at the client boundary; not treated as an empty school.
+- **No generic HTTP error translation** in `MaxPrepsClient` this slice.
+
+### Test command and result
+
+```
+pip install -e ".[dev]"
+pytest
+```
+
+Result: **pass** (89 tests).
+
+### Deviations
+
+- Centennial search does not return Roswell through the client until Slice 4 product decision (documented above; pipeline continues from known school in tests).
+
+### PRODUCT.md drift check
+
+PRODUCT.md not edited. PRODUCT §10 `get_schedule(team_id)` and `state=` search not implemented. Default cohort / search-result selection remain later config-flow work. Participant invariant unchanged: configured school via `teams[*]` participant `[1] == school_id`; `row[37]`/`row[38]` are selected-school/opponent score views only.
