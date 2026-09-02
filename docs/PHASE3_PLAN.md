@@ -824,9 +824,10 @@ Each slice note should include: what landed, decisions, pytest command/result, d
 
 **Decisions**
 
-- **HA pin:** `homeassistant==2026.3.4` with `pytest-homeassistant-custom-component==0.13.320` (matched pair from PyPI metadata). Container image: `ghcr.io/home-assistant/home-assistant:2026.3.4`.
-- **Python split:** Client/fixture tests remain on `requires-python >=3.12` without importing Home Assistant. `__init__.py` avoids top-level `homeassistant` imports so `from custom_components.maxpreps.client import …` still works without `[ha]`. HA smoke tests require Python 3.14+ (Home Assistant 2026.3.x floor).
+- **HA pin:** `homeassistant==2026.9.0` with `pytest-homeassistant-custom-component==0.13.362` (closest published phacc; upgrade phacc when a release pins `2026.9.0`). Container image: `ghcr.io/home-assistant/home-assistant:2026.9.0`. Requested `2026.9.1` is not on PyPI/GitHub as of pin date — September 2026 stable is `2026.9.0`.
+- **Python split:** Client/fixture tests remain on `requires-python >=3.12` without importing Home Assistant. `__init__.py` avoids top-level `homeassistant` imports so `from custom_components.maxpreps.client import …` still works without `[ha]`. HA smoke tests require Python 3.14+ (Home Assistant 2026.9.x floor).
 - **Operator compose:** Unpublished bind-mount compose used to verify visibility; not committed.
+- **phacc lag:** After a monthly stable release, phacc may trail by hours. Until a matched phacc ships, Layer 2 install is two-step (`phacc` then `homeassistant==2026.9.0` upgrade); see `docs/HA_DEVELOPMENT.md`.
 
 **Pytest**
 
@@ -834,7 +835,7 @@ Each slice note should include: what landed, decisions, pytest command/result, d
 |-------|---------|--------|
 | Client (`[dev]`, Python 3.12) | `pip install -e ".[dev]" && pytest` | 114 passed, 1 skipped (`test_init` skipped without HA) |
 | Client demo | `python scripts/demo_client.py --fixtures` | OK |
-| HA smoke (`[ha]`, Python 3.14) | `pip install -e ".[ha]" && pytest tests/test_manifest.py tests/test_init.py` | 3 passed |
+| HA smoke (`[ha]`, Python 3.14) | `pip install pytest-homeassistant-custom-component==0.13.362 && pip install homeassistant==2026.9.0 && pip install -e . && pytest tests/test_manifest.py tests/test_init.py` | 3 passed |
 
 **HA sandbox**
 
@@ -842,7 +843,7 @@ Each slice note should include: what landed, decisions, pytest command/result, d
 
 **Deviations**
 
-- None from approved Slice 0 scope.
+- Pin bumped post-initial commit from `2026.3.4` to `2026.9.0` (September 2026 stable). `HA_DEVELOPMENT.md` manual-check wording narrowed: confirm discovery/load without import or manifest errors (config flow still aborts `not_implemented`).
 
 **PRODUCT drift check**
 

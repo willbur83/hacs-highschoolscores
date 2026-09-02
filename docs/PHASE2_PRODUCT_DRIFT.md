@@ -1,82 +1,62 @@
 # Phase 2 — PRODUCT.md drift report
 
-Facts for product-owner review. This document does not amend [PRODUCT.md](PRODUCT.md); open items stay open until the owner decides.
+Owner review completed (Slice 12 follow-up). This document does not amend [PRODUCT.md](PRODUCT.md); PRODUCT edits belong in a separate owner-driven update.
 
 Phase 2 delivered a fixture-driven MaxPreps Python client (`custom_components/maxpreps/`) with tests and a fixtures-only demo. Home Assistant integration work has not started.
 
 ---
 
-## A. Confirmed PRODUCT ↔ empirical/implementation mismatches
+## A. Confirmed PRODUCT ↔ empirical mismatches (PRODUCT should change)
 
-### Search query and picker (PRODUCT §30, §3.2)
+Items where researched MaxPreps behavior and the Phase 2 client show PRODUCT.md wording is out of date. The owner confirmed **PRODUCT should change** — these are not implementation defects.
 
-- **PRODUCT §30** example search string: `"Centennial High School, Roswell GA"`.
-- **Empirical (MAXPREPS_RESEARCH.md):** short-name search (`Centennial`) plus disambiguation picker; qualified strings with city/state or `"High School"` often return empty results (fixture transport maps `Centennial High School` → empty).
-- **Implementation:** `MaxPrepsClient.search_schools(query)` with no `state=` facet; Saint → St. retry for leading `Saint` only (research 16b); city/state optional on `School` rows (§3 picker updated in PRODUCT for incomplete location display).
+### §30 search example (also §3.2 picker flow)
 
-### Client method signatures (PRODUCT §10 vs Phase 2 client)
+- **PRODUCT §30** example search: `"Centennial High School, Roswell GA"`.
+- **Empirical:** short-name search (`Centennial`) plus disambiguation picker; qualified strings with city/state or `"High School"` often return empty (fixture transport maps `Centennial High School` → empty).
+- **Phase 2 client:** `search_schools(query)` with no `state=` facet; city/state optional on `School` rows (§3 picker display already updated for incomplete location).
+- **Owner decision:** Short school name → result picker is the intended UX. **Revise PRODUCT §30** (and related search examples) to match researched behavior.
 
-| PRODUCT §10 (eventual) | Phase 2 implementation |
-|------------------------|---------------------------|
-| `search_schools(query, state=None)` | `search_schools(query: str) -> list[School]` — no `state=` parameter |
-| `get_school_teams(school_id)` | `get_school_teams(school: School) -> list[TeamSeason]` — uses payload `canonical_url`, not a bare `school_id` string |
-| `get_schedule(team_id, season=None)` | `get_schedule(team: TeamSeason) -> Schedule` — composite `(school_id, sport_season_id)` identity; no `team_id` or `season=` fetch key |
+### §10 client method signatures
 
-Normalized models are `School`, `TeamSeason`, `Game`, `Schedule` — not PRODUCT’s eventual `team_id`-centric API.
+| PRODUCT §10 (current wording) | Phase 2 client (researched model) |
+|-------------------------------|-----------------------------------|
+| `search_schools(query, state=None)` | `search_schools(query: str) -> list[School]` |
+| `get_school_teams(school_id)` | `get_school_teams(school: School) -> list[TeamSeason]` — fetch via payload `canonical_url` |
+| `get_schedule(team_id, season=None)` | `get_schedule(team: TeamSeason) -> Schedule` — identity `(school_id, sport_season_id)`; no `team_id` or `season=` fetch key |
 
-### Timestamps (PRODUCT §30 example vs implementation)
+Normalized models are `School`, `TeamSeason`, `Game`, `Schedule`.
 
-- **PRODUCT §30** example game `date`: `"2026-08-20T16:30:00-04:00"` (offset-aware).
-- **Implementation:** `Game.date` is timezone-**naive** `datetime`; no school/state/JSON-LD timezone attachment (PHASE2_PLAN §6 item 1 remains unresolved).
-
-### Sport-agnostic ambition vs Phase 2 scope (PRODUCT §8, §15)
-
-- **PRODUCT:** integration should be as sport-agnostic as MaxPreps data allows.
-- **Phase 2:** generic team discovery from `sportSeasons[]` (all sports listed, including tennis/golf/track); schedule decoding validated for conventional head-to-head columnar `contests[]` (arity 41 / participant width 32). Football + baseball are acceptance evidence; volleyball is regression-only; girls basketball fixture is optional extra coverage. Tennis/golf/track schedule pages in fixtures lack `__NEXT_DATA__` / `contests[]` — no schedule decode for those sports.
-
-### Game status vocabulary (PRODUCT §7 / HA PRE·IN·POST·OFF vs client)
-
-- **PRODUCT / HA direction:** `PRE`, `IN`, `POST`, `OFF` lifecycle states with POST retention semantics.
-- **Phase 2 client:** `GameStatus` = `deleted` \| `scheduled` \| `final` \| `unknown` only. Unknown `contestState` → `unknown` + `status_message`; no live/in-progress/postponed/cancelled mapping.
-
-### Default cohort / historical seasons
-
-- **PRODUCT** implies user-facing current-team selection and season UX (config flow not built).
-- **Implementation:** `get_school_teams` returns **all** `sportSeasons[]` rows (including historical e.g. Pike County `11-12`). Tests and `scripts/demo_client.py --fixtures` explicitly pick `year == "26-27"` — not a product default-season policy.
-
-### Saint → St. search retry (research 16b)
-
-- **Implementation:** one retry when first search is empty and query matches leading `Saint` (rewritten to `St.`).
-- **PRODUCT.md:** not described in search or client sections.
-
-### Demo / test output shape (PRODUCT §30 example)
-
-- **PRODUCT §30** team example: `"name": "Centennial Knights"`.
-- **Demo (`scripts/demo_client.py --fixtures`):** team block uses `display_label` (e.g. `"Boys Varsity Football"`) from `TeamSeason.display_label`, not school mascot nickname.
+- **Owner decision:** Current `School` / `TeamSeason` API reflects the discovered identity and fetch model better than §10’s `team_id`-centric sketch. **Revise PRODUCT §10** when the client API is next documented in PRODUCT.
 
 ---
 
-## B. Product decisions / implementation questions still open
+## B. Open decisions — later layers and unresolved technical policy
 
-Items from [PHASE2_PLAN.md](PHASE2_PLAN.md) §6 — intentionally unresolved in Phase 2 code:
+Not PRODUCT drift against Phase 2 code. These stay open for a future slice; Phase 2 correctly left them unresolved ([PHASE2_PLAN.md](PHASE2_PLAN.md) §6).
 
-1. **Kickoff timezone / offset** — naive `date` only; Pensacola-style inconsistencies documented in research; no localization policy.
-2. **Live / in-progress, postponed, cancelled** — not observed in fixtures; unknown enum must not be mapped to those states.
-3. **HA entity model** — config-entry scope, schedule representation, `PRE`/`POST` retention, adaptive polling, notifications vs state triggers (PRODUCT §27).
-4. **Default team-season cohort / school-year rollover / historical-season UX** — enumeration returns all rows; no `teamSeasonPickerData` API or default filter.
-5. **UI handling for unsupported sports** — tennis/golf/track enumerated on school home; schedule fetch fails with `NextDataNotFoundError` when Next.js schedule data is absent.
-6. **`isPublished: false` semantics** — field stored on `TeamSeason` when present; no production filter from absent samples.
-7. **Logo hotlink / HA media behavior** — URL strings only (`team_logo`); no CDN reliability test or image fetch.
-8. **Final-score posting latency** — unmeasured; no polling intervals in client.
-9. **PRODUCT §30 example query and offsets** — owner may revise PRODUCT or accept demo/research divergence (short name + naive dates).
-10. **Qualified search vs short name** — whether PRODUCT §30 should be rewritten to match researched search behavior.
+### Technical policy (client / normalization)
 
-Additional open product questions surfaced during Phase 2:
+1. **Kickoff timezone / offset** — `Game.date` is timezone-naive today. PRODUCT’s offset-aware kickoff intent is desirable; localization policy is unsolved (Pensacola-style inconsistencies in research). **Owner decision:** keep open.
+2. **Live / in-progress, postponed, cancelled** — not observed in fixtures; unknown `contestState` must not be mapped to those states without evidence.
+3. **`isPublished: false` semantics** — stored on `TeamSeason` when present; no production filter from absent samples.
+4. **Logo hotlink reliability** — URL strings only (`team_logo`); no CDN test or image fetch.
+5. **Final-score posting latency** — unmeasured; no polling intervals in the client.
+6. **HTTP 403/429 transport** — no-retry policy not exercised in Phase 2 (`FixtureTransport` only); live transport deferred.
 
-- Whether HA layer should hide tennis/golf/track after enumeration when schedule decode is unsupported.
-- How `PRE`/`IN`/`POST`/`OFF` map from MaxPreps `contestState` when/if live and post-game states are observed.
-- HTTP 403/429 transport policy (no-retry) — not exercised in Phase 2 (fixture-only); live transport deferred.
+### Home Assistant layer (Phase 3+)
+
+7. **HA entity model** — config-entry scope, schedule representation, adaptive polling, notifications vs state triggers (PRODUCT §27).
+8. **HA lifecycle (`PRE` / `IN` / `POST` / `OFF`)** — Phase 2 normalizes provider state to `scheduled | final | deleted | unknown`. Mapping to HA-facing lifecycle is **Phase 3 product/design**, not current client drift. **Owner decision:** open HA-layer design.
+9. **Default team-season cohort / school-year rollover / historical-season UX** — `get_school_teams` returns all `sportSeasons[]` rows; tests and demo explicitly pick `year == "26-27"`. Default-season policy belongs in config flow / UI, not Phase 2 client.
+10. **UI for unsupported sports** — tennis/golf/track enumerated on school home; schedule fetch fails with `NextDataNotFoundError` when Next.js schedule data is absent. **Owner decision:** intentionally deferred; not a Phase 2 defect.
+
+### Phase 2 implementation boundaries (document, do not treat as PRODUCT weakness)
+
+- **Sport-agnostic ambition (PRODUCT §8):** team discovery from `sportSeasons[]` is sport-agnostic; v1 schedule decode is intentionally limited to conventional head-to-head columnar `contests[]` (arity 41 / width 32). Football + baseball are acceptance evidence; volleyball regression-only; tennis/golf/track have no schedule decode in fixtures. **Owner decision:** not product drift — document the implementation boundary without weakening PRODUCT ambition.
+- **Saint → St. search retry (research 16b):** one retry when the first empty result matches leading `Saint`. **Owner decision:** implementation detail; PRODUCT need not prescribe it.
+- **Demo output (`scripts/demo_client.py --fixtures`):** uses `display_label` (e.g. `"Boys Varsity Football"`), not PRODUCT §30’s `"Centennial Knights"` example. **Owner decision:** demo artifact only — do not infer product behavior from the demo; eventual UI should expose both school/team identity and sport label.
 
 ---
 
-*Generated at Phase 2 Slice 12 completion for owner review. Item resolution belongs in PRODUCT.md or a future planning slice, not silent code changes.*
+*Owner review recorded in PHASE2_PLAN Slice 12 Implementation Notes. PRODUCT.md updates for section A items are owner-driven; section B items remain open for Phase 3 planning.*

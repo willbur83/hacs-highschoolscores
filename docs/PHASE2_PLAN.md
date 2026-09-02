@@ -1051,7 +1051,7 @@ No production parser/client refactors. HTTP 403/429 no-retry: **not tested in co
 
 - **403/429 skip:** Documented only; adding httpx or a live probe would contradict Phase 2 fixture-only transport policy.
 - **Fragility mutations:** All missing/contradictory `featuredGameData` and unknown-state cases use `copy.deepcopy` on loaded fixtures in tests; committed fixtures unchanged.
-- **Drift doc item 10 (gate):** Report written for owner review; not claimed as reviewed.
+- **Drift doc (gate item 10):** Owner reviewed `docs/PHASE2_PRODUCT_DRIFT.md`; see owner-review note below.
 
 ### Test command and result
 
@@ -1082,6 +1082,16 @@ PRODUCT.md not edited. Confirmed mismatches recorded in `docs/PHASE2_PRODUCT_DRI
 7. Unknown schema/enum/missing Next.js data fail safely without false ASPX diagnosis; no ASPX/tennis/golf/track parsers. — **PASS** (`NextDataNotFoundError`; tennis/track canaries; no legacy classifier).
 8. No HA files (`manifest.json`, `config_flow.py`, `coordinator.py`, `sensor.py`). — **PASS**.
 9. CI/tests make zero live MaxPreps requests. — **PASS** (`FixtureTransport` only).
-10. Product owner has reviewed `docs/PHASE2_PRODUCT_DRIFT.md` (open items still open). — **PENDING OWNER REVIEW** (document written; owner has not reviewed yet).
+10. Product owner has reviewed `docs/PHASE2_PRODUCT_DRIFT.md` (open items still open). — **PASS** (owner review recorded below; §6 / section B items remain open by design).
 11. External technical review of client boundaries can be done from Implementation Notes without reverse-engineering commits. — **PASS** (slice notes + drift doc + README).
+
+### Owner review (post–Slice 12)
+
+Product owner reviewed `docs/PHASE2_PRODUCT_DRIFT.md` and classified findings as follows:
+
+- **PRODUCT should change:** §30 search example (short name + picker, not qualified string); §10 client signatures (`School` / `TeamSeason` model vs `team_id`-centric sketch).
+- **Not product drift:** sport-agnostic discovery with v1 head-to-head schedule boundary; Saint → St. retry; demo `display_label` vs §30 nickname example.
+- **Open later-layer / technical policy:** timezone offsets (PRODUCT intent kept, policy unsolved); HA `PRE`/`IN`/`POST`/`OFF` mapping; default cohort and unsupported-sport UI (deferred to config flow / Phase 3).
+
+Drift report refined accordingly; PRODUCT.md and production code unchanged.
 

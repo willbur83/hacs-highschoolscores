@@ -6,11 +6,11 @@ This document describes how to develop and test the MaxPreps custom integration 
 
 | Component | Pin | Notes |
 |-----------|-----|-------|
-| Home Assistant Core (container) | `ghcr.io/home-assistant/home-assistant:2026.3.4` | Stable Core image tag matching the Python test pin |
-| `homeassistant` (Python package) | `2026.3.4` | Installed via the `[ha]` extra in `pyproject.toml` |
-| `pytest-homeassistant-custom-component` | `0.13.320` | Matched to `homeassistant==2026.3.4` |
+| Home Assistant Core (container) | `ghcr.io/home-assistant/home-assistant:2026.9.0` | Stable Core image tag matching the Python test pin |
+| `homeassistant` (Python package) | `2026.9.0` | Installed via the `[ha]` extra in `pyproject.toml` |
+| `pytest-homeassistant-custom-component` | `0.13.362` | Closest published match; upgrade when a release pins `homeassistant==2026.9.0` |
 | Client / fixture tests | Python `>=3.12` | `[dev]` extra; no Home Assistant import required |
-| HA integration tests | Python `>=3.14` | Required by Home Assistant 2026.3.x |
+| HA integration tests | Python `>=3.14` | Required by Home Assistant 2026.9.x |
 
 The Phase 2 MaxPreps client remains runnable on Python 3.12+. Home Assistant 2026.x requires Python 3.14.2 or newer; use a Python 3.14 environment (or the Core container) for `[ha]` tests and manual UI work.
 
@@ -29,11 +29,15 @@ These tests exercise parsers, models, and `MaxPrepsClient` with `FixtureTranspor
 ### Layer 2 — integration smoke (Home Assistant, no live MaxPreps)
 
 ```bash
-pip install -e ".[ha]"
+pip install pytest-homeassistant-custom-component==0.13.362
+pip install homeassistant==2026.9.0
+pip install -e .
 pytest tests/test_manifest.py tests/test_init.py
 ```
 
 Smoke tests verify `manifest.json`, `DOMAIN`, and that the integration loads and unloads via `enable_custom_integrations` with no network I/O.
+
+`pytest-homeassistant-custom-component` may trail the monthly stable `homeassistant` release by a few hours. Until a phacc release pins `2026.9.0`, install phacc first, then upgrade `homeassistant` to the stable pin above (pip cannot resolve both in one step yet). When phacc catches up, `pip install -e ".[ha]"` should work as a single command.
 
 ## Core container and bind mount
 
@@ -47,7 +51,7 @@ Keep persistent Home Assistant configuration and secrets **outside** this git re
 
 Recommended container settings:
 
-- Image: `ghcr.io/home-assistant/home-assistant:2026.3.4`
+- Image: `ghcr.io/home-assistant/home-assistant:2026.9.0`
 - Publish UI port `8123` to a host port of your choice
 - Use explicit bind mounts only (no anonymous or named volumes for config)
 - Do not use GPU passthrough
@@ -55,7 +59,7 @@ Recommended container settings:
 
 Enable custom integrations in the container configuration when loading unpublished components from the bind mount (for example `homeassistant:` → `customize:` is not required; use the developer/custom-integration settings appropriate to your Core version).
 
-After the container starts, confirm **Settings → Devices & services** lists MaxPreps as loadable. Slice 0 does not implement school search or entity setup.
+After the container starts, confirm Home Assistant discovers and loads the custom integration without import or manifest errors (check the Core log for the expected custom-integration warning). Slice 0 does not implement school search or entity setup; the config flow deliberately aborts as `not_implemented`.
 
 ## What Slice 0 does not include
 
