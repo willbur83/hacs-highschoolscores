@@ -19,6 +19,7 @@ Runtime development data and secrets are intentionally kept outside this reposit
 ```bash
 pip install -e ".[dev]"
 pytest
+python scripts/demo_client.py --fixtures
 ```
 
 ## License

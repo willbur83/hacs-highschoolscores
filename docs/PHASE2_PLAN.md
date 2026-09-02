@@ -997,3 +997,42 @@ None.
 ### PRODUCT.md drift check
 
 PRODUCT.md not edited. PRODUCT §30 qualified search example string remains known drift (short name + picker).
+
+## Implementation Notes — Slice 11 (cross-school golden path and §30 demo)
+
+### What landed
+
+- `tests/test_golden_path.py` — four-school football golden paths (`search_schools` → `get_school_teams` → `get_schedule`) via `FixtureTransport`; school selection by exact `school_id` only; team selection by `year == "26-27"`, sport, gender, level, and football `sport_season_id` with exactly-one-match assertions
+- Composite identity via client: shared football `sport_season_id` `2286cd80-c46d-4739-8dd1-92a67ca8daa7` across Centennial, Bainbridge, Pike County, and St. Edward with four distinct `school_id` values
+- Centennial baseball 26-27 (`sport_season_id` `0e872276-ae3c-4868-8b66-cb53e9727cfb`) through the same client pipeline; 30 non-deleted games
+- Volleyball: `get_schedule` client regression only (parses; not a product acceptance gate)
+- `tests/helpers/fixture_transport.py` — `Pike County` search URL override (`+` vs `%20` encoding)
+- `scripts/demo_client.py --fixtures` — fixtures-only executable golden path; prints PRODUCT §30-shaped JSON (naive ISO dates, full schedule dump)
+- `tests/test_client.py` — girls basketball team selection uses exactly-one-match assertion (no silent `next(...)`)
+- README: one-line demo command
+
+### Decisions
+
+- **Demo vs PRODUCT §30:** demo searches short researched names (`Centennial`, not `Centennial High School, Roswell GA`); selects school by `school_id`; emits timezone-naive `date` strings (no `-04:00` offsets); explicit `26-27` Boys Varsity Football and Centennial baseball selection is a test/demo choice, not product default-season behavior
+- **Location formatting (demo only):** `City, ST` when both present; city-only or state-only when one present; JSON `null` when neither — not moved into production models
+- **Football+baseball parser gate claimed:** baseball Slice 0 fixture has 30 validating non-deleted contests; football goldens pass for four schools
+- **Volleyball:** regression coverage only
+
+### Test command and result
+
+```
+pip install -e ".[dev]"
+pytest
+python scripts/demo_client.py --fixtures
+```
+
+Result: **pass** (107 tests); demo exits 0.
+
+### Deviations
+
+None.
+
+### PRODUCT.md drift check
+
+PRODUCT.md not edited. Demo intentionally differs from PRODUCT §30 example on search query, date timezone, and explicit `26-27` team pick (documented above; full drift report deferred to Slice 12).
+

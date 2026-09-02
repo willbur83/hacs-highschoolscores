@@ -281,14 +281,16 @@ def test_basketball_girls_schedule_url_preserves_gender_segment(
 ):
     school = _centennial_roswell_school()
     team_seasons = client.get_school_teams(school)
-    girls_basketball = next(
+    girls_basketball_matches = [
         team
         for team in team_seasons
         if team.year == CURRENT_YEAR
         and team.sport == "Basketball"
         and team.gender == "Girls"
         and team.level == "Varsity"
-    )
+    ]
+    assert len(girls_basketball_matches) == 1
+    girls_basketball = girls_basketball_matches[0]
 
     schedule = client.get_schedule(girls_basketball)
 

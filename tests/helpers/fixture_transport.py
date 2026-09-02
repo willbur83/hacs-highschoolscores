@@ -58,10 +58,14 @@ def _apply_search_url_overrides(mapping: dict[str, str]) -> None:
     st_edward_fixture = FIXTURES_ROOT / "st-edward" / "search-st-edward.json"
     st_edward_html = wrap_page_props_in_html(load_search_page_props(st_edward_fixture))
 
+    pike_county_fixture = FIXTURES_ROOT / "pike-county" / "search-pike-county.json"
+    pike_county_html = wrap_page_props_in_html(load_search_page_props(pike_county_fixture))
+
     mapping[build_search_url("Saint Edward")] = empty_search_html
     mapping[build_search_url("St. Edward")] = st_edward_html
     mapping[build_search_url("Centennial High School")] = empty_search_html
     mapping[build_search_url("Mount Saint Joseph")] = empty_search_html
+    mapping[build_search_url("Pike County")] = pike_county_html
 
 
 def _html_for_fixture(fixture_path: Path, fixture: dict[str, Any]) -> str:
