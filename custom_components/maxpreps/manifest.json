@@ -1,0 +1,10 @@
+{
+  "domain": "maxpreps",
+  "name": "MaxPreps",
+  "codeowners": ["@willbur83"],
+  "config_flow": true,
+  "documentation": "https://github.com/willbur83/hacs-highschoolscores",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "version": "0.0.0"
+}

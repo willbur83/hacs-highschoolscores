@@ -1,0 +1,24 @@
+---
+alwaysApply: true
+globs:
+  - custom_components/maxpreps/**
+  - tests/test_config*.py
+  - tests/test_coordinator*.py
+  - tests/test_sensor*.py
+  - tests/test_init*.py
+---
+
+# Home Assistant integration discipline
+
+Apply when editing `custom_components/maxpreps/**` or HA integration tests (`tests/test_{config,coordinator,sensor,init}*`).
+
+- MaxPreps HTML/JSON parsing stays in `parsing/` and the existing client; HA modules consume normalized models only
+- All network I/O goes through the injectable async transport and coordinator; entities must not fetch
+- Automated tests must not perform live MaxPreps HTTP
+- Do not invent `contestState` mappings, timezone offsets, or sport→calendar tables
+- Use the evidence-based supported-format allowlist from the approved Phase 3 plan — not a denylist of “likely” sports
+- One subscribed-sport fetch/parse failure must not collapse the entire config entry to unavailable
+- Do not require YAML for user configuration
+- Do not start a custom Lovelace card in Phase 3
+- Public-repo hygiene still applies ([public-repo-hygiene.mdc](public-repo-hygiene.mdc))
+- Prefer HA helpers (`DataUpdateCoordinator`, `CoordinatorEntity`, `async_get_clientsession`, `DeviceInfo`, `OptionsFlowWithReload`) over bespoke substitutes

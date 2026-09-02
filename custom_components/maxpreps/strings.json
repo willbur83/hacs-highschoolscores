@@ -1,0 +1,12 @@
+{
+  "config": {
+    "abort": {
+      "not_implemented": "MaxPreps setup is not available yet."
+    },
+    "step": {
+      "user": {
+        "title": "MaxPreps"
+      }
+    }
+  }
+}

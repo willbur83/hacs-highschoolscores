@@ -11,9 +11,17 @@ requires-python = ">=3.12"
 dev = [
     "pytest>=8.0",
 ]
+ha = [
+    "homeassistant==2026.3.4",
+    "pytest-homeassistant-custom-component==0.13.320",
+]
 
 [tool.setuptools.packages.find]
 include = ["custom_components*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+asyncio_mode = "auto"
+markers = [
+    "asyncio: mark a test as an asyncio coroutine",
+]
