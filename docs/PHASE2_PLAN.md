@@ -603,3 +603,40 @@ Slice 2 implements normalized models only. PRODUCT §30 example JSON uses offset
 ## Implementation Notes — Documentation repair (approved plan restored)
 
 `docs/PHASE2_PLAN.md` had become Implementation Notes-only. The full approved Phase 2 Slice 0–12 plan was restored above the Implementation Notes heading. Slice 0–2 notes were preserved verbatim. The approved plan text was not rewritten to match completed work. Slice 3 was not implemented. PRODUCT.md was not edited.
+
+---
+
+## Implementation Notes — Slice 3 (HTML `__NEXT_DATA__` extractor; test-only fixture helpers)
+
+### What landed
+
+- `custom_components/maxpreps/exceptions.py` — `NextDataNotFoundError`, `MalformedNextDataError` (distinct from any ASPX/legacy transport type)
+- `custom_components/maxpreps/parsing/next_data.py` — `extract_page_props(html)` returns `props.pageProps` from `<script id="__NEXT_DATA__">`
+- `tests/helpers/fixtures.py` — test-only loaders unwrap research JSON envelopes; `wrap_page_props_in_html` for synthetic HTML
+- `tests/test_next_data.py` — extractor round-trip, missing-Next-data errors, envelope helpers, tennis/track null `pageProps` canaries
+
+No search/season/contest field mapping, HTTP client, ASPX parser, or production envelope branches.
+
+### Decisions
+
+- **Production vs tests:** `extract_page_props` lives under `parsing/` and accepts HTML only. Centennial `schoolContext.sportSeasons` vs Pike/Bainbridge/St. Edward top-level `sportSeasons` unwrapping stays in `tests/helpers/fixtures.py`.
+- **Missing Next data ≠ ASPX:** `NextDataNotFoundError` message text does not mention ASPX, legacy transport, tennis, or track. Tennis/track fixtures are not passed to `extract_page_props`; tests assert helpers return `None` for their null `pageProps`.
+- **Malformed JSON:** `MalformedNextDataError` when the script body is not valid JSON; missing `props.pageProps` → `NextDataNotFoundError`.
+- **No `buildId` / `/_next/data`:** extractor reads embedded script JSON only.
+
+### Test command and result
+
+```
+pip install -e ".[dev]"
+pytest
+```
+
+Result: **pass** (20 tests — package smoke, models, next_data + fixture helpers).
+
+### Deviations
+
+None.
+
+### PRODUCT.md drift check
+
+Slice 3 adds HTML extraction only. PRODUCT.md not edited.
