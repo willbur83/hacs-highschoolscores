@@ -739,3 +739,42 @@ None.
 ### PRODUCT.md drift check
 
 Default user-visible season / cohort selection is later Home Assistant config-flow work — not implemented in this slice. PRODUCT.md not edited.
+
+## Implementation Notes — Slice 6 (contest positional schema; optional featured check)
+
+### What landed
+
+- `custom_components/maxpreps/exceptions.py` — `ContestSchemaError` for invalid `contests[]` shape or `featuredGameData` drift
+- `custom_components/maxpreps/parsing/contests.py` — index constants (`CONTEST_ROW_ARITY` 41, `PARTICIPANT_WIDTH` 32, Slice 06 row/participant map), `validate_contests_shape(contests)`, `check_featured_game_consistency(contests, featured_game_data)`
+- `tests/test_contests.py` — seven populated schedule fixtures via `load_schedule_page_props`; synthetics for empty list, arity/participant width errors, featured absent (shape-only), featured contestId/date mismatch, empty `contests` + present featured
+
+No `Game` decoding, deleted-row filtering, schedule adapter, HTTP client, JSON-LD, or research-envelope branches in production parsers.
+
+### Positional map authority
+
+The `contests[]` columnar layout is **empirically validated** from committed fixtures and `docs/MAXPREPS_RESEARCH.md` Slice 06 — **not** a documented MaxPreps API. Indices live in one module for Slice 7 reuse.
+
+**Schedule source:** `contests[]` is the authoritative game list. `featuredGameData` is an optional same-response consistency check only (contestId plus `location`, `date`, `contestState`, `canonicalUrl` against row `[5]`, `[11]`, `[15]`, `[18]`). Missing featured is not a schema failure. Empty `contests[]` is a valid empty shape but does not prove the 41/32 schema and is not baseball-acceptance evidence.
+
+### Decisions
+
+- **Structural guards only:** `validate_contests_shape` checks list shape, row arity 41, two width-32 participants, and stable scalar types at proven indices. Optional metadata (`location`, `canonicalUrl`, status message) may be null/empty without failing shape validation. Participant `teamId` (`[1]`) may be null for TBA opponents (volleyball regression fixture).
+- **Featured is not a fallback:** Malformed `contests[]` is not repaired from featured data. `check_featured_game_consistency([], featured)` fails when no matching row exists.
+- **No `buildId` / `pageProps.query`:** Production consumes already-unwrapped `pageProps` (test helper only for fixtures). Tennis/track fixtures with `pageProps: null` are out of scope for 41/32 schema tests.
+
+### Test command and result
+
+```
+pip install -e ".[dev]"
+pytest
+```
+
+Result: **pass** (55 tests).
+
+### Deviations
+
+None.
+
+### PRODUCT.md drift check
+
+PRODUCT.md not edited. `contests[]` remains the schedule source; featured is supplementary consistency only.

@@ -19,3 +19,7 @@ class SearchSchemaError(MaxPrepsError):
 
 class SportSeasonsSchemaError(MaxPrepsError):
     """School-home sportSeasons rows did not match the expected schema."""
+
+
+class ContestSchemaError(MaxPrepsError):
+    """Schedule contests[] rows did not match the expected positional schema."""
