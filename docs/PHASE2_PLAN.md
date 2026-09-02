@@ -963,3 +963,37 @@ None.
 ### PRODUCT.md drift check
 
 §3 Step 1 picker wording updated for incomplete location. PRODUCT §30 qualified search example string unchanged (known separate drift: short name vs full qualified query).
+
+## Implementation Notes — Slice 10 (search client: Saint → St. retry)
+
+### What landed
+
+- `custom_components/maxpreps/urls.py` — `is_saint_retry_candidate`, `rewrite_saint_query` (leading standalone `Saint` + whitespace only; case-insensitive)
+- `MaxPrepsClient.search_schools` — when first response is empty and query is a saint retry candidate, one retry with leading `Saint` rewritten to `St.` (remainder unchanged); no retry for non-empty first responses, queries already using `St.`, or `Saint` not at the start (e.g. `Mount Saint Joseph`)
+- `tests/helpers/fixture_transport.py` — `build_search_url` overrides: `Saint Edward` → empty `initialSchoolResults`; `St. Edward` → committed `search-st-edward.json`; `Centennial High School` and `Mount Saint Joseph` → empty (qualifier / non-leading saint cases)
+- `tests/test_client.py` — saint retry (2 fetches), `St. Edward` single fetch, Centennial High School empty one fetch, Centennial no retry, Mount Saint Joseph no retry
+
+No faceted `state=` search, ranking, autocomplete, or pasted URLs.
+
+### Decisions
+
+- **Retry trigger:** empty/null `initialSchoolResults` on first fetch **and** query matches `^Saint\s` (case-insensitive)
+- **Rewrite:** only the leading `Saint` token → `St.`; city/“High School” qualifiers are not retried
+- **Fixture transport:** client-built search URLs (`+` encoding) mapped explicitly; committed fixture `source_url` values (`%20`) unchanged
+
+### Test command and result
+
+```
+pip install -e ".[dev]"
+pytest
+```
+
+Result: **pass** (95 tests).
+
+### Deviations
+
+None.
+
+### PRODUCT.md drift check
+
+PRODUCT.md not edited. PRODUCT §30 qualified search example string remains known drift (short name + picker).

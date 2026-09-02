@@ -11,7 +11,12 @@ from custom_components.maxpreps.parsing.schedule import parse_schedule_page_prop
 from custom_components.maxpreps.parsing.search import parse_search_page_props
 from custom_components.maxpreps.parsing.sport_seasons import parse_sport_seasons
 from custom_components.maxpreps.transport import Transport
-from custom_components.maxpreps.urls import build_schedule_url, build_search_url
+from custom_components.maxpreps.urls import (
+    build_schedule_url,
+    build_search_url,
+    is_saint_retry_candidate,
+    rewrite_saint_query,
+)
 
 
 class MaxPrepsClient:
@@ -22,6 +27,16 @@ class MaxPrepsClient:
 
     def search_schools(self, query: str) -> list[School]:
         """Search schools by short name."""
+        schools = self._fetch_search_results(query)
+        if schools:
+            return schools
+
+        if is_saint_retry_candidate(query):
+            return self._fetch_search_results(rewrite_saint_query(query))
+
+        return schools
+
+    def _fetch_search_results(self, query: str) -> list[School]:
         html = self._transport.fetch(build_search_url(query))
         page_props = extract_page_props(html)
         return parse_search_page_props(page_props)

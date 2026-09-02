@@ -13,6 +13,7 @@ from tests.helpers.fixtures import (
     load_sport_seasons,
     wrap_page_props_in_html,
 )
+from custom_components.maxpreps.urls import build_search_url
 
 _BLANK_HTML = (
     "<!DOCTYPE html><html><head><title>Test</title></head><body></body></html>"
@@ -46,7 +47,21 @@ def _build_fixture_url_map() -> dict[str, str]:
         if not isinstance(source_url, str) or not source_url:
             continue
         mapping[source_url] = _html_for_fixture(fixture_path, fixture)
+    _apply_search_url_overrides(mapping)
     return mapping
+
+
+def _apply_search_url_overrides(mapping: dict[str, str]) -> None:
+    """Map client-built search URLs (Slice 10 saint retry and qualifier cases)."""
+    empty_search_html = wrap_page_props_in_html({"initialSchoolResults": None})
+
+    st_edward_fixture = FIXTURES_ROOT / "st-edward" / "search-st-edward.json"
+    st_edward_html = wrap_page_props_in_html(load_search_page_props(st_edward_fixture))
+
+    mapping[build_search_url("Saint Edward")] = empty_search_html
+    mapping[build_search_url("St. Edward")] = st_edward_html
+    mapping[build_search_url("Centennial High School")] = empty_search_html
+    mapping[build_search_url("Mount Saint Joseph")] = empty_search_html
 
 
 def _html_for_fixture(fixture_path: Path, fixture: dict[str, Any]) -> str:

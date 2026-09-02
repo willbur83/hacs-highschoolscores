@@ -17,10 +17,16 @@ from tests.test_search import (
     CENTENNIAL,
     CENTENNIAL_ROSWELL_ID,
     CENTENNIAL_ROSWELL_URL,
+    ST_EDWARD_OH_ID,
+    ST_EDWARD_OH_URL,
 )
 
 CURRENT_YEAR = "26-27"
 CENTENNIAL_SEARCH_URL = build_search_url("Centennial")
+CENTENNIAL_HIGH_SCHOOL_SEARCH_URL = build_search_url("Centennial High School")
+SAINT_EDWARD_SEARCH_URL = build_search_url("Saint Edward")
+ST_EDWARD_SEARCH_URL = build_search_url("St. Edward")
+MOUNT_SAINT_JOSEPH_SEARCH_URL = build_search_url("Mount Saint Joseph")
 CENTENNIAL_FOOTBALL_CANONICAL = (
     "https://www.maxpreps.com/ga/roswell/centennial-knights/football/"
 )
@@ -116,6 +122,64 @@ def test_search_schools_centennial(
     assert roswell.canonical_url == CENTENNIAL_ROSWELL_URL
     assert roswell.city == "Roswell"
     assert roswell.state == "GA"
+
+
+def test_search_schools_saint_edward_retries_with_st(
+    client: MaxPrepsClient,
+    transport: FixtureTransport,
+):
+    schools = client.search_schools("Saint Edward")
+
+    assert transport.requested_urls == [SAINT_EDWARD_SEARCH_URL, ST_EDWARD_SEARCH_URL]
+    target = next(school for school in schools if school.school_id == ST_EDWARD_OH_ID)
+    assert target.canonical_url == ST_EDWARD_OH_URL
+    assert target.name == "St. Edward"
+    assert target.city == "Lakewood"
+    assert target.state == "OH"
+
+
+def test_search_schools_st_edward_single_fetch(
+    client: MaxPrepsClient,
+    transport: FixtureTransport,
+):
+    schools = client.search_schools("St. Edward")
+
+    assert transport.requested_urls == [ST_EDWARD_SEARCH_URL]
+    target = next(school for school in schools if school.school_id == ST_EDWARD_OH_ID)
+    assert target.canonical_url == ST_EDWARD_OH_URL
+
+
+def test_search_schools_centennial_high_school_empty_single_fetch(
+    client: MaxPrepsClient,
+    transport: FixtureTransport,
+):
+    schools = client.search_schools("Centennial High School")
+
+    assert schools == []
+    assert transport.requested_urls == [CENTENNIAL_HIGH_SCHOOL_SEARCH_URL]
+    assert ST_EDWARD_SEARCH_URL not in transport.requested_urls
+
+
+def test_search_schools_centennial_no_saint_retry(
+    client: MaxPrepsClient,
+    transport: FixtureTransport,
+):
+    schools = client.search_schools("Centennial")
+
+    assert len(schools) > 0
+    assert transport.requested_urls == [CENTENNIAL_SEARCH_URL]
+    assert ST_EDWARD_SEARCH_URL not in transport.requested_urls
+
+
+def test_search_schools_mount_saint_joseph_no_saint_retry(
+    client: MaxPrepsClient,
+    transport: FixtureTransport,
+):
+    schools = client.search_schools("Mount Saint Joseph")
+
+    assert schools == []
+    assert transport.requested_urls == [MOUNT_SAINT_JOSEPH_SEARCH_URL]
+    assert ST_EDWARD_SEARCH_URL not in transport.requested_urls
 
 
 def test_centennial_pipeline_teams_and_schedules(
