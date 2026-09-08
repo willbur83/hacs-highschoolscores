@@ -21,6 +21,12 @@
       "search_failed": "School search failed. Try again later."
     },
     "step": {
+      "init": {
+        "data": {
+          "subscriptions": "Sports"
+        },
+        "title": "Manage sport subscriptions"
+      },
       "school": {
         "data": {
           "school": "School"

@@ -181,9 +181,18 @@ Entity unique ID (stable across school-year rollover and provider-ID churn — s
 
 Do **not** put any of the following in the unique ID: `sport_season_id` / `sportSeasonId`, `season` / term, `year`, team-season `canonical_url`. Do not mint one entity per `terms[]` row.
 
-`has_entity_name = True`. Translated name from `display_label` placeholders (e.g. `Boys Varsity Football`), producing entity IDs in the spirit of `sensor.centennial_boys_varsity_football` without hard-coding slugs as identity. Config-flow option labels may add informational `(Fall, Spring 26-27)` context; that is not part of the entity unique ID.
+`has_entity_name = True`. **HA entity name** is `{gender} {level} {sport}` only (e.g. `Boys Freshman Baseball`). Do **not** put informational `(Fall, Spring 26-27)` on the entity name. That parenthetical belongs on **config/options picker labels** only (`SchoolYearProgram.display_label`). Unique ID and entity name both follow the stable program identity, not MaxPreps terms.
 
-**State (product checkpoint Q1 — do not implement until decided):**
+**Program sensor availability** (entity `available`, distinct from compact `native_value`):
+
+- Unresolved subscription (no provider rows for the applicable year) → **unavailable**
+- All term loads failed and there is no last-good `schedule` on any term → **unavailable**
+- One useful term + one failed term → **available**
+- Stale retained last-good term data (`TermRefreshStatus.STALE` with a schedule) → **available**
+
+Keep this matrix in regression tests. Do not treat HA `unavailable` as a substitute for compact state vocabulary.
+
+**State (product checkpoint Q1 — do not implement PRE/IN/POST/OFF):**
 
 Do **not** invent `PRE` / `IN` / `POST` / `OFF` merely because PRODUCT mentions them as a future Team Tracker-like sketch. Phase 2 already normalizes provider state to `scheduled | final | deleted | unknown`. Slice 6 must **wait** for owner disposition of Q1. Planning recommendation (A) is recorded in section 6; it is not a default to implement if Q1 is still open.
 
@@ -635,7 +644,7 @@ Optimize for clean boundaries, not fewest slices. Each slice: one objective; tes
 
 - **Objective:** HA-native subscription edits with reload and stable IDs for remaining entities.
 - **Touch:** `config_flow.py` options handler (`OptionsFlowWithReload` unless Q4 chose subentries).
-- **Tests:** add baseball to football-only entry; remove a sport; entity registry unique IDs of remaining sensors unchanged; cannot add tennis or other non-allowlisted sports; cannot add Pike `11-12`; multi-term programs still one option with aggregated term/year label.
+- **Tests:** add baseball to football-only entry; remove a sport; entity registry unique IDs of remaining sensors unchanged; cannot add tennis or other non-allowlisted sports; cannot add Pike `11-12`; multi-term programs still one option with aggregated **picker** label `(Fall, Spring 26-27)` while HA entity name stays `{gender} {level} {sport}`; availability matrix (unresolved / all-terms-failed / one-good-term / stale last-good) still holds after reload.
 - **Do not:** require YAML or manual entity editing.
 
 ### Slice 8 — Multi-school behavior
@@ -1163,5 +1172,39 @@ Target Layer 2 (`homeassistant==2026.9.0`, Python 3.14): not yet run on this hos
 - Layer 2 (`homeassistant==2026.9.0`, Python 3.14, `pytest-homeassistant-custom-component==0.13.362`, two-step install): include `tests/test_sensor.py` with existing HA suite; zero live HTTP.
 
 **Deferred:** options-flow UI (Slice 7), calendar, custom card, logos (Slice 9), PRE/IN/POST/OFF (Q1), daily-until-published rollover polling (Slice 11).
+
+**PRODUCT drift check:** None. `PRODUCT.md` untouched.
+
+## Post-Slice-6 owner confirmation (2026-09-02)
+
+Slice 6 notes above are historical. Owner confirmed going forward:
+
+- **Availability matrix** (keep in regression tests): unresolved → unavailable; all terms failed with no last-good schedule → unavailable; one useful term + one failed term → available; stale retained last-good data → available.
+- **Picker vs entity name:** config/options UI may show `Boys Freshman Baseball (Fall, Spring 26-27)`; the HA entity name is `Boys Freshman Baseball` (`{gender} {level} {sport}`). Do not add the parenthetical to the entity name.
+
+## Slice 7
+
+**Goal:** HA-native add/remove sport subscriptions on an existing school config entry via `OptionsFlowWithReload`; reload after save; remaining program sensors keep stable entity-registry unique IDs.
+
+**Delivered**
+
+- `custom_components/maxpreps/config_flow.py`: `MaxPrepsOptionsFlow` (`OptionsFlowWithReload`); `async_get_options_flow` on `MaxPrepsConfigFlow`; shared helpers `_build_subscription_options`, `_subscriptions_from_selected_keys`, `_unresolved_program_label` (union of configured `{sport, gender, level}` subscriptions and applicable-year allowlisted `SchoolYearProgram`s; unresolved configured rows stay pre-selected with `(waiting for {year})` label).
+- `strings.json` / `translations/en.json`: options step `init` strings.
+- `tests/test_options_flow.py`: add/remove sports, allowlist/Pike/freshman-label/empty-selection/unresolved-survival/one-good-term-after-reload coverage.
+- `tests/test_sensor.py`: `test_stale_last_good_term_keeps_sensor_available` (availability matrix case 4 at sensor layer).
+
+**Decisions**
+
+- Q4 unchanged: `OptionsFlowWithReload`; persist `options.subscriptions` as `{sport, gender, level}` only; no subentries, no YAML.
+- Picker labels use `SchoolYearProgram.display_label` or `(waiting for {applicable_year})`; entity name / unique_id remain `{gender} {level} {sport}` without parenthetical, season, ssid, year, or URL.
+- Opening/saving options without deselecting an unresolved subscription does not silently delete it.
+
+**Tests**
+
+| Layer | Command | Result |
+|-------|---------|--------|
+| Client (`[dev]`, Python 3.12) | `pip install -e ".[dev]" && pytest` | 172 passed, 6 skipped |
+| Client demo | `python scripts/demo_client.py --fixtures` | OK |
+| HA (`homeassistant==2026.9.0`, Python 3.14, `pytest-homeassistant-custom-component==0.13.362`, two-step install) | options + sensor + coordinator + config_flow suite | green |
 
 **PRODUCT drift check:** None. `PRODUCT.md` untouched.

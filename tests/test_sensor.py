@@ -34,6 +34,7 @@ from tests.helpers.coordinator_test_helpers import centennial_entry
 from tests.test_coordinator import (
     FRESHMAN_BASEBALL_FALL_ID,
     FRESHMAN_BASEBALL_SPRING_ID,
+    FRESHMAN_BASEBALL_SPRING_SCHEDULE_URL,
     FRESHMAN_BASEBALL_SUBSCRIPTION,
     FOOTBALL_SUBSCRIPTION,
     UNRESOLVED_SUBSCRIPTION,
@@ -628,6 +629,42 @@ def test_unresolved_program_not_available() -> None:
         terms=(),
     )
     assert program_is_available(program) is False
+
+
+@pytest.mark.asyncio
+async def test_stale_last_good_term_keeps_sensor_available(
+    hass, enable_custom_integrations, frozen_applicable_date
+) -> None:
+    """Stale retained last-good schedule data keeps the program sensor available."""
+    from custom_components.maxpreps.async_client import AsyncMaxPrepsClient
+
+    transport = CoordinatorTestTransport()
+    client = AsyncMaxPrepsClient(transport)
+    entry = centennial_entry([FRESHMAN_BASEBALL_SUBSCRIPTION])
+    entry.add_to_hass(hass)
+
+    with patch(
+        "custom_components.maxpreps.client_factory.create_async_client",
+        return_value=client,
+    ):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+        failing_transport = CoordinatorTestTransport(
+            fail_urls=frozenset({FRESHMAN_BASEBALL_SPRING_SCHEDULE_URL})
+        )
+        failing_client = AsyncMaxPrepsClient(failing_transport)
+        with patch(
+            "custom_components.maxpreps.client_factory.create_async_client",
+            return_value=failing_client,
+        ):
+            await entry.runtime_data.async_refresh()
+            await hass.async_block_till_done()
+
+    entities = _sensor_entities(hass, entry)
+    assert len(entities) == 1
+    state = hass.states.get(entities[0].entity_id)
+    assert state.state != "unavailable"
 
 
 @pytest.mark.asyncio
