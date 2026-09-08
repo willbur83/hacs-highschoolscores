@@ -109,6 +109,8 @@ def game_attribute(ref: ProgramGameRef) -> dict[str, Any]:
         data["venue"] = game.venue
     if game.game_url is not None:
         data["game_url"] = game.game_url
+    if game.opponent_logo is not None:
+        data["opponent_logo"] = game.opponent_logo
     if ref.season is not None:
         data["season"] = ref.season
     return data

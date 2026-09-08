@@ -8,6 +8,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.maxpreps.const import (
     CONF_CANONICAL_URL,
+    CONF_MASCOT_URL,
     CONF_NAME,
     CONF_SCHOOL_ID,
     CONF_SUBSCRIPTIONS,
@@ -17,6 +18,7 @@ from tests.test_search import (
     BAINBRIDGE_GA_ID,
     BAINBRIDGE_GA_URL,
     CENTENNIAL_ROSWELL_ID,
+    CENTENNIAL_ROSWELL_MASCOT_URL,
     CENTENNIAL_ROSWELL_URL,
 )
 
@@ -31,6 +33,7 @@ def centennial_entry(subscriptions: list[dict[str, str]]) -> MockConfigEntry:
             CONF_SCHOOL_ID: CENTENNIAL_ROSWELL_ID,
             CONF_CANONICAL_URL: CENTENNIAL_ROSWELL_URL,
             CONF_NAME: "Centennial",
+            CONF_MASCOT_URL: CENTENNIAL_ROSWELL_MASCOT_URL,
         },
         options={CONF_SUBSCRIPTIONS: subscriptions},
     )

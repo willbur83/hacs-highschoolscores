@@ -152,6 +152,32 @@ def test_decode_alpharetta_scheduled_home():
     assert game.opponent_score is None
     assert game.result is None
     assert game.status_message == "ContestState is Pregame."
+    assert game.opponent_logo == (
+        "https://image.maxpreps.io/school-mascot/6/b/6/"
+        "6b615161-19a6-4148-aa21-ce63ffd5a68f.gif"
+        "?version=637514050800000000&width=1024&height=1024"
+    )
+
+
+def test_decode_opponent_logo_ignored_for_configured_school_participant():
+    row = _centennial_football_contests()[3]
+    game = decode_contest_row(row, CENTENNIAL_ROSWELL_ID)
+
+    school_participant, opponent_participant = row[0][1], row[0][0]
+    assert school_participant[20] != opponent_participant[20]
+    assert CENTENNIAL_ROSWELL_ID in school_participant[20]
+    assert game.opponent_logo == opponent_participant[20]
+
+
+def test_decode_non_https_opponent_logo_slot_is_ignored():
+    row = copy.deepcopy(_centennial_football_contests()[3])
+    row[0][0][20] = "http://example.com/logo.gif"
+    game = decode_contest_row(row, CENTENNIAL_ROSWELL_ID)
+    assert game.opponent_logo is None
+
+    row[0][0][20] = "not-a-url"
+    game = decode_contest_row(row, CENTENNIAL_ROSWELL_ID)
+    assert game.opponent_logo is None
 
 
 def test_decode_dunwoody_final_neutral():

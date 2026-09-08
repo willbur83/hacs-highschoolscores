@@ -8,7 +8,7 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from custom_components.maxpreps.const import ATTRIBUTION, DOMAIN
+from custom_components.maxpreps.const import ATTRIBUTION, CONF_SCHOOL_LOGO_OVERRIDE, DOMAIN
 from custom_components.maxpreps.coordinator import (
     MaxPrepsDataUpdateCoordinator,
     ProgramSnapshot,
@@ -23,6 +23,7 @@ from custom_components.maxpreps.program_sensor import (
     program_team_record,
     program_unique_id,
 )
+from custom_components.maxpreps.school_logo import resolve_school_entity_picture
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -94,6 +95,19 @@ class MaxPrepsProgramSensor(CoordinatorEntity[MaxPrepsDataUpdateCoordinator], Se
     @property
     def available(self) -> bool:
         return program_is_available(self.program)
+
+    @property
+    def entity_picture(self) -> str | None:
+        data = self.coordinator.data
+        if data is None:
+            return None
+        return resolve_school_entity_picture(
+            mascot_url=data.school.mascot_url,
+            logo_override=self.coordinator.config_entry.options.get(
+                CONF_SCHOOL_LOGO_OVERRIDE
+            ),
+            programs=data.programs,
+        )
 
     @property
     def native_value(self) -> str | None:

@@ -15,6 +15,7 @@
     },
     "error": {
       "invalid": "Invalid selection.",
+      "invalid_logo": "Enter an https:// image URL or a /local/ path.",
       "no_results": "No schools matched that name. Try a shorter name without city or state.",
       "required": "Required.",
       "school_load_failed": "Could not load programs for the selected school.",
@@ -23,8 +24,10 @@
     "step": {
       "init": {
         "data": {
+          "school_logo_override": "School logo override",
           "subscriptions": "Sports"
         },
+        "description": "Optional school logo: https:// image URL or /local/ path. Leave blank to use MaxPreps automatic logo.",
         "title": "Manage sport subscriptions"
       },
       "school": {

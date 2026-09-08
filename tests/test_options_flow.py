@@ -19,6 +19,7 @@ from custom_components.maxpreps.const import (
     CONF_LEVEL,
     CONF_NAME,
     CONF_SCHOOL_ID,
+    CONF_SCHOOL_LOGO_OVERRIDE,
     CONF_SPORT,
     CONF_SUBSCRIPTIONS,
     DOMAIN,
@@ -385,6 +386,128 @@ async def test_availability_matrix_after_options_add_program(
     assert by_season["Spring"].status == TermRefreshStatus.ERROR
     assert by_season["Fall"].status == TermRefreshStatus.REFRESHED
     assert by_season["Fall"].schedule is not None
+
+
+@pytest.mark.asyncio
+async def test_set_logo_override_preserves_subscriptions(
+    hass, enable_custom_integrations, fixture_client
+) -> None:
+    entry = centennial_entry([FOOTBALL_SUBSCRIPTION, VARSITY_BASEBALL_SUBSCRIPTION])
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    result = await _init_options(hass, entry)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            "subscriptions": [
+                FOOTBALL_SUBSCRIPTION_KEY,
+                VARSITY_BASEBALL_SUBSCRIPTION_KEY,
+            ],
+            CONF_SCHOOL_LOGO_OVERRIDE: "https://example.com/custom-logo.png",
+        },
+    )
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    await hass.async_block_till_done()
+
+    assert entry.options[CONF_SUBSCRIPTIONS] == [
+        FOOTBALL_SUBSCRIPTION,
+        VARSITY_BASEBALL_SUBSCRIPTION,
+    ]
+    assert entry.options[CONF_SCHOOL_LOGO_OVERRIDE] == "https://example.com/custom-logo.png"
+
+
+@pytest.mark.asyncio
+async def test_clear_logo_override_preserves_subscriptions(
+    hass, enable_custom_integrations, fixture_client
+) -> None:
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=CENTENNIAL_ROSWELL_ID,
+        data={
+            CONF_SCHOOL_ID: CENTENNIAL_ROSWELL_ID,
+            CONF_CANONICAL_URL: "https://www.maxpreps.com/ga/roswell/centennial-knights/",
+            CONF_NAME: "Centennial",
+        },
+        options={
+            CONF_SUBSCRIPTIONS: [FOOTBALL_SUBSCRIPTION],
+            CONF_SCHOOL_LOGO_OVERRIDE: "/local/school.png",
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await _init_options(hass, entry)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            "subscriptions": [FOOTBALL_SUBSCRIPTION_KEY],
+            CONF_SCHOOL_LOGO_OVERRIDE: "",
+        },
+    )
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert entry.options[CONF_SUBSCRIPTIONS] == [FOOTBALL_SUBSCRIPTION]
+    assert CONF_SCHOOL_LOGO_OVERRIDE not in entry.options
+
+
+@pytest.mark.asyncio
+async def test_change_subscriptions_preserves_logo_override(
+    hass, enable_custom_integrations, fixture_client
+) -> None:
+    override = "https://example.com/persisted-logo.png"
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=CENTENNIAL_ROSWELL_ID,
+        data={
+            CONF_SCHOOL_ID: CENTENNIAL_ROSWELL_ID,
+            CONF_CANONICAL_URL: "https://www.maxpreps.com/ga/roswell/centennial-knights/",
+            CONF_NAME: "Centennial",
+        },
+        options={
+            CONF_SUBSCRIPTIONS: [FOOTBALL_SUBSCRIPTION],
+            CONF_SCHOOL_LOGO_OVERRIDE: override,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await _init_options(hass, entry)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            "subscriptions": [
+                FOOTBALL_SUBSCRIPTION_KEY,
+                VARSITY_BASEBALL_SUBSCRIPTION_KEY,
+            ],
+            CONF_SCHOOL_LOGO_OVERRIDE: override,
+        },
+    )
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    await hass.async_block_till_done()
+
+    assert entry.options[CONF_SUBSCRIPTIONS] == [
+        FOOTBALL_SUBSCRIPTION,
+        VARSITY_BASEBALL_SUBSCRIPTION,
+    ]
+    assert entry.options[CONF_SCHOOL_LOGO_OVERRIDE] == override
+
+
+@pytest.mark.asyncio
+async def test_invalid_logo_override_rejected(
+    hass, enable_custom_integrations, fixture_client
+) -> None:
+    entry = centennial_entry([FOOTBALL_SUBSCRIPTION])
+    entry.add_to_hass(hass)
+
+    result = await _init_options(hass, entry)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            "subscriptions": [FOOTBALL_SUBSCRIPTION_KEY],
+            CONF_SCHOOL_LOGO_OVERRIDE: "not-a-valid-logo",
+        },
+    )
+    assert result["type"] == FlowResultType.FORM
+    assert result["errors"] == {CONF_SCHOOL_LOGO_OVERRIDE: "invalid_logo"}
 
 
 @pytest.fixture

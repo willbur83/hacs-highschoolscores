@@ -31,6 +31,7 @@ PART_IDX_HOME_AWAY_TYPE = 11
 PART_IDX_RESULT = 5
 PART_IDX_SCORE = 6
 PART_IDX_NAME = 14
+PART_IDX_MASCOT_URL = 20
 
 _CONTEST_STATE_DELETED = 1
 _CONTEST_STATE_SCHEDULED = 2
@@ -116,6 +117,7 @@ def decode_contest_row(row: list[Any], school_id: str) -> Game:
         venue=_optional_str(row[IDX_LOCATION]),
         game_url=_optional_str(row[IDX_CANONICAL_URL]),
         status_message=_optional_str(row[IDX_STATUS_MESSAGE]),
+        opponent_logo=_opponent_logo_from_participant(opponent_participant),
     )
 
 
@@ -292,3 +294,16 @@ def _participant_name(participant: list[Any]) -> str:
     if not isinstance(name, str) or not name.strip():
         return ""
     return name
+
+
+def _opponent_logo_from_participant(participant: list[Any]) -> str | None:
+    """Return opponent mascot URL from participant slot [20] when it is HTTPS."""
+    if len(participant) <= PART_IDX_MASCOT_URL:
+        return None
+    value = participant[PART_IDX_MASCOT_URL]
+    if not isinstance(value, str):
+        return None
+    stripped = value.strip()
+    if not stripped.startswith("https://"):
+        return None
+    return stripped

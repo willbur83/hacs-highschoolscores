@@ -69,6 +69,9 @@ def test_centennial_baseball_schedule_matches_non_deleted_contests():
     assert schedule.team_season.sport_season_id == BASEBALL_SPORT_SEASON_ID
     assert schedule.team_season.sport == "Baseball"
     assert schedule.team_record is None
+    assert schedule.team_logo is not None
+    assert CENTENNIAL_ROSWELL_ID in schedule.team_logo
+    assert ".gif" in schedule.team_logo
 
 
 def test_st_edward_schedule_without_page_props_query():

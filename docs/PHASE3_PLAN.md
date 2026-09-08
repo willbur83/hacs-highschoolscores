@@ -1234,3 +1234,52 @@ Slice 6 notes above are historical. Owner confirmed going forward:
 | HA (`homeassistant==2026.9.0`, Python 3.14, `pytest-homeassistant-custom-component==0.13.362`, two-step install) | config_flow + options + sensor + coordinator + multi_school suite | 69 passed |
 
 **PRODUCT drift check:** None. `PRODUCT.md` untouched.
+
+## Slice 9
+
+**Goal:** Configured-school logo on program sensors (`entity_picture`); optional `Game.opponent_logo` from opponent participant `[20]`; user-supplied logo override in options; missing logos never fail setup or sensor availability.
+
+**Delivered**
+
+- `custom_components/maxpreps/models.py`: optional `Game.opponent_logo`.
+- `custom_components/maxpreps/parsing/contests.py`: `PART_IDX_MASCOT_URL = 20`; HTTPS opponent mascot URL only (configured-school `[20]` is not `opponent_logo`).
+- `custom_components/maxpreps/school_logo.py`: school-level `resolve_school_entity_picture`, `automatic_team_logo_from_programs`, `validate_school_logo_override` (no HA imports).
+- `custom_components/maxpreps/sensor.py`: `entity_picture` property on `MaxPrepsProgramSensor` (same URL for every program on the entry per coordinator snapshot).
+- `custom_components/maxpreps/program_sensor.py`: `opponent_logo` in `game_attribute` when present.
+- `custom_components/maxpreps/config_flow.py`: options step adds optional `school_logo_override`; `_options_payload` merges logo + subscriptions; changing one does not drop the other.
+- `const.py`: `CONF_SCHOOL_LOGO_OVERRIDE`.
+- `strings.json` / `translations/en.json`: options logo field + `invalid_logo` error.
+- Tests: `tests/test_school_logo.py`, logo/opponent coverage in `test_contests.py`, `test_schedule.py`, `test_sensor.py`, `test_options_flow.py`.
+
+**`entity_picture` source order (school level, all program sensors identical)**
+
+1. `entry.options.school_logo_override` when non-blank (explicit override always wins).
+2. `entry.data.mascot_url` from search (`School.mascot_url`).
+3. First non-blank `Schedule.team_logo` from coordinator `programs[].terms[]` in subscription/term order (stale retained schedules may supply metadata).
+
+Clearing the override restores automatic resolution. `version=` query params are not identity. No HA image-entity CDN proxy in this slice.
+
+**`Game.opponent_logo`**
+
+- Opponent participant slot `[20]` only; non-blank `https://` URL.
+- Passed through `last_game` / `next_game` attributes; deleted games still excluded.
+
+**Q5 fallback shipped**
+
+- **A (MediaSelector / media-source):** Deferred — not demonstrated end-to-end for `entity_picture` in the HA 2026.9.0 test environment; `media-source://` URIs are not assumed valid for `entity_picture` without verified resolution.
+- **B (HTTPS image URL):** Shipped via options `school_logo_override` text field.
+- **C (`/local/` path):** Shipped via the same field (`validate_school_logo_override` accepts `/local/…`).
+
+Override always wins over automatic sources when set.
+
+**Sandbox HEAD:** Skipped (no owner-supervised CDN HEAD through HA session in this implementation pass).
+
+**Tests**
+
+| Layer | Command | Result |
+|-------|---------|--------|
+| Client (`[dev]`, Python 3.12) | `pip install -e ".[dev]" && pytest` | 179 passed, 7 skipped |
+| Client demo | `python scripts/demo_client.py --fixtures` | OK |
+| HA (`homeassistant==2026.9.0`, Python 3.14.6 Docker, `pytest-homeassistant-custom-component==0.13.362`, two-step install) | manifest + init + ha_transport + config_flow + programs + coordinator + sensor + options + multi_school | 80 passed |
+
+**PRODUCT drift check:** None. `PRODUCT.md` untouched.

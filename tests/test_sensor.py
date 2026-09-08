@@ -14,7 +14,15 @@ from homeassistant.config_entries import ConfigEntryState
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 
-from custom_components.maxpreps.const import ATTRIBUTION, CONF_GENDER, CONF_LEVEL, CONF_SPORT, DOMAIN
+from custom_components.maxpreps.const import (
+    ATTRIBUTION,
+    CONF_GENDER,
+    CONF_LEVEL,
+    CONF_MASCOT_URL,
+    CONF_SCHOOL_LOGO_OVERRIDE,
+    CONF_SPORT,
+    DOMAIN,
+)
 from custom_components.maxpreps.coordinator import (
     ProgramResolutionStatus,
     ProgramSnapshot,
@@ -25,11 +33,13 @@ from custom_components.maxpreps.models import Game, GameStatus, HomeAway, Schedu
 from custom_components.maxpreps.program_sensor import (
     find_last_game,
     find_next_game,
+    game_attribute,
     iter_program_games,
     program_is_available,
     program_native_value,
     program_unique_id,
 )
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 from tests.helpers.coordinator_test_helpers import centennial_entry
 from tests.test_coordinator import (
     FRESHMAN_BASEBALL_FALL_ID,
@@ -42,7 +52,7 @@ from tests.test_coordinator import (
     coordinator_client,
     frozen_applicable_date,
 )
-from tests.test_search import CENTENNIAL_ROSWELL_ID, CENTENNIAL_ROSWELL_URL
+from tests.test_search import CENTENNIAL_ROSWELL_ID, CENTENNIAL_ROSWELL_MASCOT_URL, CENTENNIAL_ROSWELL_URL
 
 VARSITY_BASEBALL_SUBSCRIPTION = {
     CONF_SPORT: "Baseball",
@@ -675,3 +685,245 @@ async def test_football_attributes_include_attribution(three_program_entry, hass
         f"{CENTENNIAL_ROSWELL_ID}:Boys:Varsity:Football",
     )
     assert state.attributes["attribution"] == ATTRIBUTION
+
+
+@pytest.mark.asyncio
+async def test_program_sensors_share_school_entity_picture_from_mascot_url(
+    three_program_entry, hass
+) -> None:
+    pictures = [
+        hass.states.get(entity.entity_id).attributes.get("entity_picture")
+        for entity in _sensor_entities(hass, three_program_entry)
+    ]
+    assert len(pictures) == 3
+    assert all(picture == CENTENNIAL_ROSWELL_MASCOT_URL for picture in pictures)
+    assert CENTENNIAL_ROSWELL_ID in CENTENNIAL_ROSWELL_MASCOT_URL
+
+
+@pytest.mark.asyncio
+async def test_entity_picture_uses_schedule_team_logo_without_entry_mascot_url(
+    hass, enable_custom_integrations, coordinator_client, frozen_applicable_date
+) -> None:
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=CENTENNIAL_ROSWELL_ID,
+        data={
+            "school_id": CENTENNIAL_ROSWELL_ID,
+            "canonical_url": CENTENNIAL_ROSWELL_URL,
+            "name": "Centennial",
+        },
+        options={"subscriptions": [FOOTBALL_SUBSCRIPTION]},
+    )
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    state = _state_for_unique_id(
+        hass,
+        entry,
+        f"{CENTENNIAL_ROSWELL_ID}:Boys:Varsity:Football",
+    )
+    picture = state.attributes.get("entity_picture")
+    assert picture is not None
+    assert CENTENNIAL_ROSWELL_ID in picture
+    assert state.state != "unavailable"
+
+
+@pytest.mark.asyncio
+async def test_user_logo_override_wins_over_automatic_mascot_url(
+    hass, enable_custom_integrations, coordinator_client, frozen_applicable_date
+) -> None:
+    override = "/local/centennial-knights.png"
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=CENTENNIAL_ROSWELL_ID,
+        data={
+            "school_id": CENTENNIAL_ROSWELL_ID,
+            "canonical_url": CENTENNIAL_ROSWELL_URL,
+            "name": "Centennial",
+            CONF_MASCOT_URL: CENTENNIAL_ROSWELL_MASCOT_URL,
+        },
+        options={
+            "subscriptions": [FOOTBALL_SUBSCRIPTION],
+            CONF_SCHOOL_LOGO_OVERRIDE: override,
+        },
+    )
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    state = _state_for_unique_id(
+        hass,
+        entry,
+        f"{CENTENNIAL_ROSWELL_ID}:Boys:Varsity:Football",
+    )
+    assert state.attributes.get("entity_picture") == override
+
+
+@pytest.mark.asyncio
+async def test_sensors_available_without_any_logo_sources(
+    hass, enable_custom_integrations, coordinator_client, frozen_applicable_date
+) -> None:
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=CENTENNIAL_ROSWELL_ID,
+        data={
+            "school_id": CENTENNIAL_ROSWELL_ID,
+            "canonical_url": CENTENNIAL_ROSWELL_URL,
+            "name": "Centennial",
+        },
+        options={"subscriptions": [FOOTBALL_SUBSCRIPTION]},
+    )
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    coordinator = entry.runtime_data
+    stripped_programs = []
+    for program in coordinator.data.programs:
+        stripped_terms = []
+        for term in program.terms:
+            if term.schedule is None:
+                stripped_terms.append(term)
+                continue
+            team_season = term.schedule.team_season
+            stripped_terms.append(
+                TermSnapshot(
+                    team_season=term.team_season,
+                    schedule=Schedule(team_season=team_season, games=term.schedule.games),
+                    status=term.status,
+                    error_type=term.error_type,
+                    error_message=term.error_message,
+                    last_success_at=term.last_success_at,
+                )
+            )
+        stripped_programs.append(
+            ProgramSnapshot(
+                sport=program.sport,
+                gender=program.gender,
+                level=program.level,
+                resolution_status=program.resolution_status,
+                terms=tuple(stripped_terms),
+            )
+        )
+    coordinator.data = coordinator.data.__class__(
+        school=coordinator.data.school.__class__(
+            school_id=coordinator.data.school.school_id,
+            canonical_url=coordinator.data.school.canonical_url,
+            name=coordinator.data.school.name,
+        ),
+        applicable_school_year=coordinator.data.applicable_school_year,
+        programs=tuple(stripped_programs),
+        refreshed_at=coordinator.data.refreshed_at,
+    )
+    coordinator.async_update_listeners()
+    await hass.async_block_till_done()
+
+    state = _state_for_unique_id(
+        hass,
+        entry,
+        f"{CENTENNIAL_ROSWELL_ID}:Boys:Varsity:Football",
+    )
+    assert state.attributes.get("entity_picture") is None
+    assert state.state != "unavailable"
+
+
+@pytest.mark.asyncio
+async def test_user_override_applies_when_no_automatic_logo_sources(
+    hass, enable_custom_integrations, coordinator_client, frozen_applicable_date
+) -> None:
+    override = "https://example.com/fallback-school.png"
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=CENTENNIAL_ROSWELL_ID,
+        data={
+            "school_id": CENTENNIAL_ROSWELL_ID,
+            "canonical_url": CENTENNIAL_ROSWELL_URL,
+            "name": "Centennial",
+        },
+        options={
+            "subscriptions": [FOOTBALL_SUBSCRIPTION],
+            CONF_SCHOOL_LOGO_OVERRIDE: override,
+        },
+    )
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    coordinator = entry.runtime_data
+    stripped_programs = []
+    for program in coordinator.data.programs:
+        stripped_terms = []
+        for term in program.terms:
+            if term.schedule is None:
+                stripped_terms.append(term)
+                continue
+            team_season = term.schedule.team_season
+            stripped_terms.append(
+                TermSnapshot(
+                    team_season=term.team_season,
+                    schedule=Schedule(team_season=team_season, games=term.schedule.games),
+                    status=term.status,
+                    error_type=term.error_type,
+                    error_message=term.error_message,
+                    last_success_at=term.last_success_at,
+                )
+            )
+        stripped_programs.append(
+            ProgramSnapshot(
+                sport=program.sport,
+                gender=program.gender,
+                level=program.level,
+                resolution_status=program.resolution_status,
+                terms=tuple(stripped_terms),
+            )
+        )
+    coordinator.data = coordinator.data.__class__(
+        school=coordinator.data.school.__class__(
+            school_id=coordinator.data.school.school_id,
+            canonical_url=coordinator.data.school.canonical_url,
+            name=coordinator.data.school.name,
+        ),
+        applicable_school_year=coordinator.data.applicable_school_year,
+        programs=tuple(stripped_programs),
+        refreshed_at=coordinator.data.refreshed_at,
+    )
+    coordinator.async_update_listeners()
+    await hass.async_block_till_done()
+
+    state = _state_for_unique_id(
+        hass,
+        entry,
+        f"{CENTENNIAL_ROSWELL_ID}:Boys:Varsity:Football",
+    )
+    assert state.attributes.get("entity_picture") == override
+    assert state.state != "unavailable"
+
+
+@pytest.mark.asyncio
+async def test_football_game_attributes_include_opponent_logo(three_program_entry, hass) -> None:
+    state = _state_for_unique_id(
+        hass,
+        three_program_entry,
+        f"{CENTENNIAL_ROSWELL_ID}:Boys:Varsity:Football",
+    )
+    next_game = state.attributes["next_game"]
+    assert next_game["opponent_name"] == "Alpharetta"
+    assert next_game["opponent_logo"].startswith("https://")
+    assert "6b615161-19a6-4148-aa21-ce63ffd5a68f" in next_game["opponent_logo"]
+
+
+def test_game_attribute_includes_opponent_logo_when_present() -> None:
+    from custom_components.maxpreps.program_sensor import ProgramGameRef
+
+    game = Game(
+        id="g1",
+        date=datetime(2026, 1, 1),
+        status=GameStatus.SCHEDULED,
+        team_name="Centennial",
+        opponent_name="Alpharetta",
+        home_away=HomeAway.HOME,
+        opponent_logo="https://example.com/opponent.gif",
+    )
+    data = game_attribute(ProgramGameRef(game=game, season="Fall"))
+    assert data["opponent_logo"] == "https://example.com/opponent.gif"

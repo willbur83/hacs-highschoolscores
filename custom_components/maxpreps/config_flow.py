@@ -24,6 +24,7 @@ from custom_components.maxpreps.const import (
     CONF_QUERY,
     CONF_SCHOOL,
     CONF_SCHOOL_ID,
+    CONF_SCHOOL_LOGO_OVERRIDE,
     CONF_SPORT,
     CONF_STATE,
     CONF_SUBSCRIPTIONS,
@@ -32,6 +33,7 @@ from custom_components.maxpreps.const import (
 from custom_components.maxpreps.exceptions import MaxPrepsError
 from custom_components.maxpreps.models import School, TeamSeason
 from custom_components.maxpreps.programs import SchoolYearProgram, group_school_year_programs
+from custom_components.maxpreps.school_logo import validate_school_logo_override
 from custom_components.maxpreps.school_year import applicable_school_year
 from custom_components.maxpreps import school_year
 from custom_components.maxpreps.selection import team_seasons_for_applicable_year
@@ -121,6 +123,17 @@ def _subscriptions_from_selected_keys(
             }
         )
     return subscriptions, None
+
+
+def _options_payload(
+    subscriptions: list[dict[str, str]],
+    school_logo_override: str,
+) -> dict[str, Any]:
+    """Build full options mapping for ``async_create_entry`` (replaces entry options)."""
+    payload: dict[str, Any] = {CONF_SUBSCRIPTIONS: subscriptions}
+    if school_logo_override:
+        payload[CONF_SCHOOL_LOGO_OVERRIDE] = school_logo_override
+    return payload
 
 
 def _config_flow_programs(
@@ -345,9 +358,16 @@ class MaxPrepsOptionsFlow(OptionsFlowWithReload):
                 if error is not None:
                     errors[CONF_SUBSCRIPTIONS] = error
                 elif subscriptions is not None:
-                    return self.async_create_entry(
-                        data={CONF_SUBSCRIPTIONS: subscriptions},
-                    )
+                    raw_logo = user_input.get(CONF_SCHOOL_LOGO_OVERRIDE, "")
+                    if raw_logo is None:
+                        raw_logo = ""
+                    validated_logo = validate_school_logo_override(str(raw_logo))
+                    if validated_logo is None:
+                        errors[CONF_SCHOOL_LOGO_OVERRIDE] = "invalid_logo"
+                    else:
+                        return self.async_create_entry(
+                            data=_options_payload(subscriptions, validated_logo),
+                        )
 
         try:
             school = school_from_entry(entry)
@@ -369,7 +389,8 @@ class MaxPrepsOptionsFlow(OptionsFlowWithReload):
         suggested = {
             CONF_SUBSCRIPTIONS: [
                 _subscription_key_from_dict(subscription) for subscription in configured
-            ]
+            ],
+            CONF_SCHOOL_LOGO_OVERRIDE: entry.options.get(CONF_SCHOOL_LOGO_OVERRIDE, ""),
         }
 
         return self.async_show_form(
@@ -383,6 +404,9 @@ class MaxPrepsOptionsFlow(OptionsFlowWithReload):
                                 mode=selector.SelectSelectorMode.LIST,
                                 multiple=True,
                             )
+                        ),
+                        vol.Optional(CONF_SCHOOL_LOGO_OVERRIDE): selector.TextSelector(
+                            selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)
                         ),
                     }
                 ),

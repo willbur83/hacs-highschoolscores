@@ -12,6 +12,11 @@ ST_EDWARD = "st-edward"
 
 CENTENNIAL_ROSWELL_ID = "52dea55b-3988-4979-b5fd-20376058997f"
 CENTENNIAL_ROSWELL_URL = "https://www.maxpreps.com/ga/roswell/centennial-knights/"
+CENTENNIAL_ROSWELL_MASCOT_URL = (
+    "https://image.maxpreps.io/school-mascot/5/2/d/"
+    "52dea55b-3988-4979-b5fd-20376058997f.gif"
+    "?version=638883757819641160&width=1024&height=1024"
+)
 BAINBRIDGE_GA_ID = "cc2897b8-106d-45b3-a9cf-5e2aca708668"
 BAINBRIDGE_GA_URL = "https://www.maxpreps.com/ga/bainbridge/bainbridge-bearcats/"
 PIKE_COUNTY_GA_ID = "84dd878e-671b-40d4-83de-e73ab301f92e"
@@ -61,7 +66,7 @@ def test_parse_centennial_roswell_row():
     assert target.state == "GA"
     assert target.mascot == "Knights"
     assert target.zip == "30076-3417"
-    assert target.mascot_url is not None
+    assert target.mascot_url == CENTENNIAL_ROSWELL_MASCOT_URL
 
 
 def test_parse_bainbridge_fixture():

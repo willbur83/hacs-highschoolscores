@@ -77,6 +77,7 @@ class Game:
     venue: str | None = None
     game_url: str | None = None
     status_message: str | None = None
+    opponent_logo: str | None = None
 
 
 @dataclass(frozen=True, slots=True)

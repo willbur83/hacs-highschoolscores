@@ -36,6 +36,7 @@ CONF_MASCOT_URL = "mascot_url"
 
 # Config entry options keys (mutable subscriptions).
 CONF_SUBSCRIPTIONS = "subscriptions"
+CONF_SCHOOL_LOGO_OVERRIDE = "school_logo_override"
 CONF_SPORT = "sport"
 CONF_GENDER = "gender"
 CONF_LEVEL = "level"
