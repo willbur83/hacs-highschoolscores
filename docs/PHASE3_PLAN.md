@@ -1208,3 +1208,29 @@ Slice 6 notes above are historical. Owner confirmed going forward:
 | HA (`homeassistant==2026.9.0`, Python 3.14, `pytest-homeassistant-custom-component==0.13.362`, two-step install) | options + sensor + coordinator + config_flow suite | green |
 
 **PRODUCT drift check:** None. `PRODUCT.md` untouched.
+
+## Slice 8
+
+**Goal:** Prove two school config entries run independently — two devices, two coordinators, non-colliding football entity unique IDs despite shared MaxPreps `sport_season_id`; unloading one entry does not disturb the other.
+
+**Delivered**
+
+- `tests/helpers/coordinator_test_helpers.py`: `bainbridge_entry()` helper alongside existing `centennial_entry()`.
+- `tests/test_multi_school.py`: Centennial + Bainbridge Boys Varsity Football fixtures; `MultiSchoolTestTransport` with optional per-school-home failure; six tests covering dual setup, shared `sport_season_id`, coordinator isolation, bidirectional unload isolation, and cross-entry school-home failure isolation.
+
+**Decisions**
+
+- No new config-flow wizard or runtime changes; existing one-entry-per-school model (`unique_id = school_id`, `DeviceInfo.identifiers = {(DOMAIN, school_id)}`, `entry.runtime_data` coordinator) is the product behavior under test.
+- Football unique IDs use fixture constants: `{CENTENNIAL_ROSWELL_ID}:Boys:Varsity:Football` and `{BAINBRIDGE_GA_ID}:Boys:Varsity:Football`; shared `FOOTBALL_SPORT_SEASON_ID` on both programs does not collapse IDs because `school_id` is in the formula.
+- Add each config entry to hass and `async_setup` sequentially (not both `add_to_hass` then both setup) to avoid `OperationNotAllowed` on HA 2026.9.
+- Duplicate Centennial still aborts `already_configured` (existing `test_config_flow.py`); no second entry for the same `school_id`.
+
+**Tests**
+
+| Layer | Command | Result |
+|-------|---------|--------|
+| Client (`[dev]`, Python 3.12) | `pip install -e ".[dev]" && pytest` | 172 passed, 7 skipped |
+| Client demo | `python scripts/demo_client.py --fixtures` | OK |
+| HA (`homeassistant==2026.9.0`, Python 3.14, `pytest-homeassistant-custom-component==0.13.362`, two-step install) | config_flow + options + sensor + coordinator + multi_school suite | 69 passed |
+
+**PRODUCT drift check:** None. `PRODUCT.md` untouched.

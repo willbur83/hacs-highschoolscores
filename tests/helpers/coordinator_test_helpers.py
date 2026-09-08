@@ -13,7 +13,12 @@ from custom_components.maxpreps.const import (
     CONF_SUBSCRIPTIONS,
     DOMAIN,
 )
-from tests.test_search import CENTENNIAL_ROSWELL_ID, CENTENNIAL_ROSWELL_URL
+from tests.test_search import (
+    BAINBRIDGE_GA_ID,
+    BAINBRIDGE_GA_URL,
+    CENTENNIAL_ROSWELL_ID,
+    CENTENNIAL_ROSWELL_URL,
+)
 
 FROZEN_APPLICABLE_DATE = date(2026, 9, 2)
 
@@ -26,6 +31,19 @@ def centennial_entry(subscriptions: list[dict[str, str]]) -> MockConfigEntry:
             CONF_SCHOOL_ID: CENTENNIAL_ROSWELL_ID,
             CONF_CANONICAL_URL: CENTENNIAL_ROSWELL_URL,
             CONF_NAME: "Centennial",
+        },
+        options={CONF_SUBSCRIPTIONS: subscriptions},
+    )
+
+
+def bainbridge_entry(subscriptions: list[dict[str, str]]) -> MockConfigEntry:
+    return MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=BAINBRIDGE_GA_ID,
+        data={
+            CONF_SCHOOL_ID: BAINBRIDGE_GA_ID,
+            CONF_CANONICAL_URL: BAINBRIDGE_GA_URL,
+            CONF_NAME: "Bainbridge",
         },
         options={CONF_SUBSCRIPTIONS: subscriptions},
     )
