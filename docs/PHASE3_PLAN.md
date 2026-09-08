@@ -1283,3 +1283,41 @@ Override always wins over automatic sources when set.
 | HA (`homeassistant==2026.9.0`, Python 3.14.6 Docker, `pytest-homeassistant-custom-component==0.13.362`, two-step install) | manifest + init + ha_transport + config_flow + programs + coordinator + sensor + options + multi_school | 80 passed |
 
 **PRODUCT drift check:** None. `PRODUCT.md` untouched.
+
+## Slice 10
+
+**Goal:** Prove graceful degradation on a live config entry (not only coordinator unit helpers): school-home vs one-schedule failures, empty `contests[]`, reload, unload, last-good retention — extending Slice 5’s `UpdateFailed` vs per-term `STALE`/`ERROR` model without a second failure architecture.
+
+**Delivered**
+
+- `tests/test_failure.py`: six Layer-2 integration tests covering school-home `NextDataNotFoundError` (malformed HTML without `__NEXT_DATA__`), HTTP 429 per-term isolation, empty `contests[]` as valid zero-game refresh, config-entry reload unique-ID stability, unload → `NOT_LOADED` → re-setup, and retained football sensor state/attributes after post-success school-home `UpdateFailed`.
+- `tests/test_coordinator.py`: extended `CoordinatorTestTransport` with `school_home_no_next_data` (returns HTML without `__NEXT_DATA__`) and `http_429_urls` (`TransportHttpError` status 429).
+
+**New vs already in Slice 5**
+
+| Case | Slice 5 | Slice 10 |
+|------|---------|----------|
+| School-home failure retains `coordinator.data` | `test_school_home_failure_after_success_raises_update_failed_retains_data` (generic `MaxPrepsError`) | `NextDataNotFoundError` variant + live entry + football sensor `native_value` / `last_game` / `next_game` retained |
+| First-setup school-home failure → `ConfigEntryNotReady` | generic `MaxPrepsError` | `NextDataNotFoundError` variant |
+| One schedule `ContestSchemaError` isolation | coordinator + sensor tests | unchanged; 429 isolation added at entry layer |
+| STALE last-good on refresh failure | coordinator test | 429 uses same `MaxPrepsError` → `STALE` path in `_refresh_term` |
+| Empty `contests[]` | transport helper `build_minimal_schedule_page_props` existed | explicit entry test: term `REFRESHED`, 0 games, sensor `unknown`, sibling football unaffected |
+| Reload / unload | `test_init` unload smoke; Slice 8 multi-school unload isolation | reload keeps unique IDs; unload → `NOT_LOADED`, re-setup works, sibling school untouched |
+
+No coordinator, sensor, or `__init__.py` code changes — Slice 5/6 behavior already matched PRODUCT §19; Slice 10 adds regression proof at the config-entry boundary.
+
+**Empty contests treatment:** `contests: []` in schedule pageProps parses to a valid `Schedule` with zero games. Term status `REFRESHED`, `last_success_at` updated, `program_native_value` → `unknown`, no `last_game`/`next_game` attributes, sensor available.
+
+**429 isolation:** `TransportHttpError` (subclass of `MaxPrepsError`) on one freshman-baseball term URL → that term `STALE` with prior schedule when last-good exists, `error_type=TransportHttpError`; sibling term and football refresh independently; no transport retries.
+
+**Reload / unload:** `async_reload(entry_id)` → `LOADED`, same entity-registry `unique_id` and `entity_id` set, no duplicate registry rows. `async_unload(entry_id)` → `NOT_LOADED`, sensor platform unloaded (entity state `unavailable`); second loaded school entry and coordinator snapshot unchanged; `async_setup` after unload succeeds.
+
+**Tests**
+
+| Layer | Command | Result |
+|-------|---------|--------|
+| Client (`[dev]`, Python 3.12) | `pip install -e ".[dev]" && pytest` | 179 passed, 8 skipped |
+| Client demo | `python scripts/demo_client.py --fixtures` | OK |
+| HA (`homeassistant==2026.9.0`, Python 3.14.6 Docker, `pytest-homeassistant-custom-component==0.13.362`, two-step install) | manifest + init + ha_transport + config_flow + programs + coordinator + sensor + options + multi_school + failure | 86 passed |
+
+**PRODUCT drift check:** None. `PRODUCT.md` untouched.

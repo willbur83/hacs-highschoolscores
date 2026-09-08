@@ -25,7 +25,11 @@ from custom_components.maxpreps.coordinator import (
     ProgramResolutionStatus,
     TermRefreshStatus,
 )
-from custom_components.maxpreps.exceptions import ContestSchemaError, MaxPrepsError
+from custom_components.maxpreps.exceptions import (
+    ContestSchemaError,
+    MaxPrepsError,
+    TransportHttpError,
+)
 from custom_components.maxpreps.models import TeamSeason
 from custom_components.maxpreps.parsing.sport_seasons import parse_sport_seasons
 from custom_components.maxpreps.urls import build_schedule_url
@@ -84,6 +88,11 @@ def _freshman_baseball_fall() -> TeamSeason:
     raise AssertionError("freshman baseball fall row not found")
 
 
+SCHOOL_HOME_NO_NEXT_DATA_HTML = (
+    "<!DOCTYPE html><html><head><title>broken</title></head><body></body></html>"
+)
+
+
 class CoordinatorTestTransport:
     """Fixture transport with freshman baseball schedule mappings and optional failures."""
 
@@ -91,11 +100,15 @@ class CoordinatorTestTransport:
         self,
         *,
         fail_urls: frozenset[str] = frozenset(),
+        http_429_urls: frozenset[str] = frozenset(),
         school_home_fail: bool = False,
+        school_home_no_next_data: bool = False,
     ) -> None:
         self._base = AsyncFixtureTransport()
         self._fail_urls = fail_urls
+        self._http_429_urls = http_429_urls
         self._school_home_fail = school_home_fail
+        self._school_home_no_next_data = school_home_no_next_data
         self._extra_html: dict[str, str] = {}
         self._register_freshman_baseball_schedules()
 
@@ -114,8 +127,15 @@ class CoordinatorTestTransport:
         return self._base.requested_urls
 
     async def fetch(self, url: str) -> str:
+        if self._school_home_no_next_data and url == CENTENNIAL_ROSWELL_URL:
+            return SCHOOL_HOME_NO_NEXT_DATA_HTML
         if self._school_home_fail and url == CENTENNIAL_ROSWELL_URL:
             raise MaxPrepsError("simulated school-home failure")
+        if url in self._http_429_urls:
+            raise TransportHttpError(
+                f"HTTP 429 fetching MaxPreps page: {url}",
+                status_code=429,
+            )
         if url in self._fail_urls:
             raise ContestSchemaError(f"simulated schedule failure for {url}")
         if url in self._extra_html:
