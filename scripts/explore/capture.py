@@ -19,6 +19,7 @@ import json
 import re
 import sys
 import time
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
@@ -95,42 +96,26 @@ def _filter_headers(headers, deny: frozenset[str]) -> dict[str, str]:
     }
 
 
-def _fetch_with_urllib(url: str) -> tuple[int, dict[str, str], bytes]:
-    """GET *url* using stdlib when httpx is unavailable."""
-    import urllib.error
-    import urllib.request
+@dataclass(frozen=True)
+class FetchResult:
+    """Single GET response from ``fetch_url`` (no caching)."""
 
-    req = urllib.request.Request(
-        url,
-        headers={"User-Agent": "hacs-highschoolscores-explore/0.1"},
-        method="GET",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            status_code = resp.status
-            response_headers = {k: v for k, v in resp.headers.items()}
-            content = resp.read()
-    except urllib.error.HTTPError as exc:
-        status_code = exc.code
-        response_headers = {k: v for k, v in exc.headers.items()}
-        content = exc.read()
-    return status_code, response_headers, content
+    status_code: int
+    content: bytes
+    content_type: str | None
+    request_headers: dict[str, str]
+    response_headers: dict[str, str]
 
 
-def capture(
+def fetch_url(
     url: str,
     *,
-    slice_id: str = "",
-    notes: str = "",
     client: httpx.Client | None = None,
-) -> dict:
-    """GET *url*, cache raw bytes, return sanitized capture metadata."""
-    raw_path, meta_path = _cache_paths(url)
-
-    if meta_path.exists() and raw_path.exists():
-        return json.loads(meta_path.read_text(encoding="utf-8"))
-
-    time.sleep(MIN_REQUEST_INTERVAL_S)
+    rate_limit: bool = True,
+) -> FetchResult:
+    """GET *url* with optional rate limiting; does not read or write the private cache."""
+    if rate_limit:
+        time.sleep(MIN_REQUEST_INTERVAL_S)
 
     if client is not None:
         response = client.get(url)
@@ -168,6 +153,57 @@ def capture(
         response_headers = _filter_headers(
             raw_response_headers, _SENSITIVE_RESPONSE_HEADERS
         )
+
+    return FetchResult(
+        status_code=status_code,
+        content=content,
+        content_type=content_type,
+        request_headers=request_headers,
+        response_headers=response_headers,
+    )
+
+
+def _fetch_with_urllib(url: str) -> tuple[int, dict[str, str], bytes]:
+    """GET *url* using stdlib when httpx is unavailable."""
+    import urllib.error
+    import urllib.request
+
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": "hacs-highschoolscores-explore/0.1"},
+        method="GET",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            status_code = resp.status
+            response_headers = {k: v for k, v in resp.headers.items()}
+            content = resp.read()
+    except urllib.error.HTTPError as exc:
+        status_code = exc.code
+        response_headers = {k: v for k, v in exc.headers.items()}
+        content = exc.read()
+    return status_code, response_headers, content
+
+
+def capture(
+    url: str,
+    *,
+    slice_id: str = "",
+    notes: str = "",
+    client: httpx.Client | None = None,
+) -> dict:
+    """GET *url*, cache raw bytes, return sanitized capture metadata."""
+    raw_path, meta_path = _cache_paths(url)
+
+    if meta_path.exists() and raw_path.exists():
+        return json.loads(meta_path.read_text(encoding="utf-8"))
+
+    fetch = fetch_url(url, client=client, rate_limit=True)
+    status_code = fetch.status_code
+    content = fetch.content
+    content_type = fetch.content_type
+    request_headers = fetch.request_headers
+    response_headers = fetch.response_headers
 
     raw_path.parent.mkdir(parents=True, exist_ok=True)
     raw_path.write_bytes(content)

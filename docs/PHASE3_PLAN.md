@@ -1354,3 +1354,31 @@ No coordinator, sensor, or `__init__.py` code changes — Slice 5/6 behavior alr
 | HA (`homeassistant==2026.9.0`, Python 3.14.6 Docker, `pytest-homeassistant-custom-component==0.13.362`, two-step install) | manifest + init + ha_transport + config_flow + programs + coordinator + sensor + options + multi_school + failure + rollover | 93 passed |
 
 **PRODUCT drift check:** None. `PRODUCT.md` untouched; behavior matches PRODUCT §27 H (keep prior data until new year publishes; daily-until-published acceptable).
+
+## Slice 12
+
+**Goal:** Owner-run Spike H game-day observation script — research-only polling on a bounded window, not production coordinator polling.
+
+**Delivered**
+
+- `scripts/explore/observe_gameday.py`: gated live observation loop (`--i-approve-live-observation` required); explicit `--target` / `--url`, timezone-aware `--start` / `--end`, `--interval` 300–600s; JSONL under `captures/private/observe_gameday/`; stops entire run on HTTP 403/429; records raw `contest_state`, naive `provider_datetime`, scores/`has_result`, and `featured_game` disagreement fields without derived kickoff-latency.
+- `scripts/explore/capture.py`: `FetchResult` + importable `fetch_url()` (rate limit preserved); CLI `capture()` behavior unchanged.
+- `tests/test_observe_gameday.py`: fixture-only tests (approval gate, config validation, 403/429 stop, synthetic schedule parse, mocked clock/sleep).
+
+**Preset targets (off by default):** `centennial`, `bainbridge`, `pike`, `st_edward`, optional non-Eastern `pensacola` — documented in `--help`; none polled without explicit `--target` or `--url`.
+
+**Approval gate:** Without `--i-approve-live-observation` the script exits non-zero and performs zero HTTP.
+
+**Coordinator:** Unchanged — `UPDATE_INTERVAL` (12h) and `ROLLOVER_UPDATE_INTERVAL` (1 day) not modified; observation is not wired into `MaxPrepsDataUpdateCoordinator`, sensors, or config flow.
+
+**Live run in this pass:** Not performed (no owner-approved school list + window in chat).
+
+**Tests**
+
+| Layer | Command | Result |
+|-------|---------|--------|
+| Client (`[dev]`, Python 3.12) | `pip install -e ".[dev]" && pytest` | 189 passed, 9 skipped |
+| Client demo | `python scripts/demo_client.py --fixtures` | OK |
+| HA (`homeassistant==2026.9.0`, Python 3.14.6 Docker, `pytest-homeassistant-custom-component==0.13.362`, two-step install) | manifest + init + ha_transport + config_flow + programs + coordinator + sensor + options + multi_school + failure + rollover | 93 passed |
+
+**PRODUCT drift check:** None. `PRODUCT.md` untouched; live scores remain undocumented as guaranteed (Spike H exit criterion).
