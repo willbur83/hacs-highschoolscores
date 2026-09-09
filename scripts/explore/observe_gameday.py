@@ -8,7 +8,7 @@ Home Assistant.
 
 Example (requires explicit approval and bounded window):
 
-    python scripts/explore/observe_gameday.py \\
+    python3 scripts/explore/observe_gameday.py \\
         --i-approve-live-observation \\
         --target centennial \\
         --start 2026-09-12T18:00:00-04:00 \\
