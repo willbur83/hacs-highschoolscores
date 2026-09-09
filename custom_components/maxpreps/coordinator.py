@@ -3,10 +3,8 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
 from datetime import datetime
-from enum import StrEnum
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
@@ -29,9 +27,16 @@ from custom_components.maxpreps.const import (
     UPDATE_INTERVAL,
 )
 from custom_components.maxpreps.exceptions import MaxPrepsError
-from custom_components.maxpreps.models import Schedule, School, TeamSeason
+from custom_components.maxpreps.models import School, TeamSeason
 from custom_components.maxpreps.school_year import applicable_school_year
 from custom_components.maxpreps import school_year
+from custom_components.maxpreps.snapshots import (
+    MaxPrepsCoordinatorData,
+    ProgramResolutionStatus,
+    ProgramSnapshot,
+    TermRefreshStatus,
+    TermSnapshot,
+)
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -40,55 +45,6 @@ if TYPE_CHECKING:
     from custom_components.maxpreps.async_client import AsyncMaxPrepsClient
 
 _LOGGER = logging.getLogger(__name__)
-
-
-class TermRefreshStatus(StrEnum):
-    """Per-term schedule refresh outcome for the current coordinator cycle."""
-
-    REFRESHED = "refreshed"
-    STALE = "stale"
-    ERROR = "error"
-
-
-class ProgramResolutionStatus(StrEnum):
-    """Whether a subscription resolved to provider rows for the applicable year."""
-
-    RESOLVED = "resolved"
-    UNRESOLVED = "unresolved"
-    WAITING_FOR_APPLICABLE_YEAR = "waiting_for_applicable_year"
-
-
-@dataclass(frozen=True, slots=True)
-class TermSnapshot:
-    """One TeamSeason term within a subscribed program."""
-
-    team_season: TeamSeason | None
-    schedule: Schedule | None
-    status: TermRefreshStatus
-    error_type: str | None
-    error_message: str | None
-    last_success_at: datetime | None
-
-
-@dataclass(frozen=True, slots=True)
-class ProgramSnapshot:
-    """Coordinator snapshot for one subscribed ``{sport, gender, level}`` program."""
-
-    sport: str
-    gender: str
-    level: str
-    resolution_status: ProgramResolutionStatus
-    terms: tuple[TermSnapshot, ...]
-
-
-@dataclass(frozen=True, slots=True)
-class MaxPrepsCoordinatorData:
-    """Full coordinator snapshot for one school config entry."""
-
-    school: School
-    applicable_school_year: str
-    programs: tuple[ProgramSnapshot, ...]
-    refreshed_at: datetime
 
 
 def school_from_entry(entry: ConfigEntry) -> School:

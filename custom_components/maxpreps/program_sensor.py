@@ -5,10 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Iterator
 
-from custom_components.maxpreps.coordinator import (
-    ProgramResolutionStatus,
-    ProgramSnapshot,
-)
+from custom_components.maxpreps.snapshots import ProgramResolutionStatus, ProgramSnapshot
 from custom_components.maxpreps.models import Game, GameStatus
 
 

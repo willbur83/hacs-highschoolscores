@@ -42,7 +42,7 @@ Canonical Layer 2 command (fixture/mock transport only; zero live MaxPreps HTTP)
 pytest tests/test_manifest.py tests/test_init.py tests/test_ha_transport.py \
   tests/test_config_flow.py tests/test_programs.py tests/test_coordinator.py \
   tests/test_sensor.py tests/test_options_flow.py tests/test_multi_school.py \
-  tests/test_failure.py tests/test_rollover.py
+  tests/test_failure.py tests/test_rollover.py tests/test_websocket.py
 ```
 
 This is the command used in Phase 3 Implementation Notes. Individual file names document the current HA-dependent suites; new Layer 2 modules should be added to this invocation when they require `homeassistant`. When phacc catches up to stable, `pip install -e ".[ha]"` may work as a single command.
@@ -62,6 +62,7 @@ This is the command used in Phase 3 Implementation Notes. Individual file names 
 | `test_multi_school.py` | Multiple config entries, coordinator isolation, unload isolation |
 | `test_failure.py` | Entry-wide vs per-program failure, reload, last-good retention |
 | `test_rollover.py` | July 1 school-year rollover, daily-until-published interval, stable `unique_id` |
+| `test_websocket.py` | Registry-owned schedule websocket get/subscribe; missing-bundle setup is in `test_init.py` |
 
 Layer 1-only HA-adjacent tests (not in the Layer 2 command): `test_school_logo.py` (logo resolution helpers), `test_observe_gameday.py` (Spike H observation script gates).
 

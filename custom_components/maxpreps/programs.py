@@ -91,3 +91,8 @@ def _ordered_deduplicated_season_terms(seasons: list[str]) -> tuple[str, ...]:
         return (len(_CONVENTIONAL_TERM_ORDER), term.casefold())
 
     return tuple(sorted(unique, key=sort_key))
+
+
+def ordered_deduplicated_season_terms(seasons: list[str]) -> tuple[str, ...]:
+    """Return unique season names in conventional presentation order."""
+    return _ordered_deduplicated_season_terms(seasons)

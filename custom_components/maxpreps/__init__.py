@@ -15,6 +15,11 @@ __all__ = ["DOMAIN", "async_setup", "async_setup_entry", "async_unload_entry"]
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the MaxPreps integration."""
+    from custom_components.maxpreps.frontend_register import async_register_frontend
+    from custom_components.maxpreps.websocket import async_register_websocket_handlers
+
+    async_register_websocket_handlers(hass)
+    await async_register_frontend(hass)
     return True
 
 
