@@ -1,6 +1,8 @@
 # MaxPreps Research
 
-This document tracks feasibility research for retrieving public MaxPreps school sports data to inform [PRODUCT.md](PRODUCT.md). Home Assistant integration code (custom components, config flows, coordinators, entities, HACS metadata) is **out of scope** until this research phase is complete and the interim feasibility gate is passed.
+This document tracks empirical MaxPreps/provider research to inform [PRODUCT.md](PRODUCT.md). It is **not** a Home Assistant implementation log. Config flows, coordinators, entities, and HACS packaging belong in PRODUCT.md and [PHASE3_PLAN.md](PHASE3_PLAN.md).
+
+**Research-document status:** The Phase 1 feasibility research recorded below is **complete**. Slice-level notes that say “no production client” are historical (true at the time of that slice). Optional later observation tooling is noted at the end of this file (Spike H); it does not rewrite the slice findings.
 
 ## Test schools
 
@@ -2230,7 +2232,7 @@ Published text (paraphrased for index — see capture for verbatim):
 
 ---
 
-**Stopped after Slice 18.** Two live requests (robots.txt, terms-of-use). **No production client.** Research phase complete for PRODUCT.md §30.
+**Stopped after Slice 18.** Two live requests (robots.txt, terms-of-use). **No production client** (historical — true at the close of this research slice). Research phase complete for PRODUCT.md §30.
 
 ---
 
@@ -2253,3 +2255,11 @@ Published text (paraphrased for index — see capture for verbatim):
 **Pass/stop verdict:** **Pass.** Next.js `__NEXT_DATA__` with `contests[]` containing at least one row, row arity **41**, two participants width **32**. Baseball is the second-sport parser fixture. Later slices may use it. This does not reopen Slice 14/15 sports investigation and does not substitute basketball for baseball.
 
 `pageProps.query` was **absent** as a key (not `null`); envelope `query` was taken from `__NEXT_DATA__.query`, matching the football/volleyball fixture style. `buildId` in this capture is `7e0e0dba-22c4d787` with a trailing newline in the JSON blob (same class of artifact as the volleyball Slice 14 fixture).
+
+---
+
+## Later observation tooling (Spike H)
+
+Optional gated script `scripts/explore/observe_gameday.py` can collect additional live `contestState` / naive-datetime / score samples on an owner-approved window. It requires `--i-approve-live-observation`, writes under `captures/private/observe_gameday/`, and is **not** production Home Assistant polling. A live run is not recorded in the research slices above unless a future research addendum is written.
+
+This pointer does not change the Slice 01–18 findings, timezone policy, or live-score stance in this document.

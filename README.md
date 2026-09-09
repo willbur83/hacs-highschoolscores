@@ -4,7 +4,7 @@ A Home Assistant custom integration for exposing public high school sports sched
 
 ## Status
 
-**Phase 3 (code-complete; completion gate pending owner sandbox checks):** A functioning Home Assistant custom integration backed by the Phase 2 MaxPreps Python client. One config entry per school; options subscriptions are `{sport, gender, level}`; one sensor per subscribed program with `unique_id` `{school_id}:{gender}:{level}:{sport}`. Entities never fetch — a `DataUpdateCoordinator` drives all network I/O through an injectable async transport.
+**Phase 3 (complete; Layer 3 owner sandbox closed the completion gate on 2026-09-09):** A functioning Home Assistant custom integration backed by the Phase 2 MaxPreps Python client. One config entry per school; options subscriptions are `{sport, gender, level}`; one sensor per subscribed program with `unique_id` `{school_id}:{gender}:{level}:{sport}`. Entities never fetch — a `DataUpdateCoordinator` drives all network I/O through an injectable async transport.
 
 **Applicable school year** is July 1 through June 30 in Home Assistant’s configured local timezone (for example `2026-07-01`–`2027-06-30` → `26-27`). The Slice 1 modal-year helper is leftover research evidence, not the production year rule.
 

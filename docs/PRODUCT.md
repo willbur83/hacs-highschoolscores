@@ -1,6 +1,40 @@
 ## Product Requirements & Technical Direction
 
-### Draft v0.1
+**Document role:** Current product truth — resolved product decisions, future goals, and explicitly open questions. This is not a Phase 1 exploration draft and not a Phase 3 implementation log.
+
+**Status labels** used below:
+
+- **Current / Decided** — landed in Phase 2 (MaxPreps client) and/or Phase 3 (Home Assistant integration) and owner-approved.
+- **Future / Desired** — still a product goal; **not** implemented. Do not treat as shipped behavior.
+- **Open / TBD** — unresolved. Do not invent an answer during implementation.
+
+Phase 3 closed its completion gate on 2026-09-09 (Layer 3 owner sandbox). Historical implementation detail lives in [PHASE3_PLAN.md](PHASE3_PLAN.md). Empirical MaxPreps findings live in [MAXPREPS_RESEARCH.md](MAXPREPS_RESEARCH.md).
+
+### Current product snapshot (Phase 3)
+
+| Topic | Status | Landed behavior |
+|-------|--------|-----------------|
+| Config entry | **Current / Decided** | One config entry per school (`unique_id` = MaxPreps `school_id`). Duplicate school → abort. Multiple schools are independent entries. |
+| Subscription identity | **Current / Decided** | Persist `{sport, gender, level}` only. Not `sportSeasonId`, term, year, or team-season URL. |
+| Multi-term programs | **Current / Decided** | One program may resolve to multiple `TeamSeason` rows in the applicable school year (e.g. Freshman Baseball Fall + Spring). One subscription, one entity. |
+| Supported formats | **Current / Decided** | Evidence-based allowlist: **Football, Baseball, Basketball, Volleyball**. Unvalidated sports are omitted from the picker, not grayed out. |
+| School year | **Current / Decided** | July 1–June 30 in Home Assistant’s local timezone (`2026-07-01`–`2027-06-30` → `26-27`). Subscriptions survive rollover. Until the new year is published, retain last-good data and poll daily, then return to 12h. |
+| Device / entity | **Current / Decided** | Device = school. One sensor per subscribed program. Unique ID `{school_id}:{gender}:{level}:{sport}`. Entity name `{gender} {level} {sport}` (no term/year parenthetical). |
+| Compact entity state | **Current / Decided** (interim) | `scheduled` \| `final` \| `unknown` derived from last/next. **Open / TBD:** Q1 Team Tracker `PRE` / `IN` / `POST` / `OFF` — do **not** invent that mapping. |
+| last_game / next_game | **Current / Decided** | Both exposed as attributes when derivable, across all terms of the program. `last_game` = latest `final`; `next_game` = earliest `scheduled` (provider-naive datetime order; not compared to wall clock). |
+| Full schedule | **Current / Decided** | Source of truth is coordinator `programs[].terms[]` (`runtime_data`). Never serialize the full schedule into entity **state**. |
+| Logos | **Current / Decided** | Automatic school `entity_picture` (search `mascot_url`, else first `Schedule.team_logo`). Optional override: HTTPS URL or `/local/` path (override wins). Opponent logo is optional on last/next when the provider supplies it. Missing logos never fail scores. |
+| Polling | **Current / Decided** | ~12h normal coordinator interval; daily only while waiting for unpublished new-year schedules. Entities do not fetch. |
+| Failure / retention | **Current / Decided** | Entry-wide discovery failure retains last successful snapshot. One program (or one term) failing does not collapse the school or sibling sports. Last-good schedules are retained. |
+| Datetimes | **Current / Decided** | Provider `Game.date` is timezone-naive. Not school-local wall time; not offset-correct kickoff. Do not invent TZ correction. |
+| Live scores | **Current / Decided** | No live-score guarantee. Unknown `contestState` stays `unknown`. |
+| Multi-school | **Current / Decided** | Independent config entries, devices, and coordinators. Reload of one school does not disturb another. |
+| Custom Lovelace card | **Future / Desired** | Phase 4. Phase 3 exposes the data contract only. |
+| Adaptive / game-day polling | **Future / Desired** | Not implemented. Conservative 12h polling is current. |
+| Calendar entities | **Future / Desired** | Blocked by timezone-naive provider datetimes. |
+| HACS store listing | **Future / Desired** | Phase 5. Manual/custom-component install only today. |
+
+---
 
 ## 1. Product Summary
 
@@ -14,7 +48,9 @@ The primary product goal is:
 
 The integration should be as sport-agnostic as the MaxPreps data allows. Sport-specific behavior should only be introduced where actual MaxPreps data differences require it.
 
-Initial development should focus on understanding and normalizing MaxPreps data rather than prematurely defining a supported-sports list.
+**Current / Decided:** Phase 1 research and Phase 2 client work defined an evidence-based supported-format allowlist (Football, Baseball, Basketball, Volleyball). Adding another sport later requires fixture/parser evidence, not a product redesign.
+
+**Future / Desired:** Keep the same generic schedule/result pipeline as more sports are validated. Do not treat the current allowlist as a permanent sport ceiling.
 
 ---
 
@@ -73,9 +109,9 @@ Johns Creek 18
 W
 ```
 
-The integration itself does not necessarily need to ship a custom Lovelace card in the first release. It must expose data in a way that supports a polished dashboard card using native or existing Home Assistant frontend components.
+**Current / Decided:** Program sensors expose compact state plus `last_game` / `next_game` attributes (and school `entity_picture`) so native or existing Home Assistant cards can show a current/next game without a custom frontend.
 
-A custom dashboard card may be considered later if necessary.
+**Future / Desired:** A polished Team Tracker-style Lovelace card (project Phase 4). The integration itself does not ship a custom card today. The `PRE` / `FINAL` prose in the examples above is illustrative dashboard copy, **not** the current entity state vocabulary (see §5 and Q1).
 
 ---
 
@@ -101,9 +137,11 @@ Possible implementations include:
 - A future custom card with expandable schedule support
     
 
-The exact frontend implementation is TBD.
+**Current / Decided:** Full school-year schedule/result data lives on the coordinator contract `programs[].terms[]` (one term = one `TeamSeason` + schedule). Entity **state** is compact and does not contain the schedule list.
 
-The integration should provide sufficient structured schedule data to support any of these approaches.
+**Future / Desired:** more-info, a dedicated subview, or a custom card that reads that coordinator contract.
+
+The exact frontend implementation is **Open / TBD**. Calendar entities are **Future / Desired** and are blocked by timezone-naive provider datetimes — do not treat calendar support as shipped.
 
 ---
 
@@ -123,7 +161,7 @@ Sep 11  @ South Forsyth  7:30 PM
 ...
 ```
 
-The data model should not assume the "current game card" is the only presentation.
+The data model should not assume the "current game card" is the only presentation. A schedule-only dashboard can consume `programs[].terms[]` (and last/next attributes) without a custom card.
 
 ---
 
@@ -150,13 +188,9 @@ Examples:
 
 The integration should favor ordinary Home Assistant state and attribute changes rather than requiring custom automation APIs.
 
-A custom event such as:
+**Current / Decided:** Automations can trigger on compact state (`scheduled` / `final` / `unknown`) and on `last_game` / `next_game` attribute changes after a coordinator refresh. Provider datetimes are timezone-naive, so “30 minutes before kickoff” is **not** a guaranteed absolute-time automation.
 
-```
-maxpreps_game_final
-```
-
-may eventually be useful, but is not required for the initial version if normal entity state transitions provide the same functionality.
+**Future / Desired:** A custom event such as `maxpreps_game_final` may eventually be useful, but is not required while normal entity state/attribute transitions provide the same functionality. Adaptive polling to detect finals sooner is also **Future / Desired** (see §12).
 
 ---
 
@@ -164,7 +198,9 @@ may eventually be useful, but is not required for the initial version if normal 
 
 ## 3.1 Distribution
 
-Initial distribution:
+**Current / Decided:** Public GitHub repository (`willbur83/hacs-highschoolscores`). The integration is a Home Assistant custom component configured entirely through the UI. No YAML is required.
+
+**Future / Desired:**
 
 ```
 GitHub public repository
@@ -174,17 +210,17 @@ HACS custom repository
 HACS default repository/listing if accepted
 ```
 
-Long-term Home Assistant Core inclusion is not an initial goal.
+HACS packaging and store listing are Phase 5. Long-term Home Assistant Core inclusion is not an initial goal.
 
 The integration should behave like a normal Home Assistant integration after installation.
-
-No YAML should be required for normal configuration.
 
 ---
 
 ## 3.2 Configuration Flow
 
 Configuration should be school-first.
+
+**Current / Decided:** One **Add Integration** action creates one config entry for one school. The user then subscribes that school to one or more allowlisted programs. Additional schools are additional Add Integration runs (independent entries). Duplicate `school_id` is rejected.
 
 Desired user experience:
 
@@ -199,26 +235,13 @@ Then:
 
 ### Step 1: Find School
 
-User searches using information such as:
+**Current / Decided:** The user searches with a **short school name** (for example `Centennial`), then picks from disambiguated results. Qualified strings such as `"Centennial High School, Roswell GA"` or `"High School"` often return empty on MaxPreps and are **not** the intended query.
 
-```
-Centennial
-```
-
-Potential additional inputs if needed:
-
-- City
-    
-- State
-    
-- ZIP code
-    
-
-Results should clearly disambiguate schools.
+Potential additional city / state / ZIP filter fields are **Future / Desired** — not shipped. Disambiguation is the result picker.
 
 The Home Assistant school picker should show each result approximately as **`School Name | City, State`**, with an optional mascot when present (for example `Centennial | Roswell, GA · Knights`). When MaxPreps omits city or state, the picker degrades gracefully (state-only, city-only, or “Location unavailable”) rather than dropping the school or failing the search.
 
-Example:
+Example result row:
 
 ```
 Centennial High School
@@ -227,27 +250,15 @@ Roswell, Georgia
 
 ### Step 2: Discover Teams
 
-After selecting the school, the integration should retrieve the teams/sports MaxPreps exposes for that school.
+After selecting the school, the integration lists **allowlisted** programs that have at least one MaxPreps `sportSeasons[]` row for the applicable school year.
 
-Example:
-
-```
-Varsity Football
-JV Football
-Boys Varsity Basketball
-Girls Varsity Basketball
-Varsity Baseball
-Varsity Softball
-Boys Varsity Soccer
-Girls Varsity Soccer
-...
-```
+**Current / Decided:** Football, Baseball, Basketball, Volleyball only. Unvalidated sports (soccer, softball, tennis, golf, track, …) are omitted, not shown disabled.
 
 ### Step 3: Select Teams
 
-User may select one or more teams.
+User may select one or more **programs**. Separate setup flows per program are not required.
 
-The integration should not require separate setup flows for each selected team unless Home Assistant architecture strongly favors that implementation.
+**Current / Decided:** Sports are added or removed later through the options flow (`OptionsFlowWithReload`), not YAML or manual entity edits.
 
 ### Subscriptions are school-year programs (decided 2026-09-02)
 
@@ -283,142 +294,133 @@ Supported sports in the picker remain the evidence-based head-to-head allowlist;
 
 ## 4.1 School as Device
 
-Preferred conceptual model:
+**Current / Decided:**
 
 ```
 Device:
 Centennial High School
 ```
 
-The device represents the physical school/program.
+The device represents the school (`DeviceInfo.identifiers = {(domain, school_id)}`). `configuration_url` is the school’s MaxPreps `canonical_url`.
 
-Selected sports/teams become entities associated with that device.
-
-Example:
+Selected **programs** become sensors on that device. Example (allowlisted programs only):
 
 ```
 Centennial High School
 
-sensor.centennial_varsity_football
-sensor.centennial_varsity_baseball
-sensor.centennial_varsity_softball
+sensor.centennial_boys_varsity_football
+sensor.centennial_boys_varsity_baseball
+sensor.centennial_boys_freshman_baseball
 ```
 
-This is preferred over creating a separate Home Assistant device for every team.
-
-This decision should be validated against Home Assistant entity/device best practices during implementation.
+One Home Assistant device per school, not per team or per MaxPreps term. Multi-term programs (Fall + Spring) are still **one** sensor. Entity unique ID is `{school_id}:{gender}:{level}:{sport}` and is stable across school-year rollover.
 
 ---
 
 # 5. Team Entity
 
-Each selected team should expose a primary entity representing the most contextually relevant game.
+Each selected program exposes a primary sensor.
 
 Example:
 
 ```
-sensor.centennial_varsity_football
+sensor.centennial_boys_varsity_football
 ```
 
-## 5.1 Relevant Game Selection
+## 5.1 Compact state and last / next games
 
-The integration should determine a "relevant game" based on time and game status.
-
-Possible states:
+**Current / Decided (interim — Q1 still open):** Entity **state** is compact provider vocabulary only:
 
 ```
-PRE
-IN
-POST
-OFF
-UNKNOWN
+scheduled
+final
+unknown
 ```
 
-Exact state terminology is TBD.
+Derivation:
 
-Desired behavior conceptually mirrors Team Tracker:
+- If `next_game` exists → `scheduled`
+- Else if `last_game` exists → `final`
+- Else → `unknown`
 
-### PRE
+`last_game` and `next_game` are **both** attributes when derivable (across all terms of the program). Phase 4 must not depend on a single “relevant game” state. Deleted contests are excluded from last/next. Compact state does **not** use `deleted`.
+
+`last_game` / `next_game` ordering uses provider-naive datetimes only (not compared to Home Assistant wall clock). That is a display heuristic, not timezone-correct scheduling.
+
+**Open / TBD (Q1):** Do **not** invent `PRE` / `IN` / `POST` / `OFF`. Those labels remain a Team Tracker-style sketch, not landed entity state. Owner disposition of Q1 is required before changing compact state.
+
+The sketch below is **Future / Desired** only, retained so Q1 is not silently discarded:
+
+### PRE (not implemented)
 
 Upcoming scheduled game.
 
-### IN
+### IN (not implemented)
 
 Game appears to be actively in progress.
 
 This state is dependent on whether MaxPreps provides sufficiently reliable live/in-progress information.
 
-Live tracking is not a core v1 requirement.
+Live tracking is not a core v1 requirement. **Current / Decided:** no live-score guarantee; unknown `contestState` stays `unknown`.
 
-### POST
+### POST (not implemented)
 
 Most recently completed game.
 
-The integration should remain in POST long enough for dashboards and automations to react.
+### OFF (not implemented)
 
-### OFF
+No relevant scheduled/current/recent game (out of season, schedule unavailable, or no upcoming game known).
 
-No relevant scheduled/current/recent game.
-
-This may occur:
-
-- out of season
-    
-- schedule unavailable
-    
-- no upcoming game known
-    
+Current compact `unknown` covers “nothing derivable,” which is **not** the same as a decided `OFF` mapping.
 
 ---
 
 # 6. Team Entity Attributes
 
-The primary team/game entity should expose normalized attributes where available.
-
-Proposed core attributes:
+**Current / Decided** attributes on the program sensor (omit when unsupported; missing data must not fail the entity):
 
 ```
-school_name:
-school_id:
-
-team_name:
-team_id:
-sport:
-level:
-gender:
-
-team_logo:
-team_record:
-
-opponent_name:
-opponent_id:
-opponent_logo:
-
-game_id:
-game_url:
-
-date:
-status:
-
-home_away:
-venue:
-location:
-
-team_score:
-opponent_score:
-result:
+school_id
+school_name
+sport
+gender
+level
+year                 # applicable school year (e.g. 26-27); not a MaxPreps term
+display_label        # "{gender} {level} {sport}" — no term/year parenthetical
+team_record          # omit if untrustworthy
+attribution
+last_game            # object when derivable
+next_game            # object when derivable
 ```
 
-Potential additional attributes:
+School logo is `entity_picture` on the sensor (not a required state attribute). Do not assume a single `season` string: a program may have multiple provider terms.
+
+`last_game` / `next_game` objects, when present, include:
 
 ```
-season:
-conference:
-region:
-rank:
-record:
-last_updated:
-source_url:
+id
+date                 # naive ISO string
+status
+opponent_name
+opponent_id          # optional
+home_away
+team_score           # optional
+opponent_score       # optional
+result               # optional
+venue                # optional
+game_url             # optional
+opponent_logo        # optional
+season               # optional MaxPreps term name of the source row
+```
+
+**Future / Desired** additional chrome (not required on the entity today):
+
+```
+team_name
+conference
+region
+rank
+source_url
 ```
 
 Attributes should only be populated when supported by MaxPreps data.
@@ -429,9 +431,38 @@ Missing data should not cause the entity to fail.
 
 # 7. Schedule Data
 
-The integration must expose full season schedule/result data.
+**Current / Decided:** The integration exposes full school-year schedule/result data on the coordinator:
 
-A normalized game object should look conceptually like:
+```
+MaxPrepsCoordinatorData.programs[].terms[]
+```
+
+Each term carries a `TeamSeason`, optional `Schedule` (`games[]`), and refresh status. Multi-term programs keep Fall/Spring (etc.) distinct internally so a later expanded view can section by term. Do not flatten away term distinction as the only stored form.
+
+Entity **state** must stay compact. Do not serialize `terms[]` or the full games list into HA entity state. Slice/Phase 4 card work should read coordinator / `runtime_data` (and last/next attributes), not invent one entity per contest.
+
+A normalized game object looks conceptually like:
+
+```
+id:
+date:          # timezone-naive
+status:        # scheduled | final | deleted | unknown  (provider)
+
+team_name:
+opponent_name:
+
+home_away:
+
+team_score:
+opponent_score:
+
+result:
+
+venue:
+
+game_url:
+opponent_logo: # optional
+```
 
 ```
 id:
@@ -471,33 +502,24 @@ The generic schedule/result model should remain usable without those fields.
 
 # 8. Sport-Agnostic Design
 
-The integration should not maintain a hardcoded list such as:
+**Current / Decided:** Normal setup lists only sports whose schedule representation has been empirically validated against the shared `contests[]` parser:
 
 ```
-football
-baseball
-softball
-basketball
+Football
+Baseball
+Basketball
+Volleyball
 ```
 
-unless MaxPreps itself requires such identifiers.
+Football and baseball are the Phase 3 acceptance targets; basketball and volleyball may appear in the selector. Soccer, softball, lacrosse, and other “likely” team sports are **not** in the picker until they have the same class of fixture evidence. Tennis, golf, track, and other meet/individual formats are omitted (schedule decode unproven).
 
-Instead:
+**Future / Desired:** Remain as sport-agnostic as the MaxPreps data allows. Do not hardcode sport-specific behavior until the source data requires it. Adding a sport is an evidence/test change, not a product redesign.
 
-1. Discover available teams from the selected school.
-    
-2. Treat sport, gender, level, and team name as metadata.
-    
-3. Pass all compatible teams through the same schedule/result normalization pipeline.
-    
-4. Identify actual exceptions empirically.
-    
+The default assumption remains:
 
-The default assumption is:
+> If MaxPreps represents a team's season as dated contests with an opponent and result **on the validated Next.js `contests[]` path**, the integration should support it through the same pipeline.
 
-> If MaxPreps represents a team's season as dated contests with an opponent and result, the integration should support it automatically.
-
-Potential exceptions requiring investigation:
+Potential exceptions requiring investigation before they can join the allowlist:
 
 - Golf
     
@@ -520,11 +542,9 @@ Potential exceptions requiring investigation:
 - Invitationals
     
 
-These sports should not be excluded in advance.
+These sports should not be excluded from **future** investigation, but they are **not** in the current picker.
 
-Exploration should determine whether MaxPreps exposes a usable team-level schedule/result representation.
-
-If they do, they should work through the same generic integration.
+Exploration (Phase 1) determined that Centennial tennis/track schedule pages were legacy ASPX without `__NEXT_DATA__` contests. They remain out of the allowlist until a populated Next.js (or other proven) decode path exists.
 
 ---
 
@@ -554,80 +574,58 @@ The Home Assistant layer should not contain raw parsing logic for MaxPreps paylo
 
 # 10. MaxPreps Client Responsibilities
 
-The client should eventually support:
+**Current / Decided** (Phase 2 client; HA uses the same models via an async facade):
 
 ## School Search
 
 ```
-search_schools(query, state=None)
+search_schools(query: str) -> list[School]
 ```
 
-Returns normalized school results.
+Short-name search. No `state=` facet. Returns normalized `School` rows (`school_id`, `canonical_url`, name, optional city/state/mascot/`mascot_url`).
 
 ## School Team Discovery
 
 ```
-get_school_teams(school_id)
+get_school_teams(school: School) -> list[TeamSeason]
 ```
 
-Returns teams/sports available for the selected school.
+Fetches `school.canonical_url` and returns **all** `sportSeasons[]` rows. Current-school-year and allowlist filtering belong to the Home Assistant config flow / coordinator, not this method.
 
 ## Team Schedule
 
 ```
-get_schedule(team_id, season=None)
+get_schedule(team: TeamSeason) -> Schedule
 ```
 
-Returns normalized games.
+Fetches the established `schedule/` child of the team-season `canonical_url`. Identity is `(school_id, sport_season_id)` plus payload `canonical_url`. There is no `team_id` or `season=` fetch key.
 
-## Team Metadata
+`Schedule` carries `games[]`, optional `team_logo`, optional `team_record`. `Game.date` is timezone-naive. `Game.status` is `scheduled | final | deleted | unknown`. Optional `opponent_logo` when the provider supplies an HTTPS mascot URL.
 
-Potentially:
-
-```
-get_team(team_id)
-```
-
-Provides:
-
-- name
-    
-- sport
-    
-- level
-    
-- gender
-    
-- logo
-    
-- record
-    
-- season
-    
-- school
-    
-
-Exact methods may change based on how MaxPreps data is actually exposed.
+Do not revive `team_id`-centric sketches. Exact transport is injectable (sync `Transport` for tests; async HA session in production).
 
 ---
 
 # 11. Polling Strategy
 
-The integration should intentionally avoid frequent MaxPreps requests.
-
-Normal operation should require only a small number of requests per day.
-
-Initial default target:
+**Current / Decided:** Conservative fixed coordinator interval.
 
 ```
-approximately 2-4 refreshes per day per configured school/team set
+Normal operation: timedelta(hours=12)   # ~2 cycles per day per school entry
+Rollover wait:    timedelta(days=1)     # only while the applicable year has no published schedules
 ```
 
-The exact implementation should attempt to minimize duplicate requests where multiple selected teams can share upstream calls.
+Entities do not poll (`CoordinatorEntity`). One cycle per school fetches school home once, then each matching term’s schedule. Multiple programs on the same school share the school-home request.
+
+Do not treat undocumented public web data as a real-time sports API.
+
+**Future / Desired:** Further request sharing or HTTP caching if evidence shows duplicate upstream work. Adaptive game-window polling is **not** current (see §12).
 
 ---
 
 # 12. Adaptive Game-Day Polling
+
+**Future / Desired — not implemented.** Do not treat this section as production behavior.
 
 More frequent polling may be useful after a scheduled game is expected to have finished.
 
@@ -668,32 +666,19 @@ The purpose is:
 
 > Detect a final result within a reasonably useful period after it becomes available.
 
+**Current / Decided:** Production polling stays at ~12h (daily during unpublished new-year wait). Optional Spike H observation (`scripts/explore/observe_gameday.py`) is research-only and is not wired into the coordinator.
+
 ---
 
 # 13. Final Score Detection
 
 Final score detection is a key automation use case.
 
-The integration should distinguish:
+**Current / Decided:** Provider `Game.status` is `scheduled | final | deleted | unknown`. Compact entity state is `scheduled | final | unknown`. When a game becomes `final` on a refresh, `last_game` (and compact state, if no `next_game` remains) update so ordinary Home Assistant automations can fire. Detection latency is bounded by the 12h (or daily rollover-wait) interval — not by adaptive polling.
 
-```
-scheduled
-in progress, if supported
-final
-postponed
-cancelled
-unknown
-```
+**Open / TBD:** `in progress`, `postponed`, and `cancelled` are **not** mapped. Those `contestState` values were not observed in research fixtures. Unknown enums stay `unknown`. Do not invent mappings.
 
-When a game transitions to final, the entity should update in a way that Home Assistant automations can reliably detect.
-
-Example:
-
-```
-PRE → POST
-```
-
-with:
+The following `PRE → POST` example is **not** current entity behavior (Q1 still open). Current automations should trigger on `scheduled` / `final` / `unknown` and on `last_game` / `next_game` attribute changes:
 
 ```
 team_score: 54
@@ -701,33 +686,20 @@ opponent_score: 18
 result: W
 ```
 
-Automations should be able to trigger from that change without special polling logic written by the user.
-
 ---
 
 # 14. Game Start Notifications
 
 Game start notifications should be primarily schedule-driven.
 
-If MaxPreps provides:
+**Current / Decided:** `next_game.date` is a timezone-naive ISO string suitable for **display and ordering**. It is **not** a reliable school-local or event-local wall time and is **not** an offset-correct kickoff timestamp. Automations that treat it as an absolute instant (including “30 minutes before kickoff”) are best-effort and may be wrong for some schools (Pensacola-style research mismatch). Do not offer a user timezone setting as a correctness fix.
 
-```
-Friday 7:30 PM
-```
-
-Home Assistant already has enough information to trigger:
-
-```
-30 minutes before game
-at game time
-```
-
-This does not require MaxPreps to report that the game has actually started.
+If MaxPreps provides a naive datetime such as Friday 7:30 PM, Home Assistant may still *attempt* schedule-driven triggers, but the integration must not document that as guaranteed.
 
 The integration must clearly distinguish:
 
 ```
-scheduled start time
+scheduled start time (naive provider datetime)
 ```
 
 from:
@@ -736,15 +708,15 @@ from:
 confirmed live/in-progress state
 ```
 
-if both eventually exist.
+if both eventually exist. Confirmed live state is **not** current.
 
 ---
 
 # 15. Live Score Support
 
-Live scoring is explicitly not a core requirement.
+**Current / Decided:** Live scoring is not supported and is not documented as guaranteed. Compact state has no `IN`. Unknown `contestState` stays `unknown`.
 
-If MaxPreps exposes usable live state/score data through the same connector, the integration may expose it.
+If MaxPreps later exposes usable live state/score data through the same connector, the integration **may** expose it (**Future / Desired**).
 
 However:
 
@@ -769,6 +741,8 @@ Primary guaranteed behavior should focus on:
 ---
 
 # 16. Standings, Rankings, and Other Data
+
+**Future / Desired** (not required for Phase 3 success; not shipped as entities):
 
 Potential future/bonus features include:
 
@@ -803,15 +777,15 @@ The integration should support at least three presentation patterns.
 
 ## Pattern A: Current/Next Game Card
 
-Team Tracker-like display.
+Team Tracker-like display. **Current / Decided:** `last_game` + `next_game` + compact state + `entity_picture` exist for this. **Future / Desired:** a polished custom card (project Phase 4).
 
 ## Pattern B: Full Schedule
 
-Season schedule/results.
+Season schedule/results. **Current / Decided:** coordinator `programs[].terms[]`. **Future / Desired:** a user-visible expanded view.
 
 ## Pattern C: Both
 
-Primary card that leads to or accompanies full schedule.
+Primary card that leads to or accompanies full schedule. **Future / Desired.**
 
 The integration should expose enough structured data to support all three without requiring users to create REST sensors or templates themselves.
 
@@ -819,21 +793,13 @@ The integration should expose enough structured data to support all three withou
 
 # 18. Custom Lovelace Card
 
-A custom frontend card is not required for initial implementation.
+**Future / Desired.** A custom frontend card is not required for Phase 3 and was not built. Project **Phase 4** is where a last/next card may be planned. Do not confuse the card-sequencing sketch below with project Phase 1/2/3 (research / client / HA integration).
 
 Preferred sequencing:
 
-### Phase 1
-
-Expose excellent Home Assistant entities and attributes.
-
-### Phase 2
-
-Determine whether native cards, Mushroom, Auto Entities, or other existing frontend tools can create the desired experience.
-
-### Phase 3
-
-Only create a custom MaxPreps Lovelace card if it meaningfully improves usability.
+1. Expose excellent Home Assistant entities and attributes. (**Current / Decided** for Phase 3.)
+2. Determine whether native cards, Mushroom, Auto Entities, or other existing frontend tools can create the desired experience. (**Future / Desired.**)
+3. Only create a custom Lovelace card if it meaningfully improves usability. (**Future / Desired** — project Phase 4.)
 
 Do not couple the backend integration to a custom frontend component.
 
@@ -874,7 +840,14 @@ Expected conditions include:
 
 A temporary upstream failure should not erase previously known schedule information.
 
-The integration should retain last successful data where appropriate while marking freshness/availability accurately.
+**Current / Decided:**
+
+- Entry-wide school-home / discovery failure raises `UpdateFailed` and retains the last successful coordinator snapshot (first setup: `ConfigEntryNotReady`).
+- A single subscribed program (or one term of a multi-term program) fetch/parse failure does **not** make sibling sports or the school device unavailable.
+- Last-good term schedules are retained (`TermRefreshStatus.STALE`); sensors with retained data stay available.
+- Unresolved subscriptions (no provider rows for the applicable year) are unavailable as entities, but the subscription itself is kept.
+- Missing logos never fail setup or scores.
+- Cancelled/postponed remain **Open / TBD** (not observed); deleted contests are excluded from last/next.
 
 ---
 
@@ -942,7 +915,11 @@ Test:
     
 - unavailable upstream
     
-- PRE → POST transition
+- compact state `scheduled` / `final` / `unknown` (not PRE → POST; Q1 still open)
+    
+- last_game / next_game attributes
+    
+- per-program vs entry-wide failure
     
 - reload
     
@@ -953,7 +930,9 @@ Test:
 
 ## Layer 3: Manual HA Sandbox
 
-Run a disposable Home Assistant development instance.
+Run a disposable Home Assistant Core development instance (see [HA_DEVELOPMENT.md](HA_DEVELOPMENT.md)).
+
+**Current / Decided:** Owner Layer 3 verification on 2026-09-09 closed the Phase 3 completion gate (live config flow, add/remove sport, two schools, reload isolation, duplicate-school rejection, automatic `entity_picture`).
 
 Test:
 
@@ -980,29 +959,23 @@ Production Home Assistant should not be the primary development environment.
 
 # 22. Repository Structure
 
-Proposed repository:
+**Current / Decided:** Public repo `willbur83/hacs-highschoolscores`. Package root is `custom_components/maxpreps/` (client, `parsing/`, coordinator, config/options flow, sensors). Tests live under `tests/` with MaxPreps fixtures. There is **no** `hacs.json` yet (Phase 5). There is no top-level `api.py` — parsers live under `parsing/`.
+
+The original sketch (including `hacs.json` and `api.py`) is retained only as historical intent:
 
 ```
-ha-maxpreps/
+hacs-highschoolscores/
 ├── custom_components/
 │   └── maxpreps/
-│       ├── __init__.py
-│       ├── api.py
+│       ├── parsing/
+│       ├── client.py
 │       ├── config_flow.py
-│       ├── const.py
 │       ├── coordinator.py
-│       ├── manifest.json
-│       ├── models.py
 │       ├── sensor.py
-│       └── translations/
-│
+│       └── ...
 ├── tests/
 │   └── fixtures/
-│
-├── .github/
-├── .devcontainer/
-├── hacs.json
-├── LICENSE
+├── docs/
 ├── README.md
 └── pyproject.toml
 ```
@@ -1015,58 +988,45 @@ Do not create a separate Python package/repository initially unless implementati
 
 # 23. Development Environment
 
-Primary development environment:
+**Current / Decided:** Develop against a disposable Home Assistant **Core container** with this repository’s `custom_components/maxpreps` bind-mounted. Pins, test layers, and the sandbox workflow are in [HA_DEVELOPMENT.md](HA_DEVELOPMENT.md). Keep HA config and secrets **outside** this git repository. Operator compose files and machine-specific paths belong in unpublished operator notes.
 
-```
-Mustang
-  Cursor
-    ↓ Remote SSH
-Lightning
-  repository
-  tests
-  devcontainer
-  Home Assistant development instance
-```
-
-The repository should live on Lightning.
-
-A disposable Home Assistant Core development environment should be used rather than another full HAOS VM.
+Do not use another full HAOS VM as the primary development environment. Do not commit host names, local filesystem paths, or compose contents here.
 
 ---
 
 # 24. V1 Success Criteria
 
-The first public release is successful if:
+The first **public** release (HACS-installable) is successful if the list below is true. Phase 3 already satisfies the integration-behavior items for allowlisted sports; HACS distribution (item 1 / 15) remains **Future / Desired** (Phase 5).
 
-1. A user can install MaxPreps for Home Assistant through HACS/custom repository.
+1. A user can install MaxPreps for Home Assistant through HACS/custom repository. (**Future / Desired** — Phase 5. Today: manual/custom-component copy or bind-mount.)
     
-2. A user can configure it entirely through the Home Assistant UI.
+2. A user can configure it entirely through the Home Assistant UI. (**Current / Decided.**)
     
-3. A user can search for and select their school.
+3. A user can search for and select their school. (**Current / Decided** — short name + picker.)
     
-4. The integration automatically discovers available teams/sports.
+4. The integration automatically discovers available teams/sports. (**Current / Decided** — allowlisted programs for the applicable school year.)
     
-5. A user can select one or more teams.
+5. A user can select one or more teams. (**Current / Decided** — programs `{sport, gender, level}`.)
     
-6. Compatible sports work without sport-specific configuration.
+6. Compatible sports work without sport-specific configuration. (**Current / Decided** for the allowlist.)
     
-7. The integration retrieves season schedules.
+7. The integration retrieves season schedules. (**Current / Decided** — coordinator `programs[].terms[]`.)
     
-8. Completed games show final scores/results.
+8. Completed games show final scores/results. (**Current / Decided** — `last_game` / schedule games with `final`.)
     
-9. Upcoming games show scheduled date/time/opponent.
+9. Upcoming games show scheduled date/time/opponent. (**Current / Decided** — `next_game`; naive datetime.)
     
-10. Data is usable in a Team Tracker-style dashboard experience.
+10. Data is usable in a Team Tracker-style dashboard experience. (**Current / Decided** as a data contract; polished custom card is **Future / Desired**.)
     
-11. Full season schedule data is available for dashboard display.
+11. Full season schedule data is available for dashboard display. (**Current / Decided** on the coordinator; frontend expanded view is **Future / Desired**.)
     
-12. Home Assistant automations can trigger around scheduled games and newly discovered final scores.
+12. Home Assistant automations can trigger around scheduled games and newly discovered final scores. (**Current / Decided** at coordinator-refresh granularity; timezone-correct “minutes before kickoff” is **not** guaranteed.)
     
-13. MaxPreps is queried conservatively.
+13. MaxPreps is queried conservatively. (**Current / Decided** — 12h / daily rollover wait.)
     
-14. Temporary MaxPreps failures do not destroy last-known schedule data.
+14. Temporary MaxPreps failures do not destroy last-known schedule data. (**Current / Decided.**)
     
-15. Another Home Assistant user with HAOS and HACS can install and use the integration without any separate server, Docker host, API service, or YAML configuration.
+15. Another Home Assistant user with HAOS and HACS can install and use the integration without any separate server, Docker host, API service, or YAML configuration. (**Future / Desired** for HACS; YAML-free UI config is **Current / Decided.**)
     
 
 ---
@@ -1104,7 +1064,7 @@ Unless exploration proves they are trivial, initial release does not require:
 
 ## Sport-Agnostic First
 
-Do not hardcode differences until the source data requires them.
+Do not hardcode sport-specific behavior until the source data requires it. The current evidence-based allowlist is a validation gate for the shared parser, not a permanent sport ceiling.
 
 ## School-First UX
 
@@ -1136,44 +1096,37 @@ Schedules and final scores should be dependable before adding standings, statist
 
 # 27. Open Product Decisions / Ambiguities
 
-The following decisions should be resolved through initial data exploration and product review rather than assumed during implementation.
+Items marked **Decided** are current product truth. Items still open must not be silently resolved in implementation.
 
 ## A. Config Entry Scope
 
-**Question:** Is one config entry a school, or one team?
-
-Preferred assumption:
-
-> One config entry represents a school and contains multiple selected teams.
-
-This seems like the better user experience but must be validated against HA entity/device architecture and update behavior.
+**Decided (Phase 3).** One config entry represents a school and contains multiple selected programs. Duplicate `school_id` is rejected. Multiple schools are independent entries.
 
 ---
 
 ## B. Schedule Representation
 
-**Question:** Should the full schedule exist:
+**Decided (Phase 3) for the data contract:**
 
-- as attributes on the primary team entity
-    
-- as a separate schedule entity
-    
-- through calendar entities
-    
-- through event entities
-    
-- through another Home Assistant-native mechanism
-    
+- Full school-year schedule lives on coordinator `programs[].terms[]` (`runtime_data`).
+- Program sensors expose compact state plus concise `last_game` / `next_game` attributes.
+- Not one entity per contest. Full schedule is **not** dumped into entity state.
 
-No decision should be made until current HA entity capabilities and dashboard behavior are evaluated.
+**Future / Desired / still open for presentation:**
 
-A Calendar entity may be especially worth investigating because sports schedules are inherently calendar data.
+- more-info vs dedicated dashboard vs custom card (project Phase 4)
+- Calendar entities (blocked by timezone-naive provider datetimes — do not ship calendar as if kickoff instants were correct)
+- event entities for reschedule/cancel
 
 ---
 
 ## C. Primary Team Entity State
 
-Possible model:
+**Open / TBD (Q1).** Do **not** implement `PRE` / `IN` / `POST` / `OFF` until the owner disposes Q1.
+
+**Current / Decided (interim):** compact state `scheduled | final | unknown` from last/next, with both last and next as attributes. This is the Phase 3 planning recommendation (provider status of next else last final), not a closed Q1 decision.
+
+Possible future models (not shipped):
 
 ```
 PRE
@@ -1182,59 +1135,23 @@ POST
 OFF
 ```
 
-Alternative:
+or an intrinsically useful state such as next-game datetime, final score, or record.
 
-The entity state could be something intrinsically useful such as:
-
-```
-Next game date
-Final score
-Record
-```
-
-and game lifecycle could exist as attributes.
-
-Need to determine which model produces the best combination of:
-
-- dashboard usability
-    
-- automation usability
-    
-- HA conventions
-    
-- Team Tracker compatibility/style
-    
+Need owner disposition for dashboard vs automation vs Team Tracker-style naming.
 
 ---
 
 ## D. POST Retention Window
 
-If Friday's game becomes final Friday night, how long should the primary card continue displaying that completed game before switching to next Friday?
-
-Possible options:
-
-- 12 hours
-    
-- 24 hours
-    
-- until next morning
-    
-- configurable
-    
-- Team Tracker-like behavior
-    
-
-Initial assumption:
-
-> Approximately 24 hours.
-
-Not yet decided.
+**Open / TBD** as a Q1/card concern. Not applicable to current compact state: `last_game` and `next_game` are both exposed when derivable; compact state prefers `scheduled` whenever a next game exists. There is no implemented POST-display timer.
 
 ---
 
 ## E. Adaptive Polling Window
 
-Need empirical MaxPreps data to determine:
+**Future / Desired.** Not implemented. Production remains 12h (daily during unpublished new-year wait).
+
+Need empirical MaxPreps data (optional Spike H observation) to determine:
 
 - whether MaxPreps reports game duration/status
     
@@ -1247,7 +1164,7 @@ Need empirical MaxPreps data to determine:
 - how long accelerated polling should continue
     
 
-Do not optimize this until the data source behavior is understood.
+Do not optimize this until the data source behavior is understood. Do not treat adaptive polling as current.
 
 ---
 
@@ -1255,35 +1172,15 @@ Do not optimize this until the data source behavior is understood.
 
 The integration should provide data suitable for notifications.
 
-Open question:
+**Current / Decided (v1 assumption, still standing):** ordinary HA state and attribute changes are sufficient.
 
-Should it itself create device/event entities specifically for:
-
-```
-game starting
-game final
-schedule changed
-```
-
-or should consumers use ordinary state triggers?
-
-Initial assumption:
-
-> Ordinary HA state changes are sufficient for v1.
+**Open / TBD:** dedicated events for `game starting` / `game final` / `schedule changed` remain optional future work.
 
 ---
 
 ## G. Schedule Changes
 
-Need to determine whether the integration should explicitly expose:
-
-```
-game rescheduled
-game cancelled
-opponent changed
-```
-
-as events, or simply update the schedule attributes.
+**Open / TBD.** Provider `deleted` contests are excluded from last/next; postponed/cancelled were **not observed**. The coordinator updates schedule data in place. Explicit rescheduled/cancelled/opponent-changed events are not shipped.
 
 Potentially valuable but not core.
 
@@ -1291,11 +1188,11 @@ Potentially valuable but not core.
 
 ## H. Multiple Seasons
 
-**Decided (2026-09-02).**
+**Decided (2026-09-02).** Landed in Phase 3.
 
 - **Applicable school year:** July 1 through June 30 in the Home Assistant instance’s local timezone. `2026-07-01`–`2027-06-30` is `26-27`.
 - Subscriptions automatically follow that school year. No annual reconfiguration. No historical year picker in v1.
-- Provider rows and published schedules for that year are separate from the calendar rule. Do not invent a schedule merely because the calendar rolled over. Until the new year is published, keep prior data and check conservatively (daily is acceptable), then return to the normal low-frequency refresh.
+- Provider rows and published schedules for that year are separate from the calendar rule. Do not invent a schedule merely because the calendar rolled over. Until the new year is published, keep prior data and check conservatively (daily), then return to the 12h refresh.
 - MaxPreps Spring/Fall (or Winter) terms inside one school year are **not** separate user seasons; see §3.2 program subscriptions.
 
 Prior-season browsing and manual season selection remain out of scope.
@@ -1304,9 +1201,7 @@ Prior-season browsing and manual season selection remain out of scope.
 
 ## I. School Identity
 
-Need to determine the most stable MaxPreps identifier for a school.
-
-Do not use display name or URL slug as the sole identity if MaxPreps exposes a stable internal ID.
+**Decided.** Persist MaxPreps `school_id` (UUID) plus payload `canonical_url`. Display name and URL slug are not identity.
 
 ---
 
@@ -1318,141 +1213,82 @@ Do not use display name or URL slug as the sole identity if MaxPreps exposes a s
 school + sport + gender + level
 ```
 
-School identity remains MaxPreps `schoolId`. Do not persist MaxPreps `sportSeasonId`, `allSeasonId`, term, year, or team-season URL as the subscription key. Those remain provider-side metadata used to fetch and match rows for the applicable school year (one or more `TeamSeason` rows per subscription).
+School identity remains MaxPreps `schoolId`. Do not persist MaxPreps `sportSeasonId`, `allSeasonId`, term, year, or team-season URL as the subscription key. Those remain provider-side metadata used to fetch and match rows for the applicable school year (one or more `TeamSeason` rows per subscription). Provider row identity remains `(school_id, sport_season_id)` plus `canonical_url`.
 
 ---
 
 ## K. HACS Scope
 
-Initial assumption:
-
-> Build to HACS quality from the beginning.
-
-But do not optimize prematurely for Home Assistant Core acceptance.
+**Future / Desired.** Build toward HACS quality, but do not treat HACS listing or Core inclusion as Phase 3 work. `hacs.json` is Phase 5.
 
 ---
 
 # 28. Significant Assumptions
 
-The current product direction assumes the following. These must be validated.
+Status after Phase 1–3. “Validated” means research + landed client/integration behavior; it does not reopen the item as an implementation task.
 
-1. MaxPreps exposes public schedule/result data that can be retrieved without authentication.
+1. MaxPreps exposes public schedule/result data that can be retrieved without authentication. **Validated.**
     
-2. School search can be implemented reliably enough that users do not need to paste URLs.
+2. School search can be implemented reliably enough that users do not need to paste URLs. **Validated** as short name + picker (not a qualified “School, City ST” string).
     
-3. MaxPreps exposes a stable-enough identifier for schools and teams.
+3. MaxPreps exposes a stable-enough identifier for schools and teams. **Validated** as `school_id` and `(school_id, sport_season_id)` plus payload `canonical_url`. User subscriptions use `{sport, gender, level}`.
     
-4. Most sports use a sufficiently similar contest model that one normalized schedule parser can support them.
+4. Most sports use a sufficiently similar contest model that one normalized schedule parser can support them. **Partial** — true for the allowlist; tennis/track/meets deferred.
     
-5. Final scores are generally available within a useful timeframe after games.
+5. Final scores are generally available within a useful timeframe after games. **Plausible, unmeasured.** Decode is reliable; posting latency is not benchmarked. 12h polling is the current detection bound.
     
-6. MaxPreps request volume can remain extremely low.
+6. MaxPreps request volume can remain extremely low. **Validated** as the 12h / daily-rollover-wait design.
     
-7. Home Assistant can dynamically vary coordinator polling frequency around expected game completion without introducing unnecessary complexity.
+7. Home Assistant can dynamically vary coordinator polling frequency around expected game completion without introducing unnecessary complexity. **Future / Desired — not implemented.** Do not treat as current.
     
-8. Full schedule data is small enough to expose conveniently within Home Assistant.
+8. Full schedule data is small enough to expose conveniently within Home Assistant. **Validated** on the coordinator contract (not entity state).
     
-9. Logos/images can either be referenced directly or cached/represented without violating HA frontend expectations.
+9. Logos/images can either be referenced directly or cached/represented without violating HA frontend expectations. **Current / Decided** for automatic `entity_picture` plus HTTPS/`/local/` override. Owner sandbox confirmed automatic logo rendering. MediaSelector upload remains deferred.
     
-10. Existing Home Assistant cards can provide an acceptable first dashboard experience.
+10. Existing Home Assistant cards can provide an acceptable first dashboard experience. **Unchanged / Future** — custom card is optional (Phase 4).
     
-11. A custom frontend card is optional rather than necessary for initial adoption.
+11. A custom frontend card is optional rather than necessary for initial adoption. **Unchanged.**
     
-12. MaxPreps's public data mechanism may change and therefore parsing logic must be isolated from HA behavior.
-    
+12. MaxPreps's public data mechanism may change and therefore parsing logic must be isolated from HA behavior. **Validated** — parsers stay in `parsing/`; HA consumes normalized models.
 
 ---
 
 # 29. Initial Exploration Phase
 
-Before building the full Home Assistant integration, perform a dedicated MaxPreps connector exploration.
+**Historical — complete.** Phase 1 research is recorded in [MAXPREPS_RESEARCH.md](MAXPREPS_RESEARCH.md). Do not treat this section as unfinished work.
 
-Use several real schools/teams and sports.
+Investigation covered football, basketball, baseball, volleyball, tennis, track, plus cross-school validation (Centennial, Bainbridge, Pike County, St. Edward) and a timezone probe (Pensacola). Softball/soccer schedule decode was not promoted into the allowlist.
 
-At minimum investigate:
-
-- football
-    
-- basketball
-    
-- baseball
-    
-- softball
-    
-- soccer
-    
-- volleyball
-    
-- one individual/multi-participant sport such as tennis or golf
-    
-- one meet-based sport such as track or swimming if available
-    
-
-For each, determine:
-
-1. How schools are discovered.
-    
-2. How teams are enumerated.
-    
-3. Stable identifiers.
-    
-4. Schedule payload structure.
-    
-5. Final result representation.
-    
-6. Status values.
-    
-7. Score orientation.
-    
-8. Home/away representation.
-    
-9. Tournament/multi-team handling.
-    
-10. Cancelled/postponed behavior.
-    
-11. Season identifiers.
-    
-12. Logo availability.
-    
-13. Record/standing availability.
-    
-14. Request/caching requirements.
-    
-15. Whether the same parser can normalize the data.
-    
-
-The output of this phase should be a short technical findings document and fixture set.
-
-Only after this exploration should supported-sport limitations be defined.
+The output was the research document plus fixtures under `tests/fixtures/maxpreps/`. Supported-format limitations were then defined as the evidence-based allowlist in §8.
 
 ---
 
 # 30. First Engineering Milestone
 
-Do not begin by building Home Assistant entities.
+**Historical — complete (Phase 2).** The MaxPreps client, fixture tests, and `scripts/demo_client.py --fixtures` exist. The Home Assistant wrapper is Phase 3 and is also complete.
 
-The first executable milestone is:
+Correct search example (do **not** use a qualified city/state string as the query):
 
 ```
 Given a school search:
-"Centennial High School, Roswell GA"
+"Centennial"
 
-↓ find school
+↓ pick Centennial High School, Roswell, GA from results
 
-↓ enumerate available teams
+↓ enumerate allowlisted programs for the applicable school year
 
-↓ select a team
+↓ select a program {sport, gender, level}
 
-↓ fetch current schedule
+↓ fetch matching TeamSeason schedule(s)
 
-↓ normalize games
+↓ normalize games (timezone-naive dates)
 
 ↓ print structured result
 
 ↓ automated tests pass
 ```
 
-Example normalized output:
+Example normalized game date is naive, not offset-correct:
 
 ```
 {
@@ -1461,13 +1297,14 @@ Example normalized output:
     "location": "Roswell, GA"
   },
   "team": {
-    "name": "Centennial Knights",
+    "name": "Boys Varsity Football",
     "sport": "Football",
+    "gender": "Boys",
     "level": "Varsity"
   },
   "games": [
     {
-      "date": "2026-08-20T16:30:00-04:00",
+      "date": "2026-08-20T19:30:00",
       "opponent": "Dunwoody",
       "status": "final",
       "team_score": 23,
@@ -1478,7 +1315,7 @@ Example normalized output:
 }
 ```
 
-Once that layer is stable and tested across materially different sports, begin the Home Assistant wrapper.
+The `"date"` value above is illustrative of **naive** ISO form. Do not copy an offset such as `-04:00` as if kickoff TZ were solved.
 
 ---
 
@@ -1486,6 +1323,8 @@ Once that layer is stable and tested across materially different sports, begin t
 
 The project is not "done" because MaxPreps data can be scraped.
 
-The first release is done when a normal Home Assistant user can:
+The first **public** release is done when a normal Home Assistant user can:
 
 > Install it, find their school, select their teams, see schedules and scores, put that information on a dashboard, and build useful game-related automations without needing to understand MaxPreps internals.
+
+**Current / Decided:** That loop works as a custom component (UI config, allowlisted programs, coordinator schedules, last/next, conservative polling). **Future / Desired:** HACS install path (Phase 5) and a polished last/next card (Phase 4).

@@ -1400,7 +1400,7 @@ No coordinator, sensor, or `__init__.py` code changes — Slice 5/6 behavior alr
 
 ### §8 completion gate (honest status)
 
-Phase 3 is **code-complete** with Layer 1 and Layer 2 tests green. The **completion gate is not closed** — Layer 3 owner sandbox verification (items 1–3 below) was not performed in this pass. Do **not** start Phase 4 card work until the owner completes those checks.
+Phase 3 is **code-complete** with Layer 1 and Layer 2 tests green. The **completion gate is not closed** — Layer 3 owner sandbox verification for the HA lifecycle/configuration behaviors in §8 items 1–6 was not performed in this pass. Do **not** start Phase 4 card work until the owner completes those checks.
 
 | # | Gate item | Status | Evidence |
 |---|-----------|--------|----------|
@@ -1416,7 +1416,7 @@ Phase 3 is **code-complete** with Layer 1 and Layer 2 tests green. The **complet
 | 10 | Entry-wide vs per-program failure isolation; last-good retention | **True (tests)** | `tests/test_failure.py`, `tests/test_coordinator.py`, `tests/test_multi_school.py`. |
 | 11 | Stable device `(domain, school_id)` and program `unique_id` | **True (tests)** | `tests/test_sensor.py`, `tests/test_rollover.py`, `tests/test_multi_school.py`. |
 | 12 | last/next game attributes; full schedule on coordinator (Spike E) | **True (tests)** | `tests/test_sensor.py`; full `terms[]` on `MaxPrepsCoordinatorData` per Slice 6 Spike E disposition — not in entity state. |
-| 13 | Configured-school logo; user fallback if automatic fails | **True (tests); sandbox HEAD skipped** | Automatic + override: `tests/test_school_logo.py`, `tests/test_sensor.py`, `tests/test_options_flow.py`. Q5 shipped HTTPS URL + `/local/` override; MediaSelector deferred (Slice 9). CDN HEAD through HA session not re-run in sandbox. |
+| 13 | Configured-school logo; user fallback if automatic fails (CONFIGURED-SCHOOL LOGO FETCH CONFIRMED WORKING IN OWNER TESTS)| **True (tests); sandbox HEAD skipped** | Automatic + override: `tests/test_school_logo.py`, `tests/test_sensor.py`, `tests/test_options_flow.py`. Q5 shipped HTTPS URL + `/local/` override; MediaSelector deferred (Slice 9). CDN HEAD through HA session not re-run in sandbox. |
 | 14 | Football **and** baseball on shared parser path | **True (tests)** | Centennial baseball + football fixtures across `test_contests.py`, `test_config_flow.py`, `test_coordinator.py`, `test_sensor.py`, golden paths. |
 | 15 | Automated tests: zero live MaxPreps HTTP | **True** | All CI-style suites use `FixtureTransport` / mock transports; observation script gated by `--i-approve-live-observation`. |
 | 16 | README documents TZ, live-score, allowlist limitations | **True** | README “Known limitations” section (this slice). |
@@ -1426,17 +1426,20 @@ Phase 3 is **code-complete** with Layer 1 and Layer 2 tests green. The **complet
 
 **Q1 (entity state vocabulary):** Still open. Interim compact state uses `scheduled | final | unknown` only (Slice 6); PRE/IN/POST/OFF not implemented.
 
-**Phase 4 recommendation:** **Do not start** until owner completes Layer 3 sandbox verification below and accepts Q1 disposition when ready.
+**Phase 4 recommendation:** **Do not start** until the owner completes the remaining Layer 3 sandbox verification below and closes the Phase 3 completion gate. Q1 remains an explicitly open product question; the Phase 3 interim entity state remains `scheduled | final | unknown` and Q1 is not added as a new completion-gate requirement here.
 
 ### Owner verification checklist (Layer 3 — required by §8 items 1–3, 13 HEAD optional)
 
 Owner actions not performed in this implementation pass:
 
-1. Start HA Core `2026.9.0` with `custom_components/maxpreps` bind-mounted per `docs/HA_DEVELOPMENT.md` (using unpublished operator compose outside git).
-2. Confirm integration loads without import/manifest errors; unload/reload entry without orphan entities.
-3. Complete config flow: short-name search → pick school → subscribe to at least one allowlisted sport; confirm program sensor appears with expected `unique_id` and compact state.
-4. Options flow: add a second sport and remove one; confirm entity set updates after reload.
-5. (Optional, Slice 9) HEAD/GET school mascot URL through HA session if automatic `entity_picture` is blank or blocked — confirm override field works with HTTPS or `/local/` path.
+1. PASS Start HA Core `2026.9.0` with `custom_components/maxpreps` bind-mounted per `docs/HA_DEVELOPMENT.md` (using unpublished operator compose outside git).
+2. PASS Confirm integration loads without import/manifest errors; unload/reload entry without orphan entities.
+3. PASS Complete config flow: short-name search → pick school → subscribe to at least one allowlisted sport; confirm program sensor appears with expected `unique_id` and compact state.
+4. PASS Add a second school through the normal integration flow. Confirm both school entries are loaded simultaneously, each has its own device/program sensor(s), and unloading/reloading one does not disturb the other.
+5. PASS On one school, subscribe to at least two supported programs and confirm both program sensors are present under the same school device.
+6. PASS Options flow: add a second sport and remove one; confirm entity set updates after reload.
+7. PASS (Optional, Slice 9) HEAD/GET school mascot URL through HA session if automatic `entity_picture` is blank or blocked — confirm override field works with HTTPS or `/local/` path.
+NOTE: All above owner tests performed and passed in manual sandbox. 
 
 **Tests**
 
@@ -1445,3 +1448,12 @@ Owner actions not performed in this implementation pass:
 | Client (`[dev]`, Python 3.12 Docker) | `pip install -e ".[dev]" && pytest` | 189 passed, 9 skipped |
 | Client demo | `python scripts/demo_client.py --fixtures` | OK |
 | HA (`homeassistant==2026.9.0`, Python 3.14.6 Docker, `pytest-homeassistant-custom-component==0.13.362`, two-step install) | manifest + init + ha_transport + config_flow + programs + coordinator + sensor + options + multi_school + failure + rollover | 93 passed |
+
+**OWNER VERIFICATION FOR LAYER 3**
+Layer 3 owner verification — PASS (2026-09-09). Home Assistant Core 2026.9.0 sandbox verified live config flow, Centennial school/program discovery, Varsity Football device/entity creation, schedules/results/record and automatic logo rendering. Options flow successfully added and removed Boys JV Football without changing the Varsity Football entity identity; removed JV entity remained as an unavailable HA entity-registry entry. Bainbridge was added as an independent second school/device/entity; Centennial reload did not affect Bainbridge. Duplicate Bainbridge configuration was correctly rejected. Phase 3 completion gate is closed.
+
+### Owner Layer 3 gate closure (2026-09-09)
+
+The Slice 13 §8 table and “completion gate is not closed” wording above are the **historical** Slice 13 assessment (code-complete; Layer 3 then unverified). They are not current status.
+
+Owner Layer 3 sandbox verification on 2026-09-09 **closed the Phase 3 completion gate**. Verified without publishing operator paths or secrets: live config flow; add/remove sport via options; two schools; reload isolation; duplicate-school rejection; automatic `entity_picture`. Q1 remains open; compact entity state remains `scheduled | final | unknown`. Custom Lovelace card work was not in Phase 3.

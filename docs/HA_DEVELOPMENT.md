@@ -69,7 +69,20 @@ Layer 1-only HA-adjacent tests (not in the Layer 2 command): `test_school_logo.p
 
 ### Layer 3 — manual HA sandbox
 
-Owner-operated Home Assistant Core instance with bind-mounted `custom_components/maxpreps`. Real UI clicks (config flow, options, entity states) and optional live MaxPreps traffic for search/logo checks belong here — never in CI. See [docs/PHASE3_PLAN.md](PHASE3_PLAN.md) §8 for the completion-gate checklist.
+Owner-operated Home Assistant Core instance with bind-mounted `custom_components/maxpreps`. Real UI clicks (config flow, options, entity states) and optional live MaxPreps traffic for search/logo checks belong here — never in CI.
+
+**Owner Layer 3 verification (2026-09-09) — complete.** Home Assistant Core 2026.9.0 sandbox passed:
+
+- Live config flow (short-name search → school → allowlisted program)
+- Options flow add/remove sport (remaining program entity identity unchanged)
+- Two schools as independent config entries and devices
+- Reload isolation (reloading one school did not disturb the other)
+- Duplicate-school rejection
+- Automatic `entity_picture` from the provider school logo
+
+Removed-program entities may remain in the Home Assistant entity registry as unavailable; that is registry behavior, not a failed unsubscribe.
+
+See [docs/PHASE3_PLAN.md](PHASE3_PLAN.md) Implementation Notes (Slice 13 and the owner Layer 3 gate closure) for the completion-gate record.
 
 ## Core container and bind mount
 
@@ -95,8 +108,8 @@ After the container starts, add the integration through **Settings → Devices &
 
 ## Phase 3 scope reference
 
-Implemented in Phase 3: config flow, options flow, coordinator, program sensors, multi-school entries, failure isolation, school-year rollover polling, configured-school logos (automatic + user override), production async transport.
+Implemented in Phase 3: config flow, options flow, coordinator, program sensors, multi-school entries, failure isolation, school-year rollover polling, configured-school logos (automatic + user override), production async transport. Owner Layer 3 sandbox verification closed the Phase 3 completion gate on 2026-09-09.
 
 Not in Phase 3: HACS metadata (`hacs.json`), custom Lovelace card, live-score mapping, tennis/golf/track schedules, YAML configuration.
 
-See [docs/PHASE3_PLAN.md](PHASE3_PLAN.md) for the full slice breakdown and §8 completion gate.
+See [docs/PHASE3_PLAN.md](PHASE3_PLAN.md) for the full slice breakdown, §8 completion gate, and owner Layer 3 gate closure.
