@@ -43,6 +43,7 @@ CONF_LEVEL = "level"
 
 # Coordinator polling (Phase 3 §3.6).
 UPDATE_INTERVAL = timedelta(hours=12)
+ROLLOVER_UPDATE_INTERVAL = timedelta(days=1)
 
 # Config flow form field names.
 CONF_QUERY = "query"

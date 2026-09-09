@@ -1321,3 +1321,36 @@ No coordinator, sensor, or `__init__.py` code changes — Slice 5/6 behavior alr
 | HA (`homeassistant==2026.9.0`, Python 3.14.6 Docker, `pytest-homeassistant-custom-component==0.13.362`, two-step install) | manifest + init + ha_transport + config_flow + programs + coordinator + sensor + options + multi_school + failure | 86 passed |
 
 **PRODUCT drift check:** None. `PRODUCT.md` untouched.
+
+## Slice 11
+
+**Goal:** Subscriptions survive the July 1 school-year boundary without `unique_id` churn or user reconfiguration. Keep last-good prior-year data until applicable-year provider rows and schedules are published; poll daily while waiting, then return to 12h.
+
+**Delivered**
+
+- `custom_components/maxpreps/const.py`: `ROLLOVER_UPDATE_INTERVAL = timedelta(days=1)` alongside existing `UPDATE_INTERVAL` (12h).
+- `custom_components.maxpreps/coordinator.py`:
+  - `ProgramResolutionStatus.WAITING_FOR_APPLICABLE_YEAR` — distinct from `UNRESOLVED` (no last-good) and `RESOLVED` (applicable-year schedule successfully parsed, including valid `contests: []`).
+  - `_retained_rollover_terms()` — prior program terms with schedules are carried forward as `TermRefreshStatus.STALE` when the applicable year has no matching rows yet, or matching rows exist but no applicable-year term has yet produced a successful `Schedule`.
+  - `_build_program_snapshot()` — empty applicable-year match + last-good ⇒ `WAITING_FOR_APPLICABLE_YEAR` with retained terms; applicable-year fetch attempted when rows exist; once any applicable-year term refreshes successfully, snapshot switches to `RESOLVED` with only those terms (prior-year terms dropped).
+  - `_apply_update_interval()` — coordinator uses `ROLLOVER_UPDATE_INTERVAL` while any subscribed program is `WAITING_FOR_APPLICABLE_YEAR`, otherwise `UPDATE_INTERVAL`.
+- `tests/test_rollover.py`: seven Layer-2 integration tests with frozen `homeassistant_local_date` and synthetic school-home / schedule mappings (no live MaxPreps).
+- `tests/test_coordinator.py`: `CoordinatorTestTransport` records attempted URLs before simulated schedule failures (rollover fetch-attempt assertions).
+
+**Last-good retention:** On applicable-year mismatch, `_retained_rollover_terms(prior_program)` reuses terms that already have a `schedule`, marking them `STALE`. `MaxPrepsCoordinatorData.applicable_school_year` advances to the calendar year (e.g. `27-28`); retained `term.team_season.year` may remain `26-27` until provider rows and schedules publish.
+
+**Waiting vs unresolved:** `UNRESOLVED` — no applicable-year data and no rollover-retained last-good ⇒ sensor unavailable. `WAITING_FOR_APPLICABLE_YEAR` — applicable year not yet published but last-good exists ⇒ sensor available via existing availability matrix (`any(term.schedule is not None)`).
+
+**Interval switch:** Any program in `WAITING_FOR_APPLICABLE_YEAR` ⇒ `update_interval = 1 day`; when all programs leave waiting (successful applicable-year schedule parse, including empty `contests[]`) ⇒ restore 12h.
+
+**unique_id proof:** Tests assert `{school_id}:{gender}:{level}:{sport}` unchanged across September 2026 (`26-27`) and July 2027 (`27-28`) rollover; entity registry `unique_id` stable in entry-level retention test.
+
+**Tests**
+
+| Layer | Command | Result |
+|-------|---------|--------|
+| Client (`[dev]`, Python 3.12) | `pip install -e ".[dev]" && pytest` | 179 passed, 9 skipped |
+| Client demo | `python scripts/demo_client.py --fixtures` | OK |
+| HA (`homeassistant==2026.9.0`, Python 3.14.6 Docker, `pytest-homeassistant-custom-component==0.13.362`, two-step install) | manifest + init + ha_transport + config_flow + programs + coordinator + sensor + options + multi_school + failure + rollover | 93 passed |
+
+**PRODUCT drift check:** None. `PRODUCT.md` untouched; behavior matches PRODUCT §27 H (keep prior data until new year publishes; daily-until-published acceptable).

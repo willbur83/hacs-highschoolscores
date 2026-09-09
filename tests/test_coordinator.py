@@ -132,11 +132,13 @@ class CoordinatorTestTransport:
         if self._school_home_fail and url == CENTENNIAL_ROSWELL_URL:
             raise MaxPrepsError("simulated school-home failure")
         if url in self._http_429_urls:
+            self._base.requested_urls.append(url)
             raise TransportHttpError(
                 f"HTTP 429 fetching MaxPreps page: {url}",
                 status_code=429,
             )
         if url in self._fail_urls:
+            self._base.requested_urls.append(url)
             raise ContestSchemaError(f"simulated schedule failure for {url}")
         if url in self._extra_html:
             self._base.requested_urls.append(url)

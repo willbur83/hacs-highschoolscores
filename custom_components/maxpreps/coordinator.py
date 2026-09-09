@@ -25,6 +25,7 @@ from custom_components.maxpreps.const import (
     CONF_STATE,
     CONF_SUBSCRIPTIONS,
     DOMAIN,
+    ROLLOVER_UPDATE_INTERVAL,
     UPDATE_INTERVAL,
 )
 from custom_components.maxpreps.exceptions import MaxPrepsError
@@ -55,6 +56,7 @@ class ProgramResolutionStatus(StrEnum):
 
     RESOLVED = "resolved"
     UNRESOLVED = "unresolved"
+    WAITING_FOR_APPLICABLE_YEAR = "waiting_for_applicable_year"
 
 
 @dataclass(frozen=True, slots=True)
@@ -135,6 +137,51 @@ def _prior_term_snapshot(
     return None
 
 
+def _term_has_successful_schedule(term: TermSnapshot) -> bool:
+    return term.status is TermRefreshStatus.REFRESHED and term.schedule is not None
+
+
+def _any_term_has_successful_schedule(terms: tuple[TermSnapshot, ...]) -> bool:
+    return any(_term_has_successful_schedule(term) for term in terms)
+
+
+def _retained_rollover_terms(
+    prior_program: ProgramSnapshot | None,
+) -> tuple[TermSnapshot, ...]:
+    """Return prior-year last-good terms marked stale for rollover retention."""
+    if prior_program is None:
+        return ()
+    retained: list[TermSnapshot] = []
+    for term in prior_program.terms:
+        if term.schedule is None:
+            continue
+        if term.status is TermRefreshStatus.STALE:
+            retained.append(term)
+            continue
+        if term.status is TermRefreshStatus.REFRESHED:
+            retained.append(
+                TermSnapshot(
+                    team_season=term.team_season,
+                    schedule=term.schedule,
+                    status=TermRefreshStatus.STALE,
+                    error_type=term.error_type,
+                    error_message=term.error_message,
+                    last_success_at=term.last_success_at,
+                )
+            )
+    return tuple(retained)
+
+
+def _has_waiting_rollover_programs(
+    programs: tuple[ProgramSnapshot, ...],
+) -> bool:
+    return any(
+        program.resolution_status
+        is ProgramResolutionStatus.WAITING_FOR_APPLICABLE_YEAR
+        for program in programs
+    )
+
+
 async def _refresh_term(
     client: AsyncMaxPrepsClient,
     team_season: TeamSeason,
@@ -181,6 +228,15 @@ async def _build_program_snapshot(
     matching_rows = _match_subscription_rows(team_seasons, subscription, applicable_year)
 
     if not matching_rows:
+        retained = _retained_rollover_terms(prior_program)
+        if retained:
+            return ProgramSnapshot(
+                sport=sport,
+                gender=gender,
+                level=level,
+                resolution_status=ProgramResolutionStatus.WAITING_FOR_APPLICABLE_YEAR,
+                terms=retained,
+            )
         return ProgramSnapshot(
             sport=sport,
             gender=gender,
@@ -196,12 +252,32 @@ async def _build_program_snapshot(
             await _refresh_term(client, team_season, prior_term)
         )
 
+    terms_tuple = tuple(term_snapshots)
+    if _any_term_has_successful_schedule(terms_tuple):
+        return ProgramSnapshot(
+            sport=sport,
+            gender=gender,
+            level=level,
+            resolution_status=ProgramResolutionStatus.RESOLVED,
+            terms=terms_tuple,
+        )
+
+    retained = _retained_rollover_terms(prior_program)
+    if retained:
+        return ProgramSnapshot(
+            sport=sport,
+            gender=gender,
+            level=level,
+            resolution_status=ProgramResolutionStatus.WAITING_FOR_APPLICABLE_YEAR,
+            terms=retained,
+        )
+
     return ProgramSnapshot(
         sport=sport,
         gender=gender,
         level=level,
         resolution_status=ProgramResolutionStatus.RESOLVED,
-        terms=tuple(term_snapshots),
+        terms=terms_tuple,
     )
 
 
@@ -250,12 +326,23 @@ class MaxPrepsDataUpdateCoordinator(DataUpdateCoordinator[MaxPrepsCoordinatorDat
                 )
             )
 
-        return MaxPrepsCoordinatorData(
+        data = MaxPrepsCoordinatorData(
             school=school,
             applicable_school_year=applicable_year,
             programs=tuple(programs),
             refreshed_at=dt_util.utcnow(),
         )
+        self._apply_update_interval(data.programs)
+        return data
+
+    def _apply_update_interval(self, programs: tuple[ProgramSnapshot, ...]) -> None:
+        interval = (
+            ROLLOVER_UPDATE_INTERVAL
+            if _has_waiting_rollover_programs(programs)
+            else UPDATE_INTERVAL
+        )
+        if self.update_interval != interval:
+            self.update_interval = interval
 
 
 __all__ = [
