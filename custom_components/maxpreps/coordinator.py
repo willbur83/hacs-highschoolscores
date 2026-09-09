@@ -32,7 +32,6 @@ from custom_components.maxpreps.exceptions import MaxPrepsError
 from custom_components.maxpreps.models import Schedule, School, TeamSeason
 from custom_components.maxpreps.school_year import applicable_school_year
 from custom_components.maxpreps import school_year
-from custom_components.maxpreps.selection import team_seasons_for_applicable_year
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry

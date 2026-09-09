@@ -1382,3 +1382,66 @@ No coordinator, sensor, or `__init__.py` code changes — Slice 5/6 behavior alr
 | HA (`homeassistant==2026.9.0`, Python 3.14.6 Docker, `pytest-homeassistant-custom-component==0.13.362`, two-step install) | manifest + init + ha_transport + config_flow + programs + coordinator + sensor + options + multi_school + failure + rollover | 93 passed |
 
 **PRODUCT drift check:** None. `PRODUCT.md` untouched; live scores remain undocumented as guaranteed (Spike H exit criterion).
+
+## Slice 13
+
+**Goal:** Documentation wrap-up so a stranger can tell what Phase 3 is, how to test it, and what it does not promise. Honest §8 completion-gate assessment; do not mark Phase 3 complete unless each gate item is actually true.
+
+**Delivered**
+
+- `README.md`: Phase 3 status (custom integration vs HACS release), install, both test layers with pins, explicit limitations (timezone-naive dates, no live-score guarantee, supported-format allowlist).
+- `docs/HA_DEVELOPMENT.md`: current Layer 2 inventory and canonical pytest command; config flow, options (logo override), sensors, multi-school, rollover no longer marked “not implemented”; Layer 3 sandbox called out; no private host paths.
+- `custom_components/maxpreps/coordinator.py`: removed unused `team_seasons_for_applicable_year` import (hygiene only).
+- This Implementation Notes section: §8 gate table and owner verification checklist.
+
+**Paths touched:** `README.md`, `docs/HA_DEVELOPMENT.md`, `custom_components/maxpreps/coordinator.py` (import only), `docs/PHASE3_PLAN.md` (append only).
+
+**PRODUCT drift check:** None. `PRODUCT.md` untouched.
+
+### §8 completion gate (honest status)
+
+Phase 3 is **code-complete** with Layer 1 and Layer 2 tests green. The **completion gate is not closed** — Layer 3 owner sandbox verification (items 1–3 below) was not performed in this pass. Do **not** start Phase 4 card work until the owner completes those checks.
+
+| # | Gate item | Status | Evidence |
+|---|-----------|--------|----------|
+| 1 | Reproducible HA dev environment (public docs + unpublished operator compose) | **Partial — docs true; Layer 3 unverified** | `docs/HA_DEVELOPMENT.md` documents Core container bind-mount, pins, and test layers without private paths. Unpublished operator compose/secrets remain outside git by design; not invented in-repo. Owner must confirm their compose + bind-mount workflow. |
+| 2 | Integration loads and unloads normally in HA | **Tests-only** | `tests/test_init.py`, `tests/test_failure.py` (reload/unload). Not re-verified in owner sandbox UI this pass. |
+| 3 | Setup through HA UI (search → school → supported sports), no YAML | **Tests-only** | `tests/test_config_flow.py` (fixture transport). Not re-verified with live search in sandbox. |
+| 4 | Multiple schools as separate config entries/devices | **Tests-only** | `tests/test_multi_school.py` (six tests). |
+| 5 | Multiple subscribed sports per school | **Tests-only** | `tests/test_config_flow.py`, `tests/test_coordinator.py`, `tests/test_sensor.py`. |
+| 6 | Add/remove sports via HA options | **Tests-only** | `tests/test_options_flow.py`. |
+| 7 | Applicable school year July 1–June 30 ∩ allowlist; Slice 1 modal helper not production | **True (tests)** | `tests/test_school_year.py`, `tests/test_config_flow.py`, coordinator applicable-year logic; modal helper documented as non-production in README. |
+| 8 | Rollover re-resolves subscriptions; stable `unique_id`; last-good until published; daily poll | **True (tests)** | `tests/test_rollover.py` (seven tests); Slice 11 coordinator `WAITING_FOR_APPLICABLE_YEAR` + `ROLLOVER_UPDATE_INTERVAL`. |
+| 9 | Production async transport; entities do not fetch; ~12h polling | **True (tests + code)** | `tests/test_ha_transport.py`, `tests/test_coordinator.py`; `UPDATE_INTERVAL` 12h in `const.py`; sensors use coordinator only. |
+| 10 | Entry-wide vs per-program failure isolation; last-good retention | **True (tests)** | `tests/test_failure.py`, `tests/test_coordinator.py`, `tests/test_multi_school.py`. |
+| 11 | Stable device `(domain, school_id)` and program `unique_id` | **True (tests)** | `tests/test_sensor.py`, `tests/test_rollover.py`, `tests/test_multi_school.py`. |
+| 12 | last/next game attributes; full schedule on coordinator (Spike E) | **True (tests)** | `tests/test_sensor.py`; full `terms[]` on `MaxPrepsCoordinatorData` per Slice 6 Spike E disposition — not in entity state. |
+| 13 | Configured-school logo; user fallback if automatic fails | **True (tests); sandbox HEAD skipped** | Automatic + override: `tests/test_school_logo.py`, `tests/test_sensor.py`, `tests/test_options_flow.py`. Q5 shipped HTTPS URL + `/local/` override; MediaSelector deferred (Slice 9). CDN HEAD through HA session not re-run in sandbox. |
+| 14 | Football **and** baseball on shared parser path | **True (tests)** | Centennial baseball + football fixtures across `test_contests.py`, `test_config_flow.py`, `test_coordinator.py`, `test_sensor.py`, golden paths. |
+| 15 | Automated tests: zero live MaxPreps HTTP | **True** | All CI-style suites use `FixtureTransport` / mock transports; observation script gated by `--i-approve-live-observation`. |
+| 16 | README documents TZ, live-score, allowlist limitations | **True** | README “Known limitations” section (this slice). |
+| 17 | No custom card required | **True** | No Lovelace card in repo; not started. |
+| 18 | No tennis/golf/track schedule implementation | **True** | `SUPPORTED_SPORTS` allowlist only; unvalidated sports omitted from picker. |
+| 19 | Implementation Notes; PRODUCT.md not silently rewritten; hygiene | **True** | This note appended only; `PRODUCT.md` untouched; staged-diff hygiene before commit. |
+
+**Q1 (entity state vocabulary):** Still open. Interim compact state uses `scheduled | final | unknown` only (Slice 6); PRE/IN/POST/OFF not implemented.
+
+**Phase 4 recommendation:** **Do not start** until owner completes Layer 3 sandbox verification below and accepts Q1 disposition when ready.
+
+### Owner verification checklist (Layer 3 — required by §8 items 1–3, 13 HEAD optional)
+
+Owner actions not performed in this implementation pass:
+
+1. Start HA Core `2026.9.0` with `custom_components/maxpreps` bind-mounted per `docs/HA_DEVELOPMENT.md` (using unpublished operator compose outside git).
+2. Confirm integration loads without import/manifest errors; unload/reload entry without orphan entities.
+3. Complete config flow: short-name search → pick school → subscribe to at least one allowlisted sport; confirm program sensor appears with expected `unique_id` and compact state.
+4. Options flow: add a second sport and remove one; confirm entity set updates after reload.
+5. (Optional, Slice 9) HEAD/GET school mascot URL through HA session if automatic `entity_picture` is blank or blocked — confirm override field works with HTTPS or `/local/` path.
+
+**Tests**
+
+| Layer | Command | Result |
+|-------|---------|--------|
+| Client (`[dev]`, Python 3.12 Docker) | `pip install -e ".[dev]" && pytest` | 189 passed, 9 skipped |
+| Client demo | `python scripts/demo_client.py --fixtures` | OK |
+| HA (`homeassistant==2026.9.0`, Python 3.14.6 Docker, `pytest-homeassistant-custom-component==0.13.362`, two-step install) | manifest + init + ha_transport + config_flow + programs + coordinator + sensor + options + multi_school + failure + rollover | 93 passed |
