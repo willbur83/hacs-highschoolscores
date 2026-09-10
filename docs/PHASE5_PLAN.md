@@ -887,7 +887,21 @@ Same locked rules as Slice 3 Implementation Notes — **no** `0.1.0b1` manifest 
 | Packaging dry-run — `npm run build`, `pack_release_zip.sh`, `assert_release_zip.sh` | **PASS** (zip root: `manifest.json`, `brand/icon.png`, `www/high-school-sports-scores-card.js`; no nested `high_school_sports_scores/`) |
 | `actionlint` on `release.yml` | **skipped** (`actionlint` not installed in dev environment) |
 | Layer 2 container | **not run** (no Python/HA test changes) |
-| GitHub Release / tag push | **not run** (Slice 4 deliverable is workflow + docs only) |
+
+**GitHub Actions verification (`release.yml` `workflow_dispatch` on `willbur83/hacs-highschoolscores`):**
+
+| Run | Trigger | Result |
+|-----|---------|--------|
+| [34515142164](https://github.com/willbur83/hacs-highschoolscores/actions/runs/34515142164) | `workflow_dispatch` on `main` (commit `03dd5cb`) | **success** |
+
+**Run 34515142164 job results:**
+
+| Job | Result |
+|-----|--------|
+| Package validation (manual) | **success** — checkout, Node setup, `npm ci && npm test && npm run build`, `pack_release_zip.sh`, `assert_release_zip.sh` (log: `Release zip assertions passed` for `high_school_sports_scores.zip`) |
+| Publish GitHub Release | **skipped** (`if: push` + `refs/tags/` — no `gh release create` step ran) |
+
+**Closure checks:** zero git tags and zero GitHub Releases on the repo after the run (`gh release list` empty; tags API count 0). Remote `main` `manifest.json` version remains **`0.0.0`** (`const.VERSION` / `pyproject.toml` unchanged on `main`). Tag-driven publish path not exercised in Slice 4.
 
 Zero live MaxPreps.
 
