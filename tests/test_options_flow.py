@@ -446,6 +446,7 @@ async def test_clear_logo_override_preserves_subscriptions(
         },
     )
     assert result["type"] == FlowResultType.CREATE_ENTRY
+    await hass.async_block_till_done()
     assert entry.options[CONF_SUBSCRIPTIONS] == [FOOTBALL_SUBSCRIPTION]
     assert CONF_SCHOOL_LOGO_OVERRIDE not in entry.options
 
