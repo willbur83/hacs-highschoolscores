@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import pytest
 
-from custom_components.maxpreps.async_client import AsyncMaxPrepsClient
-from custom_components.maxpreps.client import MaxPrepsClient
-from custom_components.maxpreps.exceptions import NextDataNotFoundError, SearchSchemaError
-from custom_components.maxpreps.models import GameStatus, TeamSeason
+from custom_components.high_school_sports_scores.async_client import AsyncMaxPrepsClient
+from custom_components.high_school_sports_scores.client import MaxPrepsClient
+from custom_components.high_school_sports_scores.exceptions import NextDataNotFoundError, SearchSchemaError
+from custom_components.high_school_sports_scores.models import GameStatus, TeamSeason
 from tests.helpers.async_fixture_transport import AsyncFixtureTransport
 from tests.helpers.fixture_transport import FixtureTransport, FixtureUrlNotMappedError
 from tests.helpers.fixtures import wrap_page_props_in_html

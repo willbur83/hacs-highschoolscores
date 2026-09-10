@@ -54,5 +54,5 @@ captures/private/
 *.local
 
 # Phase 4 generated Lovelace card bundle (build with frontend/npm run build)
-custom_components/maxpreps/www/*.js
+custom_components/high_school_sports_scores/www/*.js
 frontend/node_modules/

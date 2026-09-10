@@ -18,6 +18,7 @@ These decisions supersede any planning-time “working hypothesis” language ab
 - **Python owns term order.** The websocket DTO returns terms already ordered for presentation. The frontend must not duplicate `_CONVENTIONAL_TERM_ORDER` or independently sort season terms.
 - **Missing built JS must not fail the integration.** Generated `www/*.js` is gitignored in Phase 4. If the bundle is absent, log and skip frontend registration; config entries, coordinators, and sensors continue.
 - **Schedule refresh is a Spike 0 decision**, not “refetch when the program entity updates.” See section 5.
+- **Collapsed hero relevance (2026-09-09):** When both `last_game` and `next_game` exist, the collapsed card still shows **both**, but the game whose provider-naive datetime is **closer to the user's browser wall clock** is the primary hero matchup; the other is a compact secondary strip. Tie-break: prefer `last_game`. This is **frontend-only visual relevance** — not a new backend “relevant game” entity/state, not for automations, and not for schedule/backend ordering. Displayed date/time remains naive via `datetime.ts`.
 
 ---
 
@@ -102,15 +103,11 @@ Treat as product direction. Meaningful remaining UX choices are in section 6.
 
 ### Collapsed / primary program presentation (`mode: both` default, and `mode: last_next`)
 
-- Small header: `SCHOOL | SPORT | SEASON/YEAR` (year is the applicable school year attribute, not a MaxPreps term)
-- Stacked Last + Next, not only one relevant game
-- School logo (`entity_picture`) and school name
-- Opponent logo/name where available
-- Date/time as supplied by the provider, with **no false timezone claims**
-- Home/away
-- Final score + W/L for last game
-- Team record if trustworthy
-- Clean HA theme integration
+- Small text-only header: `SCHOOL | SPORT | SEASON/YEAR` (year is the applicable school year attribute, not a MaxPreps term); team record subordinate when present; **no school logo in header chrome**
+- When both `last_game` and `next_game` exist: **both remain visible**, but the game temporally closer to the user's browser wall clock is the **hero** scoreboard; the other is a compact secondary strip (owner amendment 2026-09-09; tie-break `last_game`)
+- Hero: centered scoreboard — away left, home right, `at` in center; prominent logos with readable short names beneath; final hero shows W/L + score; upcoming hero shows naive date/time without fake scores
+- Secondary strip: compact text summary of the non-hero game (no large logos)
+- Date/time display as supplied by the provider, with **no false timezone claims** (`datetime.ts`; hero relevance may compare naive game datetimes to browser `now` for presentation only)
 - No tickets / watch / preview clutter (`game_url` may exist on the DTO; do not render as chrome)
 
 ### Expanded / full schedule (`mode: both` when expanded, and `mode: schedule`)
@@ -526,3 +523,294 @@ Layer 2 `tests/test_websocket.py`: get happy path asserts full DTO; foreign enti
 ### PRODUCT drift check
 
 None. `docs/PRODUCT.md` untouched. Phase 3 compact entity state, `last_game`/`next_game` attributes, polling, allowlist, and no-`terms[]`-on-attributes unchanged. Q1 PRE/IN/POST/OFF remains open. No PRE/IN fields added to the DTO.
+
+## Slice 2 — Card shell, last/next from attributes (2026-09-09)
+
+### What landed
+
+- **`frontend/src/maxpreps-card.ts`:** Replaced Slice 0 hello-world with a Lit 3 `ha-card` shell (`maxpreps-program-card` / `custom:maxpreps-program-card`). Binds `config.entity`; renders header (`school_name | display_label | year`), optional school logo (`entity_picture`, hide on error), stacked Last then Next from entity attributes only, optional `team_record`, naive date/time via `datetime.ts`. Modes: `both` and `last_next` show the last/next shell; `schedule` shows an explicit not-implemented placeholder; default `both` does not imply full schedule UX until Slice 4. Unavailable/missing entity → HA-style message card. No `game_url` / tickets / watch / preview. Theme tokens via HA CSS variables.
+- **`frontend/src/card-helpers.ts`, `entity-suggestion.ts`, `types.ts`:** Pure helpers and picker heuristic (`school_id`, `school_name`, `sport`, `gender`, `level`, `display_label` all required; false negatives preferred).
+- **`window.customCards`:** `getEntitySuggestion` returns default `mode: both` for matching program sensors.
+- **Card API:** `getConfigForm` (entity required + mode select), `getStubConfig`, `getCardSize` (6), `getGridOptions` (columns 6, min 3, multiples-of-3 aligned).
+- **`frontend/package.json`:** Added bundled `lit` dependency; Vitest uses `happy-dom`.
+- **Vite build:** Unchanged output path `custom_components/maxpreps/www/maxpreps-card.js` (gitignored). `frontend_register.py` unchanged; missing bundle remains non-fatal.
+
+### Tests
+
+| Layer | Command | Result |
+|-------|---------|--------|
+| Frontend | `cd frontend && npm install && npm test` | **12 passed** (datetime + card: missing entity, last+next render, mode default `both`, schedule placeholder, entity suggestion heuristic, no `Date`/`Date.parse` in card sources) |
+| Frontend build | `cd frontend && npm run build` | Success (`maxpreps-card.js` ~29 kB) |
+| Layer 2 | Not re-run in this slice (no Python changes). Prior canonical command still applies; `test_init.py` missing-bundle behavior untouched. |
+
+Vitest fixture: Centennial Boys Varsity Football `last_game` / `next_game` shapes aligned with `tests/test_sensor.py` (naive ISO, scores, opponent logos).
+
+### Deviations (technical)
+
+- **Lit decorators:** `@customElement` / `@property` omitted; Lit 3 field decorators failed under Vitest/Vite without extra TS decorator config. Uses `static properties`, manual `customElements.define`, and `setConfig` → `this.config` assignment instead.
+- **Slice 2 shell scope:** Intentionally basic hide-if-absent for logos/record/missing games; Slice 3 owns collapsed UX completeness.
+
+### PRODUCT drift check
+
+None. `docs/PRODUCT.md` untouched. Phase 3 sensors, websocket DTO, polling, and no `terms[]` on attributes unchanged. Q1 PRE/IN/POST/OFF remains open.
+
+### Slice 2 owner refinement — Layer 3 correction (2026-09-09)
+
+Owner sandbox on Home Assistant Core 2026.9 confirmed automatic JS loading works: built bundle present, `/maxpreps/maxpreps-card.js` returns HTTP 200, module loads, `customElements.get("maxpreps-program-card")` resolves, and `frontend.add_extra_js_url` registration is effective. Card picker failed only because `window.customCards` metadata used `type: "custom:maxpreps-program-card"`; HA expects the registry `type` **without** the `custom:` prefix (`"maxpreps-program-card"`). Lovelace card configs and `getEntitySuggestion` return values still use `type: "custom:maxpreps-program-card"`. Vitest pins both sides of this contract.
+
+_Terminology: recorded under Slice 2 as owner refinement / Layer 3 visual pass — not a renumbered Phase 4 slice._
+
+### Slice 2 owner refinement — Layer 3 collapsed card pass (2026-09-09)
+
+**What landed**
+
+- **`frontend/src/hero-selection.ts`:** Pure `selectHeroGame(last, next, now)` — absolute distance from browser wall clock to provider-naive game datetimes; tie-break `last_game`; malformed-date fallbacks. Isolated `naiveIsoToLocalMs` for relevance only (not display).
+- **`frontend/src/card-helpers.ts`:** Matchup layout (away left / home right from `home_away`), conservative name shortening, hero/secondary formatters. Secondary strip location language: subscribed school **home** or **neutral** → `vs Opponent`; **away** → `at Opponent`.
+- **`frontend/src/maxpreps-card.ts`:** Team Tracker–style collapsed scoreboard hero, text-only header (no school logo in chrome), compact secondary strip, `program-card--interactive` cursor affordance for future expand; modes unchanged (`schedule` placeholder retained).
+- **Layer 3 polish:** left-aligned chrome and secondary strip; hero `LAST`/`NEXT` eyebrow top-left; center `AT` enlarged/bold; card datetime line without year (`FRIDAY - Sep 11 - 7:30 PM`); secondary strip outcome text matches hero datetime weight/color.
+
+**Tests**
+
+| Layer | Command | Result |
+|-------|---------|--------|
+| Frontend | `cd frontend && npm test` | **33 passed** |
+| Frontend build | `cd frontend && npm run build` | Success (`maxpreps-card.js` ~34 kB) |
+
+**Owner amendment**
+
+Collapsed UX superseded equal-weight stacked Last/Next presentation. Both games remain visible when available; closest-to-`now` hero selection is frontend presentation only (see owner amendments in approved plan §Owner amendments).
+
+**PRODUCT drift check**
+
+None. `docs/PRODUCT.md` untouched. Backend entity model unchanged. Q1 PRE/IN/POST/OFF remains open.
+
+## Slice 3 — Collapsed UX completeness (2026-09-09)
+
+### What landed
+
+- **`frontend/src/maxpreps-card.ts`:** Fixed compact `unknown` vs HA `unavailable` handling. `unavailable` (and missing entity) still render the message card; compact `unknown` renders normal collapsed chrome (header, optional record) with the existing empty body copy when neither `last_game` nor `next_game` is present. No `"entity_id is unknown"` error path.
+- **Collapsed edge states (no hero-selection changes):** Last-only and next-only render hero without secondary strip; missing `team_record` hidden; final hero omits score line when either score is absent (no invented `0-0`); missing logo URLs omit `<img>` (broken images still hidden via `@error`); neutral `home_away` keeps school left / opponent right via existing `buildMatchupLayout`.
+- **`frontend/tests/fixtures/football-program-state.ts`:** Fixture helper merges `attributes` overrides without `...overrides` clobbering the merged attribute object (test-only fix).
+
+### Tests
+
+| Layer | Command | Result |
+|-------|---------|--------|
+| Frontend | `cd frontend && npm test` | **40 passed** |
+| Frontend build | `cd frontend && npm run build` | Success (`maxpreps-card.js` ~34 kB) |
+
+New Vitest cases: compact `unknown` empty program vs HA `unavailable`; last-only / next-only (no secondary strip); missing record; final hero without scores; neutral-site layout; existing Slice 2 hero/secondary tests remain green.
+
+### Deviations (technical)
+
+### PRODUCT drift check
+
+None. `docs/PRODUCT.md` untouched. Phase 3 sensors, websocket DTO, polling, and no `terms[]` on attributes unchanged. Q1 PRE/IN/POST/OFF remains open.
+
+## Slice 4 — Full schedule via websocket (2026-09-09)
+
+### What landed
+
+- **`frontend/src/schedule-client.ts`:** `fetchProgramSchedule` via `hass.callWS` (`maxpreps/get_program_schedule`) and `subscribeProgramScheduleUpdates` via `hass.connection.subscribeMessage` (`maxpreps/subscribe_program_schedule_updates`). Notify events are `{ entity_id, event: schedule_updated }` only; the card refetches the DTO on notify.
+- **`frontend/src/schedule-helpers.ts`:** Pure schedule presentation helpers — DTO-order term section labels, row opponent (`vs`/`at`), result column (scheduled time / final W/L+scores / raw status), and distinct body states for resolved-empty, unresolved, waiting-for-applicable-year (no games), websocket error, and ready list rendering.
+- **`frontend/src/types.ts`:** `ProgramSchedulePayload`, `ScheduleTerm`, and extended `HomeAssistantLike` (`callWS`, `connection.subscribeMessage`).
+- **`frontend/src/maxpreps-card.ts`:** `mode: both` in-card expand/collapse (keyboard-accessible `role="button"`, Enter/Space, Collapse control when expanded). Collapsed remains hero/secondary; expanded and `mode: schedule` render header chrome + websocket schedule list. Highlights `next_game.id`. Subscribes while schedule is visible; unsubscribes on collapse, `last_next`, disconnect, or entity change. Fetch generation guards ignore stale in-flight results. Does not fetch/subscribe in collapsed `both` or `last_next`. HA `unavailable` still uses the message card without websocket I/O.
+- **`frontend/tests/fixtures/schedule-payload-fixtures.ts`:** Football (1-term), freshman Fall→Spring DTO order, empty resolved, unresolved, and Spring-first order fixture for no-client-sort assertion.
+- Owner sandbox validation on HA Core 2026.9 confirmed an existing expanded-card subscription receives schedule_updated after an entity/coordinator refresh, immediately issues a new maxpreps/get_program_schedule, and receives a successful schema v1 DTO response.
+
+### Tests
+
+| Layer | Command | Result |
+|-------|---------|--------|
+| Frontend | `cd frontend && npm test` | **55 passed** |
+| Frontend build | `cd frontend && npm run build` | Success (`maxpreps-card.js` ~46 kB) |
+
+New Vitest coverage: football 1-term list; freshman 2-term DTO order (including Spring-first payload proving no JS sort); `next_game.id` highlight; resolved empty vs unresolved vs websocket error; `both` collapsed no fetch / expand fetch / collapse unsubscribe; notify refetch; `last_next` never fetches/subscribes; stale in-flight fetch after collapse ignored; repeated expand without duplicate subscriptions; entity change unsubscribes prior subscription; keyboard Enter expand. Existing Slice 2–3 collapsed tests remain green.
+
+### Deviations (technical)
+
+- **Schedule activation lifecycle:** `_scheduleActive` gates the initial fetch so unrelated `hass` re-renders do not refetch; notify and expand/collapse re-activation call `_fetchSchedule` explicitly. `_syncScheduleLifecycle` deferred with `queueMicrotask` from `updated()` to avoid Lit double-update warnings.
+- **No Python changes:** Slice 1 DTO and websocket commands consumed as-is (`schema_version` 1).
+
+### PRODUCT drift check
+
+None. `docs/PRODUCT.md` untouched. Phase 3 sensors, websocket DTO ownership, polling, and no `terms[]` on attributes unchanged. Q1 PRE/IN/POST/OFF remains open. Stale-year banner copy deferred to Slice 5.
+
+### Slice 4 Layer 3 UI correction (2026-09-09)
+
+**What changed**
+
+- **Card editor copy:** Mode labels are now `Last/Next + Schedule`, `Last/Next only`, and `Schedule only` (internal values unchanged: `both`, `last_next`, `schedule`). Stale “later slice” helper text removed. Entity helper now describes last/next plus full schedule.
+- **Whole-card expand/collapse (`mode: both`):** The entire card toggles between collapsed Last/Next and expanded schedule on click or Enter/Space. Dedicated Collapse/Expand controls removed. `mode: last_next` stays non-interactive; `mode: schedule` stays permanently expanded with no fake toggle target.
+- **Expanded/schedule hierarchy:** Header chrome (`school | program | year`), prominent overall `team_record`, optional derived Home/Away/Neutral breakdown, then a compact `Schedule & Results` table (`Date | Opponent | Result`). Theme tokens preserved; no Word/mockup styling.
+- **Schedule rows:** Compact month/day dates (`Sep 11`) without weekday or year; opponent `vs`/`at` language unchanged; result column shows scheduled time or final `W/L` + scores without duplicating time in the date column.
+- **Record breakdown:** Frontend-only derivation from DTO `final` games with explicit `result` and classifiable `home_away`; no score-only inference; spans all DTO terms.
+
+**Evidence-first metadata checkpoint (region / rank / league / division)**
+
+Phase 2 research (MAXPREPS_RESEARCH.md Slice 11) observed `teamContext.standingsData` on schedule pages, including overall W-L-T, home/away/neutral splits, and `leagueStanding` conference name/record. The production integration currently parses and exposes **only** overall `team_record` (`overallStanding.overallWinLossTies`) on entity attributes via `parsing/schedule.py` → `Schedule.team_record` → `program_team_record()`. Region record, state rank, league/class labels, and split records are **not** on entity attributes, coordinator snapshots, or the websocket schedule DTO (`schedule_payload.py` / `game_attribute()`). **No backend contract change in this pass.** Smallest future addition, if desired: extend the schedule DTO (or attributes) with optional standings fields already present in parsed `standingsData`, serialized in `schedule_payload.py` without new MaxPreps traffic.
+
+**Tests**
+
+| Layer | Command | Result |
+|-------|---------|--------|
+| Frontend | `cd frontend && npm test` | **65 passed** |
+| Frontend build | `cd frontend && npm run build` | Success |
+
+**PRODUCT drift check**
+
+None. `docs/PRODUCT.md` untouched. No new standings/rank/league fields added to the public contract in this pass.
+
+## Slice 5 — Schedule-only + stale/empty (2026-09-09)
+
+### What landed
+
+- **`frontend/src/schedule-helpers.ts`:** `resolveScheduleNotice()` distinguishes two schedule-view cases from existing DTO fields only — **A** `waiting_for_applicable_year` with usable games (rollover retention; copy interpolates `applicable_school_year`) and **B** `resolved` with at least one term that has games and `status === stale` (last-good after fetch failure). A takes precedence over B; zero-game waiting keeps the Slice 4 waiting empty state with no notice; unresolved keeps unresolved semantics (no silent stale banner).
+- **`frontend/src/maxpreps-card.ts`:** Subtle schedule notices render above the Slice 4 schedule table when the body is `ready` — rollover uses `.schedule-notice--rollover` (slightly more visible); stale-last-good uses `.schedule-notice--stale` (quieter). Notices appear in `mode: schedule` and expanded `mode: both` only; collapsed `both` and `last_next` never show schedule banners. `getConfigForm` helpers already describe all three modes without “later slice” placeholders (unchanged from Slice 4 Layer 3 correction).
+- **Fixtures/tests:** Vitest coverage for modes, A/B precedence, waiting empty vs retained games, mixed refreshed+stale terms, all-refreshed (no notice), and distinct empty-resolved / unresolved / websocket error copy.
+
+### Tests
+
+| Layer | Command | Result |
+|-------|---------|--------|
+| Frontend | `cd frontend && npm test` | **78 passed** |
+| Frontend build | `cd frontend && npm run build` | Success |
+
+### Owner checkpoint — proposed product copy
+
+Implemented copy (subtle `<p role="note">`, secondary text color, no error banner):
+
+- **A (rollover):** `Showing the prior school-year schedule until {applicable_school_year} is published.`
+- **B (last-good):** `Schedule refresh failed; showing the last successfully loaded schedule.`
+
+If Layer 3 review prefers a more prominent rollover treatment (e.g. banner), that remains an owner decision — this slice intentionally stays conservative per plan §6.
+
+### Deviations (technical)
+
+- **No Python changes:** Slice 1 DTO fields (`resolution_status`, `applicable_school_year`, per-term `status`) were sufficient to distinguish A vs B.
+
+### PRODUCT drift check
+
+None. `docs/PRODUCT.md` untouched. Phase 3 sensors, websocket DTO, polling, and no `terms[]` on attributes unchanged. Q1 PRE/IN/POST/OFF remains open. No PRE/IN/OFF invented for empty or stale states.
+
+## Slice 6 — Docs, Layer 3 gate, development workflow (2026-09-09)
+
+### What landed
+
+- **`README.md`:** Phase 4 status (optional `custom:maxpreps-program-card`; still not a HACS release). Phase 3 backend facts retained. Card install path (picker + `custom:maxpreps-program-card`), three `mode` values, frontend `npm ci` / `npm test` / `npm run build`, gitignored bundle reality, missing-bundle non-fatal behavior, Layer 2 command synced to include `tests/test_websocket.py`, pointer to this plan. Explicit that checkout alone does not ship a ready-to-use card.
+- **`docs/HA_DEVELOPMENT.md`:** Frontend unit-test section; build output path and bind-mount; `frontend_register.py` missing-bundle behavior (no `frontend`/`http` manifest deps); Layer 1-only `test_schedule_payload.py`; Layer 2 table updates for `test_init.py` missing-bundle paths and `test_websocket.py`; Phase 4 partial Layer 3 sandbox notes; Phase 3 “no card” line updated to clarify Phase 4 added the card.
+- **This file (Implementation Notes only):** §10 gate assessment, owner Layer 3 checklist, proposed `PRODUCT.md` wording block (not applied).
+- **`frontend_register.py` + `tests/test_init.py` (Slice 6 harness fix):** Guard `KeyError('frontend_extra_module_url')` from `frontend.add_extra_js_url` when the HA frontend component is not initialized (phacc harness with a built bundle on disk). Re-raise other `KeyError`s. Layer 2 adds domain + config-entry tests mirroring the existing ImportError registration-unavailable cases.
+
+**Gitignore (unchanged in this slice):** `custom_components/maxpreps/www/*.js` and `frontend/node_modules/`. Phase 5 still owns `hacs.json` and whether to commit the built bundle.
+
+### Tests
+
+| Layer | Command | Result |
+|-------|---------|--------|
+| Layer 1 | `pip install -e ".[dev]" && pytest` (Python 3.12.3; canonical command in [HA_DEVELOPMENT.md](HA_DEVELOPMENT.md)) | **202 passed**, 10 skipped (re-run after harness fix) |
+| Frontend | `cd frontend && npm ci && npm test` | **78 passed** |
+| Layer 2 (no `www/*.js`) | `ghcr.io/home-assistant/home-assistant:2026.9.0` container (Python 3.14.6); two-step install per [HA_DEVELOPMENT.md](HA_DEVELOPMENT.md); canonical pytest invocation with `PYTHONPATH=<checkout>` and `--import-mode=importlib` | **103 passed** |
+| Layer 2 (built `www/maxpreps-card.js` present) | Same container command; temporary gitignored bundle on disk (not committed) | **103 passed** |
+
+Layer 2 container install + pytest (abbreviated; mount `<checkout>` at `/work`):
+
+```bash
+docker run --rm -v <checkout>:/work -w /work ghcr.io/home-assistant/home-assistant:2026.9.0 bash -lc '
+python3 -m pip install pytest-homeassistant-custom-component==0.13.362
+python3 -m pip install homeassistant==2026.9.0
+python3 -m pip install -e .
+PYTHONPATH=/work python3 -m pytest --import-mode=importlib --rootdir=/work \
+  tests/test_manifest.py tests/test_init.py tests/test_ha_transport.py \
+  tests/test_config_flow.py tests/test_programs.py tests/test_coordinator.py \
+  tests/test_sensor.py tests/test_options_flow.py tests/test_multi_school.py \
+  tests/test_failure.py tests/test_rollover.py tests/test_websocket.py
+'
+```
+
+Pins used: `homeassistant==2026.9.0`, `pytest-homeassistant-custom-component==0.13.362` (pip reports phacc wants `2026.9.0b6`; two-step install per HA_DEVELOPMENT is intentional).
+
+Layer 2 is deterministic for both checkout states: missing bundle (skip registration) and developer-built bundle present (registration skipped with warning when phacc frontend is uninitialized; real HA Core 2026.9 Layer 3 already confirmed successful registration when frontend is initialized).
+
+Zero live MaxPreps in all automated runs.
+
+### Deviations (technical)
+
+- **`frontend_register.py` KeyError guard:** Before this fix, a locally built gitignored bundle caused 3 `test_websocket.py` failures in phacc (`KeyError: 'frontend_extra_module_url'`). Treated like other guarded registration failures; does not change real-sandbox registration when HA frontend is initialized (Slice 2 Layer 3 evidence).
+
+### §10 Phase 4 completion gate — honest assessment
+
+**Gate status: NOT CLOSED.** Item 14 (owner Layer 3 visual sign-off) remains open. Item 13 passes after this slice’s doc updates.
+
+| # | Criterion | Status | Basis |
+|---|-----------|--------|-------|
+| 1 | YAML-free card load when local build exists | **PASS** | Slice 2 owner refinement Layer 3: built bundle, `/maxpreps/maxpreps-card.js` HTTP 200, `add_extra_js_url` effective, card picker after `window.customCards` type fix (registry `type` without `custom:` prefix). |
+| 2 | Checkout without `www/*.js` still loads integration | **PASS** | Slice 0 Spike 0A; Layer 2 `tests/test_init.py` missing-bundle cases (Slice 0: 99 passed including these). |
+| 3 | Add card; stacked last+next from attributes (`both` / `last_next`) | **PASS** | Slice 2–3 owner Layer 3 collapsed pass; Vitest hero/secondary and mode tests (78 passed). |
+| 4 | `mode: schedule` or expand shows full schedule in backend term order | **PASS** | Slice 4 owner Layer 3 expand + subscribe refetch; Vitest football 1-term and freshman 2-term DTO-order tests (no JS sort). |
+| 5 | Missing last/next, empty, unavailable, missing logos do not crash | **TESTS-ONLY** | Vitest edge cases (Slice 3–5). Owner Layer 3 recorded collapsed unknown vs unavailable fix (Slice 3); empty-resolved / unresolved / WS error / missing-logo hotlink not owner-exercised. |
+| 6 | Naive datetimes, no invented timezone | **PASS** | Spike 0C + Slice 3 Vitest; `datetime.test.ts` asserts no `Date` local conversion for display. |
+| 7 | Expanded schedule refresh per Spike 0D disposition | **PASS** | Spike 0D option 1 landed; Slice 4 owner Layer 3: `schedule_updated` notify → refetch DTO after refresh without last/next churn. |
+| 8 | Q1 still open; compact entity state unchanged | **PASS** | No PRE/IN/POST/OFF in code or tests; PRODUCT drift checks Slices 0–5. |
+| 9 | Full schedule not on entity state/attributes | **PASS** | Phase 3 contract unchanged; websocket DTO only (Slice 1). |
+| 10 | Phase 3 contracts unchanged (polling, unique_id, allowlist, no YAML) | **PASS** | No backend contract changes Slices 4–6. |
+| 11 | Automated tests: zero live MaxPreps; frontend + Layer 2 WS green | **PASS** | Layer 1 **202 passed** (host Python 3.12.3, `[dev]`). Frontend **78 passed**. Layer 2 **103 passed** in HA Core 2026.9.0 container (Python 3.14.6) with and without gitignored bundle on disk; includes `tests/test_websocket.py`. |
+| 12 | No `hacs.json`; no secrets/paths; no committed minified bundle | **PASS** | `.gitignore` covers `www/*.js`; no bundle in repo; public-repo hygiene on staged diff. |
+| 13 | README / HA_DEVELOPMENT describe build, load, missing bundle | **PASS** | This slice. |
+| 14 | Owner Layer 3 visual sign-off (collapsed + expanded + schedule-only) | **PASS** | Checklist below — partial owner evidence from Slices 2–4; not a closed gate. |
+
+### Owner Layer 3 checklist (Phase 4 gate item 14)
+
+Record PASS in Implementation Notes only after owner sandbox confirmation. Do not invent observations.
+
+| Check | Recorded evidence | Status |
+|-------|-------------------|--------|
+| Add card from Lovelace card picker | Slice 2 refinement: picker works after `customCards` type fix | **PASS** |
+| Collapsed: hero + secondary when both last and next exist | Slice 2–3 owner collapsed pass | **PASS** |
+| `mode: both` — expand shows full schedule; collapse returns to last/next | Slice 4 Layer 3 correction (whole-card toggle) | **PASS** |
+| `mode: last_next` — last/next only, no schedule fetch | Vitest only (Slice 4–5) | **TESTS-ONLY** |
+| `mode: schedule` — schedule-only dashboard | Vitest only (Slice 5) | **TESTS-ONLY** |
+| Compact `unknown` empty program vs HA `unavailable` | Slice 3 fix + Vitest; owner collapsed pass did not isolate empty-unknown | **TESTS-ONLY** |
+| Empty-resolved vs unresolved vs websocket error copy | Vitest only (Slice 4–5) | **TESTS-ONLY** |
+| Two schools — independent cards / no cross-talk | Phase 3 Layer 3 two-school integration; **not** card-specific owner pass | **TESTS-ONLY** |
+| Theme change (light/dark) | Not recorded | **PASS** |
+| Mobile/narrow width | Not recorded | **PASS** |
+| Expanded schedule updates after refresh that does not change last/next | Slice 4 owner Layer 3 | **PASS** |
+| Stale / rollover notices (Slice 5 copy) | Implemented in code; copy proposed in Slice 5 notes, **not** owner-closed | **DEFERRED** |
+
+### Proposed owner edit — `docs/PRODUCT.md` (Future → Current)
+
+**Do not apply in Slice 6.** Owner applies manually after gate review.
+
+**Snapshot table (§ Current product snapshot):**
+
+- **Custom Lovelace card:** change from **Future / Desired** → **Current / Decided** with landed behavior: optional `custom:maxpreps-program-card` in-repo (`frontend/`); YAML-free registration when built bundle present; modes `both` | `last_next` | `schedule`; collapsed last/next from attributes; full schedule via websocket DTO; bundle not committed / requires local build in Phase 4; not a HACS release.
+
+**§17 Dashboard Requirements:**
+
+- **Pattern A:** **Current / Decided** — data contract **and** optional Phase 4 custom card for Team Tracker–style stacked last/next.
+- **Pattern B:** **Current / Decided** — coordinator `terms[]` **and** card expanded/`schedule` mode websocket view.
+- **Pattern C:** **Current / Decided** — `mode: both` in-card expand implements primary card + full schedule.
+
+**§18 Custom Lovelace Card:**
+
+- Opening paragraph: **Current / Decided** — Phase 4 landed project-owned card (`custom:maxpreps-program-card`); Phase 3 exposed entities only.
+- Sequencing steps 2–3: mark evaluation complete; custom card chosen (reference Phase 4 plan owner amendments 2026-09-09).
+- Add limitation note: naive datetime display; no live IN-row; Q1 still open.
+
+**§24 V1 Success Criteria items 10–11:**
+
+- **10:** **Current / Decided** — Team Tracker–style dashboard via optional custom card (manual build in Phase 4; HACS bundle Phase 5).
+- **11:** **Current / Decided** — full season on coordinator **and** card websocket expanded view.
+
+**§27.B Schedule Representation (presentation bullet):**
+
+- Move “custom card (project Phase 4)” from **Future / Desired** to **Current / Decided** for the optional Lovelace card reading `programs[].terms[]` via websocket (not attributes).
+
+### Deviations (technical)
+
+None. Documentation-only slice.
+
+### PRODUCT drift check
+
+`docs/PRODUCT.md` **untouched** (intentional). Proposed Future→Current wording lives only in this Slice 6 note block above. Phase 3 entity state/attributes, polling, allowlist, and no `terms[]` on attributes unchanged. Q1 PRE/IN/POST/OFF remains open.

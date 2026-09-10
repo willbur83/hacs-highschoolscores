@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from custom_components.maxpreps.client import MaxPrepsClient
-from custom_components.maxpreps.models import GameStatus, School, Schedule, TeamSeason
+from custom_components.high_school_sports_scores.client import MaxPrepsClient
+from custom_components.high_school_sports_scores.models import GameStatus, School, Schedule, TeamSeason
 from tests.helpers.fixture_transport import FixtureTransport
 from tests.test_schedule import (
     BASEBALL_SPORT_SEASON_ID,

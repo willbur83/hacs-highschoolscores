@@ -12,8 +12,8 @@ from homeassistant.config_entries import ConfigEntryState
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers import entity_registry as er
 
-from custom_components.maxpreps.async_client import AsyncMaxPrepsClient
-from custom_components.maxpreps.const import (
+from custom_components.high_school_sports_scores.async_client import AsyncMaxPrepsClient
+from custom_components.high_school_sports_scores.const import (
     CONF_CANONICAL_URL,
     CONF_GENDER,
     CONF_LEVEL,
@@ -24,7 +24,7 @@ from custom_components.maxpreps.const import (
     CONF_SUBSCRIPTIONS,
     DOMAIN,
 )
-from custom_components.maxpreps.coordinator import TermRefreshStatus
+from custom_components.high_school_sports_scores.coordinator import TermRefreshStatus
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from tests.helpers.async_fixture_transport import AsyncFixtureTransport
 from tests.helpers.coordinator_test_helpers import FROZEN_APPLICABLE_DATE, centennial_entry
@@ -60,15 +60,15 @@ def fixture_client():
 
     with (
         patch(
-            "custom_components.maxpreps.school_year.homeassistant_local_date",
+            "custom_components.high_school_sports_scores.school_year.homeassistant_local_date",
             return_value=FROZEN_APPLICABLE_DATE,
         ),
         patch(
-            "custom_components.maxpreps.config_flow.client_factory.create_async_client",
+            "custom_components.high_school_sports_scores.config_flow.client_factory.create_async_client",
             return_value=client,
         ),
         patch(
-            "custom_components.maxpreps.client_factory.create_async_client",
+            "custom_components.high_school_sports_scores.client_factory.create_async_client",
             return_value=client,
         ),
     ):
@@ -246,11 +246,11 @@ async def test_freshman_baseball_one_option_without_entity_parenthetical(
 
     with (
         patch(
-            "custom_components.maxpreps.config_flow.client_factory.create_async_client",
+            "custom_components.high_school_sports_scores.config_flow.client_factory.create_async_client",
             return_value=client,
         ),
         patch(
-            "custom_components.maxpreps.client_factory.create_async_client",
+            "custom_components.high_school_sports_scores.client_factory.create_async_client",
             return_value=client,
         ),
     ):
@@ -341,7 +341,7 @@ async def test_availability_matrix_after_options_add_program(
     entry.add_to_hass(hass)
 
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
@@ -349,7 +349,7 @@ async def test_availability_matrix_after_options_add_program(
 
         result = await _init_options(hass, entry)
         with patch(
-            "custom_components.maxpreps.config_flow.client_factory.create_async_client",
+            "custom_components.high_school_sports_scores.config_flow.client_factory.create_async_client",
             return_value=client,
         ):
             result = await hass.config_entries.options.async_configure(
@@ -513,7 +513,7 @@ async def test_invalid_logo_override_rejected(
 @pytest.fixture
 def frozen_applicable_date():
     with patch(
-        "custom_components.maxpreps.school_year.homeassistant_local_date",
+        "custom_components.high_school_sports_scores.school_year.homeassistant_local_date",
         return_value=FROZEN_APPLICABLE_DATE,
     ):
         yield FROZEN_APPLICABLE_DATE

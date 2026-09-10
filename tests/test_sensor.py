@@ -14,7 +14,7 @@ from homeassistant.config_entries import ConfigEntryState
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 
-from custom_components.maxpreps.const import (
+from custom_components.high_school_sports_scores.const import (
     ATTRIBUTION,
     CONF_GENDER,
     CONF_LEVEL,
@@ -23,14 +23,14 @@ from custom_components.maxpreps.const import (
     CONF_SPORT,
     DOMAIN,
 )
-from custom_components.maxpreps.coordinator import (
+from custom_components.high_school_sports_scores.coordinator import (
     ProgramResolutionStatus,
     ProgramSnapshot,
     TermRefreshStatus,
     TermSnapshot,
 )
-from custom_components.maxpreps.models import Game, GameStatus, HomeAway, Schedule, TeamSeason
-from custom_components.maxpreps.program_sensor import (
+from custom_components.high_school_sports_scores.models import Game, GameStatus, HomeAway, Schedule, TeamSeason
+from custom_components.high_school_sports_scores.program_sensor import (
     find_last_game,
     find_next_game,
     game_attribute,
@@ -200,9 +200,9 @@ async def test_freshman_baseball_unique_id_stable_after_term_metadata_refresh(
 
     transport = CoordinatorTestTransport()
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=__import__(
-            "custom_components.maxpreps.async_client", fromlist=["AsyncMaxPrepsClient"]
+            "custom_components.high_school_sports_scores.async_client", fromlist=["AsyncMaxPrepsClient"]
         ).AsyncMaxPrepsClient(transport),
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
@@ -541,7 +541,7 @@ async def test_unresolved_program_sensor_unavailable(
 async def test_whole_freshman_program_failure_leaves_football_available(
     hass, enable_custom_integrations, frozen_applicable_date
 ) -> None:
-    from custom_components.maxpreps.async_client import AsyncMaxPrepsClient
+    from custom_components.high_school_sports_scores.async_client import AsyncMaxPrepsClient
     from tests.test_coordinator import (
         FRESHMAN_BASEBALL_FALL_SCHEDULE_URL,
         FRESHMAN_BASEBALL_SPRING_SCHEDULE_URL,
@@ -558,7 +558,7 @@ async def test_whole_freshman_program_failure_leaves_football_available(
     entry = centennial_entry([FOOTBALL_SUBSCRIPTION, FRESHMAN_BASEBALL_SUBSCRIPTION])
     entry.add_to_hass(hass)
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=AsyncMaxPrepsClient(transport),
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
@@ -585,7 +585,7 @@ async def test_whole_freshman_program_failure_leaves_football_available(
 async def test_one_freshman_term_error_keeps_entity_and_football_available(
     hass, enable_custom_integrations, frozen_applicable_date
 ) -> None:
-    from custom_components.maxpreps.async_client import AsyncMaxPrepsClient
+    from custom_components.high_school_sports_scores.async_client import AsyncMaxPrepsClient
     from tests.test_coordinator import FRESHMAN_BASEBALL_SPRING_SCHEDULE_URL
 
     transport = CoordinatorTestTransport(
@@ -594,7 +594,7 @@ async def test_one_freshman_term_error_keeps_entity_and_football_available(
     entry = centennial_entry([FOOTBALL_SUBSCRIPTION, FRESHMAN_BASEBALL_SUBSCRIPTION])
     entry.add_to_hass(hass)
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=AsyncMaxPrepsClient(transport),
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
@@ -646,7 +646,7 @@ async def test_stale_last_good_term_keeps_sensor_available(
     hass, enable_custom_integrations, frozen_applicable_date
 ) -> None:
     """Stale retained last-good schedule data keeps the program sensor available."""
-    from custom_components.maxpreps.async_client import AsyncMaxPrepsClient
+    from custom_components.high_school_sports_scores.async_client import AsyncMaxPrepsClient
 
     transport = CoordinatorTestTransport()
     client = AsyncMaxPrepsClient(transport)
@@ -654,7 +654,7 @@ async def test_stale_last_good_term_keeps_sensor_available(
     entry.add_to_hass(hass)
 
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
@@ -665,7 +665,7 @@ async def test_stale_last_good_term_keeps_sensor_available(
         )
         failing_client = AsyncMaxPrepsClient(failing_transport)
         with patch(
-            "custom_components.maxpreps.client_factory.create_async_client",
+            "custom_components.high_school_sports_scores.client_factory.create_async_client",
             return_value=failing_client,
         ):
             await entry.runtime_data.async_refresh()
@@ -914,7 +914,7 @@ async def test_football_game_attributes_include_opponent_logo(three_program_entr
 
 
 def test_game_attribute_includes_opponent_logo_when_present() -> None:
-    from custom_components.maxpreps.program_sensor import ProgramGameRef
+    from custom_components.high_school_sports_scores.program_sensor import ProgramGameRef
 
     game = Game(
         id="g1",

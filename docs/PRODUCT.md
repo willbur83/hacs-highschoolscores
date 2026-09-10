@@ -29,7 +29,7 @@ Phase 3 closed its completion gate on 2026-09-09 (Layer 3 owner sandbox). Histor
 | Datetimes | **Current / Decided** | Provider `Game.date` is timezone-naive. Not school-local wall time; not offset-correct kickoff. Do not invent TZ correction. |
 | Live scores | **Current / Decided** | No live-score guarantee. Unknown `contestState` stays `unknown`. |
 | Multi-school | **Current / Decided** | Independent config entries, devices, and coordinators. Reload of one school does not disturb another. |
-| Custom Lovelace card | **Future / Desired** | Phase 4. Phase 3 exposes the data contract only. |
+| Custom Lovelace card | **Current / Decided** | Optional `custom:high-school-sports-scores-card` in-repo (`frontend/`); YAML-free registration when built bundle present; modes `both` \| `last_next` \| `schedule`; collapsed last/next from attributes; full schedule via websocket DTO; bundle not committed / requires local build in Phase 4; not a HACS release. Owner-approved in the development repository/sandbox — **not** HACS packaging, release installation, or public distribution. |
 | Adaptive / game-day polling | **Future / Desired** | Not implemented. Conservative 12h polling is current. |
 | Calendar entities | **Future / Desired** | Blocked by timezone-naive provider datetimes. |
 | HACS store listing | **Future / Desired** | Phase 5. Manual/custom-component install only today. |
@@ -109,9 +109,9 @@ Johns Creek 18
 W
 ```
 
-**Current / Decided:** Program sensors expose compact state plus `last_game` / `next_game` attributes (and school `entity_picture`) so native or existing Home Assistant cards can show a current/next game without a custom frontend.
+**Current / Decided:** Program sensors expose compact state plus `last_game` / `next_game` attributes (and school `entity_picture`) so native or existing Home Assistant cards can show a current/next game. An optional project-owned Lovelace card (`custom:high-school-sports-scores-card`) provides a Team Tracker–style stacked last/next display when the frontend bundle is built locally (Phase 4; not a HACS release).
 
-**Future / Desired:** A polished Team Tracker-style Lovelace card (project Phase 4). The integration itself does not ship a custom card today. The `PRE` / `FINAL` prose in the examples above is illustrative dashboard copy, **not** the current entity state vocabulary (see §5 and Q1).
+The `PRE` / `FINAL` prose in the examples above is illustrative dashboard copy, **not** the current entity state vocabulary (see §5 and Q1).
 
 ---
 
@@ -134,14 +134,14 @@ Possible implementations include:
     
 - Navigation to a dedicated dashboard/subview
     
-- A future custom card with expandable schedule support
+- The Phase 4 custom card with expandable schedule support
     
 
-**Current / Decided:** Full school-year schedule/result data lives on the coordinator contract `programs[].terms[]` (one term = one `TeamSeason` + schedule). Entity **state** is compact and does not contain the schedule list.
+**Current / Decided:** Full school-year schedule/result data lives on the coordinator contract `programs[].terms[]` (one term = one `TeamSeason` + schedule). Entity **state** is compact and does not contain the schedule list. The optional Phase 4 custom card reads that contract via websocket for expanded or `schedule`-only presentation.
 
-**Future / Desired:** more-info, a dedicated subview, or a custom card that reads that coordinator contract.
+**Future / Desired:** more-info, a dedicated subview, or other native HA presentation alternatives.
 
-The exact frontend implementation is **Open / TBD**. Calendar entities are **Future / Desired** and are blocked by timezone-naive provider datetimes — do not treat calendar support as shipped.
+**Current / Decided:** The Phase 4 custom card (`custom:high-school-sports-scores-card`) implements expandable and `schedule`-only full-schedule presentation via the websocket DTO. Calendar entities are **Future / Desired** and are blocked by timezone-naive provider datetimes — do not treat calendar support as shipped.
 
 ---
 
@@ -777,15 +777,15 @@ The integration should support at least three presentation patterns.
 
 ## Pattern A: Current/Next Game Card
 
-Team Tracker-like display. **Current / Decided:** `last_game` + `next_game` + compact state + `entity_picture` exist for this. **Future / Desired:** a polished custom card (project Phase 4).
+Team Tracker-like display. **Current / Decided:** data contract (`last_game` + `next_game` + compact state + `entity_picture`) **and** optional Phase 4 custom card for Team Tracker–style stacked last/next.
 
 ## Pattern B: Full Schedule
 
-Season schedule/results. **Current / Decided:** coordinator `programs[].terms[]`. **Future / Desired:** a user-visible expanded view.
+Season schedule/results. **Current / Decided:** coordinator `programs[].terms[]` **and** card expanded/`schedule` mode websocket view.
 
 ## Pattern C: Both
 
-Primary card that leads to or accompanies full schedule. **Future / Desired.**
+Primary card that leads to or accompanies full schedule. **Current / Decided:** `mode: both` in-card expand implements primary card + full schedule.
 
 The integration should expose enough structured data to support all three without requiring users to create REST sensors or templates themselves.
 
@@ -793,13 +793,15 @@ The integration should expose enough structured data to support all three withou
 
 # 18. Custom Lovelace Card
 
-**Future / Desired.** A custom frontend card is not required for Phase 3 and was not built. Project **Phase 4** is where a last/next card may be planned. Do not confuse the card-sequencing sketch below with project Phase 1/2/3 (research / client / HA integration).
+**Current / Decided.** Phase 4 landed a project-owned optional card (`custom:high-school-sports-scores-card`). Phase 3 exposed entities and attributes only; the card is a separate frontend bundle (`frontend/`) that requires a local build and is not committed to git. Do not confuse the card-sequencing sketch below with project Phase 1/2/3 (research / client / HA integration).
 
 Preferred sequencing:
 
 1. Expose excellent Home Assistant entities and attributes. (**Current / Decided** for Phase 3.)
-2. Determine whether native cards, Mushroom, Auto Entities, or other existing frontend tools can create the desired experience. (**Future / Desired.**)
-3. Only create a custom Lovelace card if it meaningfully improves usability. (**Future / Desired** — project Phase 4.)
+2. Determine whether native cards, Mushroom, Auto Entities, or other existing frontend tools can create the desired experience. (**Current / Decided** — evaluation complete; native cards alone were insufficient for the desired Team Tracker + expandable schedule UX.)
+3. Only create a custom Lovelace card if it meaningfully improves usability. (**Current / Decided** — custom card chosen; see Phase 4 plan owner amendments 2026-09-09.)
+
+**Limitations (Current / Decided):** Provider datetimes remain timezone-naive in display. No live or in-progress game presentation is promised. Q1 Team Tracker `PRE` / `IN` / `POST` / `OFF` mapping remains **Open / TBD** — do not invent it.
 
 Do not couple the backend integration to a custom frontend component.
 
@@ -959,7 +961,7 @@ Production Home Assistant should not be the primary development environment.
 
 # 22. Repository Structure
 
-**Current / Decided:** Public repo `willbur83/hacs-highschoolscores`. Package root is `custom_components/maxpreps/` (client, `parsing/`, coordinator, config/options flow, sensors). Tests live under `tests/` with MaxPreps fixtures. There is **no** `hacs.json` yet (Phase 5). There is no top-level `api.py` — parsers live under `parsing/`.
+**Current / Decided:** Public repo `willbur83/hacs-highschoolscores`. Package root is `custom_components/high_school_sports_scores/` (client, `parsing/`, coordinator, config/options flow, sensors). Tests live under `tests/` with MaxPreps fixtures. There is **no** `hacs.json` yet (Phase 5). There is no top-level `api.py` — parsers live under `parsing/`.
 
 The original sketch (including `hacs.json` and `api.py`) is retained only as historical intent:
 
@@ -988,7 +990,7 @@ Do not create a separate Python package/repository initially unless implementati
 
 # 23. Development Environment
 
-**Current / Decided:** Develop against a disposable Home Assistant **Core container** with this repository’s `custom_components/maxpreps` bind-mounted. Pins, test layers, and the sandbox workflow are in [HA_DEVELOPMENT.md](HA_DEVELOPMENT.md). Keep HA config and secrets **outside** this git repository. Operator compose files and machine-specific paths belong in unpublished operator notes.
+**Current / Decided:** Develop against a disposable Home Assistant **Core container** with this repository’s `custom_components/high_school_sports_scores` bind-mounted. Pins, test layers, and the sandbox workflow are in [HA_DEVELOPMENT.md](HA_DEVELOPMENT.md). Keep HA config and secrets **outside** this git repository. Operator compose files and machine-specific paths belong in unpublished operator notes.
 
 Do not use another full HAOS VM as the primary development environment. Do not commit host names, local filesystem paths, or compose contents here.
 
@@ -1016,9 +1018,9 @@ The first **public** release (HACS-installable) is successful if the list below 
     
 9. Upcoming games show scheduled date/time/opponent. (**Current / Decided** — `next_game`; naive datetime.)
     
-10. Data is usable in a Team Tracker-style dashboard experience. (**Current / Decided** as a data contract; polished custom card is **Future / Desired**.)
+10. Data is usable in a Team Tracker-style dashboard experience. (**Current / Decided** — via optional custom card; manual frontend build in Phase 4; HACS-bundled card in Phase 5.)
     
-11. Full season schedule data is available for dashboard display. (**Current / Decided** on the coordinator; frontend expanded view is **Future / Desired**.)
+11. Full season schedule data is available for dashboard display. (**Current / Decided** — on the coordinator **and** via the card websocket expanded view.)
     
 12. Home Assistant automations can trigger around scheduled games and newly discovered final scores. (**Current / Decided** at coordinator-refresh granularity; timezone-correct “minutes before kickoff” is **not** guaranteed.)
     
@@ -1112,9 +1114,13 @@ Items marked **Decided** are current product truth. Items still open must not be
 - Program sensors expose compact state plus concise `last_game` / `next_game` attributes.
 - Not one entity per contest. Full schedule is **not** dumped into entity state.
 
+**Current / Decided for presentation:**
+
+- Optional Lovelace card (`custom:high-school-sports-scores-card`) reading `programs[].terms[]` via websocket (not attributes); modes `both` \| `last_next` \| `schedule`; requires local frontend build in Phase 4 (not a HACS release).
+
 **Future / Desired / still open for presentation:**
 
-- more-info vs dedicated dashboard vs custom card (project Phase 4)
+- more-info vs dedicated dashboard vs other native HA alternatives
 - Calendar entities (blocked by timezone-naive provider datetimes — do not ship calendar as if kickoff instants were correct)
 - event entities for reschedule/cancel
 
@@ -1245,7 +1251,7 @@ Status after Phase 1–3. “Validated” means research + landed client/integra
     
 9. Logos/images can either be referenced directly or cached/represented without violating HA frontend expectations. **Current / Decided** for automatic `entity_picture` plus HTTPS/`/local/` override. Owner sandbox confirmed automatic logo rendering. MediaSelector upload remains deferred.
     
-10. Existing Home Assistant cards can provide an acceptable first dashboard experience. **Unchanged / Future** — custom card is optional (Phase 4).
+10. Existing Home Assistant cards can provide an acceptable first dashboard experience. **Validated** — native cards work from attributes; optional Phase 4 custom card improves Team Tracker + schedule UX.
     
 11. A custom frontend card is optional rather than necessary for initial adoption. **Unchanged.**
     
@@ -1327,4 +1333,4 @@ The first **public** release is done when a normal Home Assistant user can:
 
 > Install it, find their school, select their teams, see schedules and scores, put that information on a dashboard, and build useful game-related automations without needing to understand MaxPreps internals.
 
-**Current / Decided:** That loop works as a custom component (UI config, allowlisted programs, coordinator schedules, last/next, conservative polling). **Future / Desired:** HACS install path (Phase 5) and a polished last/next card (Phase 4).
+**Current / Decided:** That loop works as a custom component (UI config, allowlisted programs, coordinator schedules, last/next, conservative polling, optional Phase 4 Lovelace card with local frontend build). **Future / Desired:** HACS install path and release-bundled card (Phase 5).

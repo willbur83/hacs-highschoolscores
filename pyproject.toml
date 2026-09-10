@@ -11,6 +11,8 @@ requires-python = ">=3.12"
 dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",
+    "awesomeversion>=25.0",
+    "packaging>=24.0",
 ]
 ha = [
     "homeassistant==2026.9.0",

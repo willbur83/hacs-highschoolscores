@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from custom_components.maxpreps.programs import group_school_year_programs
+from custom_components.high_school_sports_scores.programs import group_school_year_programs
 from tests.helpers.team_season_builders import make_team_season
 
 

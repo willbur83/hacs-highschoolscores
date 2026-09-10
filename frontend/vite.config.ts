@@ -3,12 +3,12 @@ import { resolve } from "node:path";
 
 export default defineConfig({
   build: {
-    outDir: resolve(__dirname, "../custom_components/maxpreps/www"),
+    outDir: resolve(__dirname, "../custom_components/high_school_sports_scores/www"),
     emptyOutDir: false,
     lib: {
-      entry: resolve(__dirname, "src/maxpreps-card.ts"),
+      entry: resolve(__dirname, "src/high-school-sports-scores-card.ts"),
       formats: ["es"],
-      fileName: () => "maxpreps-card.js",
+      fileName: () => "high-school-sports-scores-card.js",
     },
     rollupOptions: {
       output: {
@@ -17,7 +17,7 @@ export default defineConfig({
     },
   },
   test: {
-    environment: "node",
+    environment: "happy-dom",
     include: ["tests/**/*.test.ts"],
   },
 });

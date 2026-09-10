@@ -6,7 +6,7 @@ from datetime import date
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.maxpreps.const import (
+from custom_components.high_school_sports_scores.const import (
     CONF_CANONICAL_URL,
     CONF_MASCOT_URL,
     CONF_NAME,

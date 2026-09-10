@@ -2,10 +2,10 @@ import copy
 
 import pytest
 
-from custom_components.maxpreps.exceptions import ContestSchemaError
-from custom_components.maxpreps.models import GameStatus
-from custom_components.maxpreps.parsing.contests import CONTEST_ROW_ARITY
-from custom_components.maxpreps.parsing.schedule import parse_schedule_page_props
+from custom_components.high_school_sports_scores.exceptions import ContestSchemaError
+from custom_components.high_school_sports_scores.models import GameStatus
+from custom_components.high_school_sports_scores.parsing.contests import CONTEST_ROW_ARITY
+from custom_components.high_school_sports_scores.parsing.schedule import parse_schedule_page_props
 from tests.helpers.fixtures import load_schedule_page_props
 from tests.test_search import (
     BAINBRIDGE,

@@ -12,8 +12,8 @@ pytest.importorskip("homeassistant")
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResultType, InvalidData
 
-from custom_components.maxpreps.async_client import AsyncMaxPrepsClient
-from custom_components.maxpreps.const import (
+from custom_components.high_school_sports_scores.async_client import AsyncMaxPrepsClient
+from custom_components.high_school_sports_scores.const import (
     CONF_CANONICAL_URL,
     CONF_GENDER,
     CONF_LEVEL,
@@ -23,7 +23,7 @@ from custom_components.maxpreps.const import (
     CONF_SUBSCRIPTIONS,
     DOMAIN,
 )
-from custom_components.maxpreps.urls import build_search_url
+from custom_components.high_school_sports_scores.urls import build_search_url
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from tests.helpers.async_fixture_transport import AsyncFixtureTransport
 from tests.test_search import (
@@ -87,11 +87,11 @@ def fixture_client():
 
     with (
         patch(
-            "custom_components.maxpreps.school_year.homeassistant_local_date",
+            "custom_components.high_school_sports_scores.school_year.homeassistant_local_date",
             return_value=FROZEN_APPLICABLE_DATE,
         ),
         patch(
-            "custom_components.maxpreps.config_flow.client_factory.create_async_client",
+            "custom_components.high_school_sports_scores.config_flow.client_factory.create_async_client",
             return_value=client,
         ),
     ):
@@ -508,11 +508,11 @@ async def test_applicable_year_without_provider_rows_aborts_no_supported_sports(
 
     with (
         patch(
-            "custom_components.maxpreps.school_year.homeassistant_local_date",
+            "custom_components.high_school_sports_scores.school_year.homeassistant_local_date",
             return_value=FUTURE_APPLICABLE_DATE,
         ),
         patch(
-            "custom_components.maxpreps.config_flow.client_factory.create_async_client",
+            "custom_components.high_school_sports_scores.config_flow.client_factory.create_async_client",
             return_value=client,
         ),
     ):

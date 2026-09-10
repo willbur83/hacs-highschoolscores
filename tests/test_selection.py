@@ -1,12 +1,12 @@
 import pytest
 
-from custom_components.maxpreps.exceptions import (
+from custom_components.high_school_sports_scores.exceptions import (
     CurrentCohortAmbiguousError,
     CurrentCohortEmptyError,
 )
-from custom_components.maxpreps.models import TeamSeason
-from custom_components.maxpreps.parsing.sport_seasons import parse_sport_seasons
-from custom_components.maxpreps.selection import (
+from custom_components.high_school_sports_scores.models import TeamSeason
+from custom_components.high_school_sports_scores.parsing.sport_seasons import parse_sport_seasons
+from custom_components.high_school_sports_scores.selection import (
     _school_year_start,
     canonical_url_year_segment,
     canonical_url_year_segments,

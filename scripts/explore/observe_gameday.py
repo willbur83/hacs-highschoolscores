@@ -50,8 +50,8 @@ if str(_SCRIPTS_EXPLORE) not in sys.path:
 
 from capture import FetchResult, fetch_url  # noqa: E402
 
-from custom_components.maxpreps.exceptions import ContestSchemaError  # noqa: E402
-from custom_components.maxpreps.parsing.contests import (  # noqa: E402
+from custom_components.high_school_sports_scores.exceptions import ContestSchemaError  # noqa: E402
+from custom_components.high_school_sports_scores.parsing.contests import (  # noqa: E402
     IDX_CANONICAL_URL,
     IDX_CONTEST_ID,
     IDX_CONTEST_STATE,
@@ -66,7 +66,7 @@ from custom_components.maxpreps.parsing.contests import (  # noqa: E402
     decode_contest_row,
     validate_contests_shape,
 )
-from custom_components.maxpreps.parsing.next_data import extract_page_props  # noqa: E402
+from custom_components.high_school_sports_scores.parsing.next_data import extract_page_props  # noqa: E402
 
 OBSERVE_OUTPUT_ROOT = REPO_ROOT / "captures" / "private" / "observe_gameday"
 MIN_INTERVAL_SECONDS = 300

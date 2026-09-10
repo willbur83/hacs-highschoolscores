@@ -5,15 +5,15 @@ from __future__ import annotations
 from dataclasses import replace
 from datetime import datetime
 
-from custom_components.maxpreps.models import GameStatus, TeamSeason
-from custom_components.maxpreps.parsing.schedule import parse_schedule_page_props
-from custom_components.maxpreps.parsing.sport_seasons import parse_sport_seasons
-from custom_components.maxpreps.schedule_payload import (
+from custom_components.high_school_sports_scores.models import GameStatus, TeamSeason
+from custom_components.high_school_sports_scores.parsing.schedule import parse_schedule_page_props
+from custom_components.high_school_sports_scores.parsing.sport_seasons import parse_sport_seasons
+from custom_components.high_school_sports_scores.schedule_payload import (
     SCHEMA_VERSION,
     build_program_schedule_payload,
     sort_term_snapshots_for_presentation,
 )
-from custom_components.maxpreps.snapshots import (
+from custom_components.high_school_sports_scores.snapshots import (
     ProgramResolutionStatus,
     ProgramSnapshot,
     TermRefreshStatus,

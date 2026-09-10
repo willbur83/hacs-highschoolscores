@@ -1,0 +1,11 @@
+{
+  "domain": "high_school_sports_scores",
+  "name": "High School Sports Scores",
+  "codeowners": ["@willbur83"],
+  "config_flow": true,
+  "documentation": "https://github.com/willbur83/hacs-highschoolscores",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/willbur83/hacs-highschoolscores/issues",
+  "version": "0.0.0"
+}

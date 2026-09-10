@@ -1,0 +1,823 @@
+# Phase 5
+
+This file has two parts:
+
+1. **Approved plan** — the Phase 5 public-release plan after planning review, **plus owner amendments dated 2026-09-09** that lock product identity, MIT license, HACS ZIP-release architecture, card type, beta-coverage intent, and a version-syntax evidence checkpoint.
+2. **Implementation Notes** — what completed slices actually did. Do not rewrite historical notes as though later owner decisions existed at the time. Differences from the then-current plan belong there.
+
+Do not treat Implementation Notes as amendments to the approved plan.
+Do not rewrite historical Phase 3 or Phase 4 notes in [docs/PHASE3_PLAN.md](PHASE3_PLAN.md) or [docs/PHASE4_PLAN.md](PHASE4_PLAN.md).
+
+### Owner amendments (2026-09-09)
+
+These decisions supersede any planning-time “recommend MIT”, “all three testers must complete”, “lock `0.1.0-beta.1` in manifest files”, or “card type is a recommendation” language.
+
+- **License: MIT.** Create a conventional MIT `LICENSE` file. README must distinguish that MIT applies to **this project’s source code** and does **not** grant rights to MaxPreps content, trademarks, imagery, or other provider-owned material.
+- **Card type is locked:** Lovelace `custom:high-school-sports-scores-card`; picker/`customCards.type` `high-school-sports-scores-card` (no `custom:` prefix in the picker registry — Phase 4 Layer 3 lesson). No compatibility alias for `custom:maxpreps-program-card`.
+- **Domain is locked:** `high_school_sports_scores`. No dual-domain shim. No released-user migration (no external releases/users yet).
+- **Beta gate is coverage, not headcount.** Seek all three nearby testers; require meaningful independent validation across multiple real HAOS environments. If a tester drops, document why and obtain equivalent independent coverage. Do not silently reduce external coverage.
+- **Version-file syntax is not locked** to `0.1.0-beta.1`. Human-facing first beta remains conceptually `v0.1.0-beta.1`; internal manifest/const/pyproject strings must be validated against Home Assistant, HACS/AwesomeVersion, and PEP 440 before any version bump or tag-to-manifest comparison is coded.
+- **Public README** describes live/in-progress limitations in user language. Do not expose internal “Q1” shorthand to strangers. Keep Q1 / PRE / IN / POST / OFF in PRODUCT.md and phase docs.
+- **Slice order (late-stage):** Slice 6 cuts the first GitHub pre-release artifact. Slice 7 is owner clean-install of that artifact, then external beta. Do not attempt a HACS release-artifact install before a release exists.
+- **`hide_default_branch`:** deliberate policy because `main` has no generated frontend bundle — not a claim that `zip_release` makes the default branch universally uninstallable.
+- **Brand path:** HA 2026.3+ supported custom-integration location `custom_components/<domain>/brand/icon.png`. HACS requires branding; do not imply HACS uniquely invented that inline path.
+
+---
+
+# Phase 5 — Public HACS release
+
+## 1. Objective
+
+Turn the completed Phase 4 project into a clean, public, HACS-installable Home Assistant integration named **High School Sports Scores** (informal **HSSS**), with:
+
+- permanent domain `high_school_sports_scores`
+- public identity/branding cleanup (product vs MaxPreps provider)
+- conventional HACS ZIP-release packaging
+- deterministic frontend bundling in the release artifact
+- GitHub release automation
+- HACS/hassfest validation
+- clean stranger-facing install docs
+- developer clean-install of the **actual release artifact**
+- private beta with meaningful independent external HAOS coverage
+- first stable `v0.1.0` readiness
+
+Do **not** expand product functionality.
+
+---
+
+## 2. Authorities / baseline
+
+Treat in this order:
+
+| Authority | Role |
+|-----------|------|
+| [docs/PRODUCT.md](PRODUCT.md) | Product behavior. Current / Decided vs Future / Desired vs Open / TBD. Do not silently overwrite. Slice 0 reconciles landed Phase 4 card wording before release work. |
+| This plan | Phase 5 release/identity/packaging intent, including 2026-09-09 owner amendments |
+| [docs/PHASE4_PLAN.md](PHASE4_PLAN.md) | Landed card/websocket contracts. Implementation Notes are history, not product authority. |
+| [docs/HA_DEVELOPMENT.md](HA_DEVELOPMENT.md) | Core 2026.9 pins, Layer 1/2/3 conventions |
+| Landed Phase 3/4 code and tests | Technical contract Phase 5 must not break aside from identity strings/paths |
+| Current HACS/HA docs cited in §7–§8 | Do not invent HACS behavior |
+
+Phase 4 is **complete**. Owner Layer 3 visual checks (2026-09-09): light, dark, narrow/mobile, explicit `last_next`, explicit `schedule` all PASS. Stale/rollover notice appearance is deferred/non-blocking.
+
+Current repo facts (2026-09-09):
+
+- Public GitHub: `willbur83/hacs-highschoolscores` on `main`; **0 releases, 0 tags**, empty `.github/`, no `hacs.json`, no `LICENSE`, no `info.md`, no `CODEOWNERS` file
+- Package root: [`custom_components/maxpreps/`](../custom_components/maxpreps/); `manifest.json` domain `maxpreps`, name `MaxPreps`, version `0.0.0`, **missing `issue_tracker`** (HACS-required)
+- Card: `custom:maxpreps-program-card`; bundle `www/maxpreps-card.js` **gitignored**
+- GitHub description still says “MaxPreps”; topics empty; GitHub license `null`
+
+---
+
+## 3. Locked owner decisions
+
+Do not re-litigate:
+
+| Item | Decision |
+|------|----------|
+| Public name | High School Sports Scores |
+| Informal shorthand | HSSS |
+| HA domain | `high_school_sports_scores` |
+| Provider | MaxPreps (unchanged) |
+| Lovelace type | `custom:high-school-sports-scores-card` |
+| Picker / custom element type | `high-school-sports-scores-card` |
+| Old card type | No compatibility alias for `custom:maxpreps-program-card` |
+| Migration | No dual-domain shim; no released-user migration |
+| Rename timing | Now, before any beta/public release |
+| License | **MIT** for this repository’s source code |
+| Release model | Conventional HACS integration; GitHub Releases; `zip_release`; CI-produced ZIP; no custom installer |
+| Frontend source | stays in `frontend/` |
+| Generated JS | remains gitignored in git; **must** be inside the release ZIP under `custom_components/high_school_sports_scores/www/` |
+| End-user HAOS | no npm requirement |
+| First beta (human-facing) | conceptually `v0.1.0-beta.1` |
+| First stable (human-facing) | `v0.1.0` |
+| Attribution | independent-project disclaimer + MaxPreps as data source |
+| Branding | no MaxPreps logos as project branding |
+| Beta cohort | three nearby HAOS testers are the planned/default cohort; gate is independent coverage, not exact headcount |
+| Product scope | no new sports, polling, Q1 implementation, timezone, calendar, region/rank, card redesign |
+
+Provider-specific implementation names may remain `MaxPreps` where they genuinely refer to the upstream provider/client/parser/data source. Do not blindly rename those symbols.
+
+---
+
+## 4. Key risks / unknowns requiring evidence
+
+| Risk | Evidence / handling |
+|------|---------------------|
+| HACS ZIP vs preferred model | **No conflict found.** Current HACS docs: `zip_release` is **supported for integrations** and requires `filename`. HACS downloads that GitHub Release asset and `extractall`s into `custom_components/<domain>/`. If later HACS evidence proves incompatibility, **stop and report** before changing direction. |
+| ZIP internal layout | Files must sit at **archive root** (`manifest.json` at zip root). A nested `high_school_sports_scores/` folder would install as `custom_components/high_school_sports_scores/high_school_sports_scores/`. |
+| Default-branch install | This project sets `hide_default_branch: true` because `main` does not contain the generated runtime frontend bundle. Supported end-user installs must use a GitHub Release ZIP. If HACS behavior differs during Slice 3/6 validation, record it; do not expose `main` as a supported install path merely because HACS can technically offer it. |
+| Pre-release visibility | GitHub pre-releases are not the default HACS version. Testers must pick the beta via HACS “Need a different version?” / pre-release enablement. Document this in the beta gate. |
+| HACS Action does not verify the zip asset exists | Add **our own** packaging assertion in CI/release. Do not rely on `hacs/action` for “zip contains the card JS”. |
+| Brand assets path | Branding is required for the public integration. For Home Assistant 2026.3+, use the supported custom-integration location [`custom_components/<domain>/brand/icon.png`](https://developers.home-assistant.io/docs/core/integration/brand_images/). Do **not** submit to `home-assistant/brands` unless later requirements explicitly call for it. HACS **dashboard** may still show a CDN placeholder until HACS serves local/repo icons; HA Devices & services on 2026.9 will show the local icon. Not a release blocker. |
+| Domain length | `high_school_sports_scores` is locked and is valid HA domain syntax (lowercase + underscores). hassfest requires domain == directory name. If hassfest rejects length, **stop and report** — do not silently shorten. |
+| Dev sandbox leftovers | Old `maxpreps` config entries, devices `(maxpreps, school_id)`, entity registry `platform=maxpreps`, Lovelace `custom:maxpreps-program-card` will **not** auto-migrate. Wipe/re-add is acceptable (no external users). Do not write `async_migrate_entry` for a released `maxpreps` domain. |
+| Layer 2 in CI | Practical with Python 3.14 + pins in [HA_DEVELOPMENT.md](HA_DEVELOPMENT.md). If GHA/phacc cannot install, stop and report; do not drop Layer 2 from CI silently. |
+| **Version syntax (tag vs manifest)** | **Not locked.** See §7.1. Do not assume `manifest.json` / `const.VERSION` / `pyproject.toml` should literally contain `0.1.0-beta.1`. Do not implement naive `tag.lstrip("v") == manifest["version"]` until the mapping is evidenced. |
+
+---
+
+## 5. Domain rename strategy
+
+Clean break. No dual-domain shim. No entity unique_id rewrite. Config entry `unique_id` remains MaxPreps `school_id`. Entity unique_id remains `{school_id}:{gender}:{level}:{sport}`.
+
+### HA implications (precise)
+
+- Config entries are keyed by **domain**. Old `maxpreps` entries become orphaned after the folder/domain change.
+- Device identifiers are `(DOMAIN, school_id)` in [`sensor.py`](../custom_components/maxpreps/sensor.py) → devices re-created on re-add.
+- Entity registry `platform` becomes `high_school_sports_scores`. Generated `entity_id` slugs (school + program name) can stay the same after re-add; do not promise they will.
+- Websocket commands are `f"{DOMAIN}/..."`. Card JS **must** match in the same change set.
+- Static URL is `/{DOMAIN}/<card.js>` via [`frontend_register.py`](../custom_components/maxpreps/frontend_register.py).
+- `ConfigFlow.VERSION` stays `1` (no schema migration).
+
+Developer sandbox: remove old MaxPreps integration entries (or reset `.storage` outside git), restart, add **High School Sports Scores**. Do not blindly delete unrelated HA data.
+
+```mermaid
+flowchart LR
+  subgraph identity [Integration identity rename]
+    Path["custom_components/maxpreps"] --> PathNew["custom_components/high_school_sports_scores"]
+    Domain["DOMAIN maxpreps"] --> DomainNew["DOMAIN high_school_sports_scores"]
+    Card["custom:maxpreps-program-card"] --> CardNew["custom:high-school-sports-scores-card"]
+  end
+  subgraph stay [Provider identity stays]
+    Client["MaxPrepsClient parsers URLs"]
+    Attr["ATTRIBUTION Data provided by MaxPreps"]
+    Fixtures["tests/fixtures/maxpreps"]
+  end
+```
+
+### A. MUST rename (integration identity)
+
+| Surface | Current | Target |
+|---------|---------|--------|
+| Package path | `custom_components/maxpreps/` | `custom_components/high_school_sports_scores/` |
+| [`manifest.json`](../custom_components/maxpreps/manifest.json) `domain` / `name` | `maxpreps` / `MaxPreps` | `high_school_sports_scores` / `High School Sports Scores` |
+| [`const.py`](../custom_components/maxpreps/const.py) `DOMAIN` | `"maxpreps"` | `"high_school_sports_scores"` |
+| Config flow registration | `MaxPrepsConfigFlow(..., domain=DOMAIN)` | `HighSchoolSportsScoresConfigFlow` + new `DOMAIN` |
+| Device identifiers | `(DOMAIN, school_id)` | new `DOMAIN` |
+| WS ownership | `entity_entry.platform != DOMAIN` | auto via `DOMAIN` |
+| WS commands | `maxpreps/get_program_schedule`, `maxpreps/subscribe_program_schedule_updates` | `high_school_sports_scores/...` |
+| WS error | `not_maxpreps_program` | `not_program_sensor` |
+| Static URL / bundle file | `/maxpreps/maxpreps-card.js` | `/high_school_sports_scores/high-school-sports-scores-card.js` |
+| User-Agent | `HomeAssistant-MaxPreps/{VERSION}` | `HomeAssistant-HighSchoolSportsScores/{VERSION}` |
+| translations/strings titles | `"title": "MaxPreps"` (user step) | `"High School Sports Scores"` |
+| Logger package | `custom_components.maxpreps.*` | `custom_components.high_school_sports_scores.*` |
+| Tests asserting HA ownership | `custom_components.maxpreps`, `DOMAIN == "maxpreps"` | new package/domain |
+| `.gitignore` | `custom_components/maxpreps/www/*.js` | new path |
+| Vite `outDir` | `../custom_components/maxpreps/www` | new path |
+| Cursor rule globs | `custom_components/maxpreps/**` | new path |
+| HACS metadata | absent | `hacs.json` name High School Sports Scores |
+| HA class names that are product/UI | `MaxPrepsConfigFlow`, `MaxPrepsOptionsFlow`, `MaxPrepsProgramSensor` | `HighSchoolSportsScores*` |
+| Lovelace type | `custom:maxpreps-program-card` | `custom:high-school-sports-scores-card` |
+
+Keep search copy that names the **data source** (“Search MaxPreps by short school name…”).
+
+### B. MAY stay MaxPreps (provider)
+
+- `MaxPrepsClient`, `AsyncMaxPrepsClient`, `MaxPrepsError` and subclasses
+- [`parsing/`](../custom_components/maxpreps/parsing/), [`urls.py`](../custom_components/maxpreps/urls.py) (`maxpreps.com`)
+- `ATTRIBUTION = "Data provided by MaxPreps"`
+- `MaxPrepsDataUpdateCoordinator` / `MaxPrepsCoordinatorData` (HA wrappers of MaxPreps fetch/snapshot — provider-flavored; **do not blindly rename**)
+- [`tests/fixtures/maxpreps/`](../tests/fixtures/maxpreps/), [`docs/MAXPREPS_RESEARCH.md`](MAXPREPS_RESEARCH.md)
+- Config abort strings that describe MaxPreps responses
+- Fixture `source_url` / CDN URLs
+
+Do **not** rewrite [PHASE3_PLAN.md](PHASE3_PLAN.md) / Phase 4 approved-plan history to pretend the domain was always HSSS.
+
+---
+
+## 6. Public naming / card naming strategy
+
+**Locked:**
+
+| Role | Value |
+|------|--------|
+| Integration title | High School Sports Scores |
+| Domain | `high_school_sports_scores` |
+| Lovelace type | `custom:high-school-sports-scores-card` |
+| Custom element / `customCards.type` | `high-school-sports-scores-card` (no `custom:` prefix in the picker registry) |
+| Picker display name | High School Sports Scores |
+| Built filename | `high-school-sports-scores-card.js` |
+| ZIP asset | `high_school_sports_scores.zip` |
+
+Rejected:
+
+- `custom:maxpreps-program-card` — provider-branded
+- `custom:hsss-program-card` — YAML readers should not need the informal acronym
+- `custom:high-school-sports-scores-program-card` — redundant “program”
+
+HSSS remains docs/conversation shorthand, not the Lovelace type.
+
+No compatibility alias for the old card type.
+
+If hassfest/HACS later rejects a locked identifier, **stop and report** — do not silently invent a substitute.
+
+---
+
+## 7. HACS packaging / release architecture
+
+**Current HACS requirements (cite and follow; do not invent):**
+
+From [General](https://www.hacs.xyz/docs/publish/start/) + [Integrations](https://www.hacs.xyz/docs/publish/integration/):
+
+- Public GitHub repo; description; topics; README
+- Root [`hacs.json`](https://www.hacs.xyz/docs/publish/start/) with required `name`
+- Exactly **one** directory under `custom_components/`
+- All runtime files under `custom_components/<domain>/`
+- `manifest.json` keys: `domain`, `documentation`, `issue_tracker`, `codeowners`, `name`, `version`
+- Brand assets are required for the public integration. For Home Assistant 2026.3+, use the supported custom-integration location: `custom_components/high_school_sports_scores/brand/icon.png`. Do not submit to `home-assistant/brands` unless later requirements explicitly call for it.
+
+**Proposed `hacs.json` (only currently documented keys):**
+
+```json
+{
+  "name": "High School Sports Scores",
+  "zip_release": true,
+  "filename": "high_school_sports_scores.zip",
+  "hide_default_branch": true,
+  "homeassistant": "2026.9.0"
+}
+```
+
+`hide_default_branch: true` is a **deliberate release-policy choice**: the default branch does not contain the generated runtime frontend bundle. Supported end-user installs must use a GitHub Release ZIP. Do not expose `main` as a supported install path merely because HACS can technically offer the default branch.
+
+Do **not** set `content_in_root` (git layout is the standard subdirectory). Do **not** add undocumented keys (`render_readme`, `iot_class` in hacs.json). No `info.md` — README is the user doc.
+
+**ZIP layout** (HACS `extractall` into `/config/custom_components/high_school_sports_scores/`):
+
+```
+manifest.json
+__init__.py
+brand/icon.png
+www/high-school-sports-scores-card.js
+...remaining integration files...
+```
+
+Exclude: `__pycache__`, tests, `frontend/`, docs, `.git`.
+
+**Generated JS policy:** keep gitignoring `www/*.js`. Developers still `npm run build`. Missing bundle remains **non-fatal** for git checkouts (Phase 4 contract). Release ZIP **must** contain the built file; missing-bundle is not acceptable for the artifact testers install. End users on HAOS must not need npm.
+
+**Custom-repo install (before HACS default):**
+
+1. HACS → Custom repositories → `willbur83/hacs-highschoolscores`, category Integration
+2. Download a **GitHub Release** (the supported path; `main` is hidden and is not a supported install)
+3. Restart Home Assistant
+4. Settings → Devices & services → Add → High School Sports Scores
+
+Optional my-link: [HACS repository redirect](https://my.home-assistant.io/create-link/?redirect=hacs_repository) for `willbur83/hacs-highschoolscores` / `integration`.
+
+**Later default HACS inclusion (not a Phase 5 completion requirement):** public repo already; HACS Action **with no ignores**; hassfest; at least one GitHub Release; PR to [`hacs/default`](https://github.com/hacs/default) `integration` list (alpha order); repo description, issues enabled, topics. Queue is months-long. Document as post-v0.1.0 follow-up. Do **not** file that PR in Phase 5.
+
+### 7.1 Version-format evidence checkpoint (technical, not an owner product decision)
+
+Human-facing targets remain:
+
+- first beta conceptually `v0.1.0-beta.1`
+- first stable `v0.1.0`
+
+**Do not lock** internal `manifest.json` / `const.VERSION` / `pyproject.toml` strings to `0.1.0-beta.1` until this checkpoint is closed with evidence.
+
+Planning-time evidence (not yet a locked mapping):
+
+- Home Assistant custom-integration `version` must be recognized by **AwesomeVersion** (hassfest `verify_version` allows CALVER, SEMVER, SIMPLEVER, BUILDVER, PEP440). Docs: [integration manifest — Version](https://developers.home-assistant.io/docs/creating_integration_manifest/).
+- Home Assistant Core’s own pre-releases use PEP 440 canonical forms such as `2026.5.0b0`, not `2026.5.0-beta.0` ([HA versioning](https://developers.home-assistant.io/docs/versioning/)).
+- PEP 440 canonical public beta spelling is `0.1.0b1`. `0.1.0-beta.1` is a valid *input* that **normalizes** to `0.1.0b1` (`packaging.version.Version("0.1.0-beta.1").public == "0.1.0b1"`). Published identifiers SHOULD use the canonical form.
+- HACS remote version is the GitHub **release tag name** (releases required, not bare tags). AwesomeVersion commonly accepts a leading `v`.
+- A naive CI check `manifest["version"] == tag.lstrip("v")` **fails** if the tag is `v0.1.0-beta.1` and the manifest is `0.1.0b1`. Do not write that comparison until the mapping is documented.
+
+**Stop and report (Slice 3, before Slice 4 tag comparison and before Slice 6 version bump) after running hassfest-equivalent AwesomeVersion checks on candidate strings**, including at least:
+
+- `v0.1.0-beta.1` (human-facing GitHub tag candidate)
+- `0.1.0-beta.1`
+- `0.1.0b1`
+- `v0.1.0` / `0.1.0` (stable)
+
+Then document one consistent mapping used by git tags, GitHub Releases (including pre-release flag), `manifest.json`, `const.VERSION`, `pyproject.toml` if it participates, and CI. Do not mix incompatible spellings. If pyproject does not need to track the integration version, say so explicitly rather than inventing a third string.
+
+Bump versions **in git** on the release PR; CI verifies the documented mapping; do not inject a different version only inside the ZIP.
+
+---
+
+## 8. CI / release workflow
+
+Add conventional GitHub Actions. No custom installer. No npm on the end-user HAOS host.
+
+**`validate.yml`** (push, PR, nightly, `workflow_dispatch`):
+
+- Layer 1: Python 3.12, `pip install -e ".[dev]"`, `pytest` (skip HA-import tests as today)
+- Frontend: Node LTS, `cd frontend && npm ci && npm test`
+- Layer 2: Python 3.14, same two-step pins as [HA_DEVELOPMENT.md](HA_DEVELOPMENT.md), canonical pytest file list (plus any new packaging tests)
+- Packaging dry-run: `npm run build`, zip the integration dir as release would, assert zip-root `manifest.json`, `www/*.js`, `brand/icon.png`, no nested domain folder
+- hassfest: `home-assistant/actions/hassfest@master`
+- HACS: `hacs/action@main` with `category: integration` and **no ignores** (ship brands + GitHub description/topics/issues first)
+- Version-syntax evidence (Slice 3): AwesomeVersion/hassfest checks of candidate strings; record the mapping in Implementation Notes before coding tag comparison
+
+Do **not** declare `frontend`/`http` manifest dependencies (Phase 4 phacc evidence).
+
+**`release.yml`** (tag pattern TBD after §7.1):
+
+1. Checkout the tag
+2. Assert git tag ↔ `manifest.json` version using the **documented** mapping from §7.1 (not a guessed `lstrip("v")`)
+3. `npm ci && npm test && npm run build` into `custom_components/high_school_sports_scores/www/`
+4. Re-run packaging assertions
+5. `gh release create` **with the zip attached in the same call** (never publish a release then hope the zip lands). Mark the first beta as a GitHub **pre-release**.
+
+Pin actions by SHA or tagged major + Dependabot later if desired; first pass may use current major tags plus a comment to pin before stable if owner wants extra supply-chain hardness.
+
+---
+
+## 9. Documentation / disclaimer work
+
+**README** becomes stranger-facing (not a phase log):
+
+- Title: High School Sports Scores
+- Independent-project disclaimer, approximately:
+
+  > High School Sports Scores is an independent, open-source Home Assistant integration and is not affiliated with, endorsed by, sponsored by, or associated with MaxPreps. The integration retrieves publicly available sports schedule and score data from MaxPreps.com. MaxPreps remains the original source of that data. Users are encouraged to visit and support MaxPreps and the services they provide to high school sports communities.
+
+- Separate LICENSE sentence: the MIT license applies to **this project’s source code**. It does **not** grant rights to MaxPreps content, trademarks, imagery, or other provider-owned material.
+- HACS custom-repository install (and my-link)
+- First-time setup: Add Integration → High School Sports Scores → short school name → allowlisted sports
+- Supported sports: Football, Baseball, Basketball, Volleyball
+- Card: picker + `custom:high-school-sports-scores-card`; modes `both` / `last_next` / `schedule`
+- Known limitations in **user language**, including:
+  - Provider datetimes are timezone-naive and are not reliable kickoff timestamps
+  - **Live/in-progress game state is not currently supported. Program entities currently expose `scheduled`, `final`, or `unknown` status.**
+  - Conservative ~12 hour polling (daily only while waiting for a new school year to be published)
+- Do **not** write “Q1 remains open” or PRE / IN / POST / OFF in README. Keep that terminology in PRODUCT.md and phase planning docs.
+- Troubleshooting: missing card (should not happen on HACS ZIP; if git clone, need npm build), school search tips, reload
+- Beta feedback: GitHub Issues; forbid private hostnames/IPs/paths in reports
+- Screenshots only if captured without private infra
+- Development pointer to [HA_DEVELOPMENT.md](HA_DEVELOPMENT.md)
+
+**Do not** put compose, bind-mount hosts, `/srv/`, or operator IPs in README.
+
+[HA_DEVELOPMENT.md](HA_DEVELOPMENT.md): update paths/domain/card type; keep Core pins; describe release-ZIP vs bind-mount; fix leftover “Phase 4 gate not closed” language after Slice 0.
+
+[PRODUCT.md](PRODUCT.md): Slice 0 applies Phase 4 Future→Current from PHASE4_PLAN Slice 6 **proposed wording** (do not invent extra product history). After stable gate, promote HACS custom-repo items 1/15 to Current; keep default-store listing Future until a `hacs/default` PR is actually filed.
+
+LICENSE file is MIT (Slice 2). README License section must include the source-code vs MaxPreps-material distinction.
+
+GitHub repo metadata (via `gh`): description without branding the product as MaxPreps; topics `home-assistant`, `hacs`, `custom-integration`, `lovelace`, `high-school-sports`; issues enabled.
+
+Do not expand Phase 5 into a broad legal analysis or legal-release gate.
+
+---
+
+## 10. Clean-install gate (developer)
+
+This gate runs in **Slice 7**, after **Slice 6** has published a real GitHub pre-release with `high_school_sports_scores.zip` attached. Do not attempt it before a release exists.
+
+Must use the **actual GitHub Release artifact** (HACS install of that release, or the release ZIP unpacked into `custom_components/high_school_sports_scores/`).
+
+Forbidden as the gate path: bind mounts, local npm on the HA host, installing from a git source checkout / `main`.
+
+Checklist:
+
+- Fresh HAOS or disposable HA + HACS (not the bind-mount Core sandbox as the **gate** machine)
+- Add custom repository → install the release under test
+- Confirm `www/high-school-sports-scores-card.js` exists on disk after install
+- Config flow, entities, card picker, `both` / `last_next` / `schedule`, restart persistence
+- No developer npm step
+
+Stop if the real release artifact cannot be installed cleanly without npm, a source checkout, or bind mounts, or if HACS installs a tree without the JS (that means zip_release/filename/layout is wrong).
+
+---
+
+## 11. External beta gate
+
+Planned/default cohort: three nearby testers with mature real-world HAOS installs, preferably different schools/programs.
+
+Human-facing first beta: conceptually `v0.1.0-beta.1` as a GitHub **pre-release** created in Slice 6, using the version mapping from §7.1. Slice 7 then clean-installs that same artifact (owner first, then external testers).
+
+Exercise: HACS custom-repo install, config flow, entity creation, card picker, all three card modes, schedule, restart persistence, and **upgrade from one beta release to another** if a second beta is needed.
+
+**Coverage rule (replaces exact headcount):**
+
+- Seek beta coverage from all three available testers
+- Require meaningful independent validation across **multiple** real HAOS environments
+- If one tester drops out or cannot complete the beta, **document why**
+- Require equivalent independent coverage through another HAOS installation or repeated independent clean-install/update validation
+- Do **not** silently reduce external coverage
+- Release quality is the gate, not an arbitrary headcount of three named people
+
+Provide a short tester brief (install + pre-release selection + issue template). Collect findings; fix release-blocking bugs before stable. Do not expand product scope to satisfy nice-to-haves.
+
+---
+
+## 12. Stable-release gate
+
+- Beta findings resolved or explicitly deferred as known limitations
+- Independent external coverage recorded per §11
+- GitHub Release `v0.1.0` (not pre-release), using the §7.1 mapping
+- `hacs/action` and hassfest green **without ignores**
+- Packaging assertions green; ZIP contains card JS + `brand/icon.png`
+- README install path verified on a clean HACS install of `v0.1.0`
+- PRODUCT §24 items 1 and 15 become Current for **custom-repository** HACS (default store still Future)
+
+---
+
+## 13. Slice breakdown
+
+Keep the tree green. Automated tests: **zero live MaxPreps**. Each slice: Implementation Notes append-only below.
+
+### Slice 0 — PRODUCT / Phase 4 reconciliation
+
+- **Objective:** Promote landed Phase 4 card behavior to Current/Decided using the **already-proposed** PHASE4_PLAN Slice 6 wording. Note Phase 4 owner visual gate passed. Do not start rename/HACS files.
+- **Files:** [PRODUCT.md](PRODUCT.md) (snapshot table, §§17–18, §24 items 10–11, §27.B, working-definition footer); light [HA_DEVELOPMENT.md](HA_DEVELOPMENT.md) Phase 4 “gate not closed” correction; this plan’s notes.
+- **Tests:** none (docs).
+- **Layer 3 / manual:** none.
+- **Stop if:** wording would invent behavior Phase 4 did not land (Q1, live scores, HACS).
+- **Must not change:** Python/frontend runtime; PHASE3/4 historical plan text.
+- **Deliverable:** PRODUCT matches shipped card; Phase 5 coding unblocked.
+
+### Slice 1 — Domain, package, and card identity rename
+
+- **Objective:** One coherent identity cutover: path, `DOMAIN`, manifest name, WS namespace, static URL, Lovelace type `custom:high-school-sports-scores-card`, User-Agent, translations title, tests, vite/gitignore/cursor globs.
+- **Files:** move `custom_components/maxpreps/` → `high_school_sports_scores/`; [`const.py`](../custom_components/maxpreps/const.py), [`manifest.json`](../custom_components/maxpreps/manifest.json), [`config_flow.py`](../custom_components/maxpreps/config_flow.py), [`sensor.py`](../custom_components/maxpreps/sensor.py), [`websocket.py`](../custom_components/maxpreps/websocket.py), [`frontend_register.py`](../custom_components/maxpreps/frontend_register.py), [`strings.json`](../custom_components/maxpreps/strings.json), [`translations/en.json`](../custom_components/maxpreps/translations/en.json); all `from custom_components.maxpreps` imports; [`frontend/`](../frontend/) card tag, WS constants, vite outDir, package name, tests; [`.gitignore`](../.gitignore); [`.cursor/rules/ha-integration.mdc`](../.cursor/rules/ha-integration.mdc); HA_DEVELOPMENT/README path strings needed for correctness.
+- **Tests:** Layer 1+2+frontend green with new domain/WS/card type; missing-bundle still non-fatal; registry ownership still uses `DOMAIN`.
+- **Layer 3 / manual:** sandbox wipe old `maxpreps` entry; re-add; card picker shows new type.
+- **Stop if:** hassfest/domain mismatch; hidden unique_id format change; temptation to add migration for released users.
+- **Must not change:** parsers, client, fixtures, polling, entity unique_id formula, compact state, DTO schema (except WS type prefix).
+- **Deliverable:** git checkout runs as `high_school_sports_scores` with renamed card (local npm build still required for the card in this slice).
+
+### Slice 2 — HACS metadata, MIT LICENSE, brands, GitHub repo fields
+
+- **Objective:** Valid HACS integration **source** metadata without yet publishing a release.
+- **Files:** root `hacs.json`; MIT `LICENSE`; `manifest.json` `issue_tracker` + documentation URL; `custom_components/high_school_sports_scores/brand/icon.png` (+ optional `logo.png`); GitHub description/topics via `gh`; tests for required manifest keys including `issue_tracker`.
+- **Tests:** `test_manifest.py` updated; packaging path exists for `brand/icon.png`.
+- **Layer 3 / manual:** HA 2026.9 Devices & services shows local original icon (not MaxPreps art).
+- **Stop if:** branding cannot be shipped at `custom_components/<domain>/brand/icon.png` for HA 2026.9 — report with evidence before inventing a second brand location.
+- **Must not change:** scrape/parse behavior; do not use MaxPreps trademarks as the icon.
+- **Deliverable:** MIT LICENSE in repo; `hacs/action` can pass on the branch once description/topics exist.
+
+### Slice 3 — CI validation and version-syntax evidence
+
+- **Objective:** PR/push CI for Layer 1, frontend unit, Layer 2, packaging dry-run, hassfest, HACS Action; **and** close §7.1 with recorded AwesomeVersion/hassfest/PEP 440 evidence before any release tag comparison or version bump.
+- **Files:** `.github/workflows/validate.yml`; optional `scripts/ci/pack_release_zip.sh` used by CI and release; Implementation Notes recording the version mapping.
+- **Tests:** workflow green on `main`/PR; packaging dry-run fails if JS or `brand/icon.png` missing from the assembled zip; version-candidate checks recorded.
+- **Layer 3 / manual:** none.
+- **Stop if:** Layer 2 cannot run on GHA with documented pins; hassfest flags a real manifest issue; candidate version strings disagree across HA/HACS/PEP 440 — document a mapping or stop; do not invent a hybrid.
+- **Must not change:** product behavior; do not bump off `0.0.0` in this slice.
+- **Deliverable:** conventional validation CI; documented tag ↔ manifest ↔ pyproject mapping.
+
+### Slice 4 — Release ZIP automation
+
+- **Objective:** Tag-driven GitHub Release whose asset is the tested zip with built card JS. Uses the §7.1 mapping from Slice 3.
+- **Files:** `.github/workflows/release.yml`; version still `0.0.0` in this slice until Slice 6; docs in HA_DEVELOPMENT for how to cut a tag.
+- **Tests:** dry-run pack script. Do not publish a real GitHub Release in this slice.
+- **Layer 3 / manual:** none. First real pre-release is Slice 6.
+- **Stop if:** zip layout would nest the domain folder; asset name ≠ `hacs.json` `filename`; tag/manifest comparison does not match the documented mapping.
+- **Must not change:** gitignore of `www/*.js` (keep uncommitted).
+- **Deliverable:** reproducible `high_school_sports_scores.zip`.
+
+### Slice 5 — Public README and user docs
+
+- **Objective:** Stranger can install from README without operator knowledge.
+- **Files:** [`README.md`](../README.md); HA_DEVELOPMENT separated as developer; optional `docs/BETA.md` or a README section for testers; GitHub issue template that forbids private infra.
+- **Tests:** none beyond link/path sanity.
+- **Layer 3 / manual:** none.
+- **Stop if:** docs would document bind-mount as the user install path; README uses “Q1” or PRE/IN/POST/OFF as end-user terminology.
+- **Must not change:** runtime.
+- **Deliverable:** HACS custom-repo install + disclaimer + MIT vs MaxPreps distinction + card + user-language limitations + beta reporting.
+
+### Slice 6 — First beta release artifact
+
+- **Objective:** Create the first real GitHub pre-release using the validated §7.1 version mapping and the Slice 4 release workflow.
+- **Files:** version fields (`manifest` / `const.py` / `pyproject.toml` as mapped); git tag / GitHub pre-release; `high_school_sports_scores.zip` attached in the same release create; Implementation Notes recording tag, asset name, and mapping used.
+- **Tests:** full CI on the version-bump PR; release workflow produces the zip; confirm the GitHub Release asset exists and matches `hacs.json` `filename`.
+- **Layer 3 / manual:** none beyond verifying the release/asset exists (list the zip; confirm `manifest.json` and `www/*.js` at zip root). Do **not** run the clean-install gate in this slice.
+- **Stop if:** release asset is missing, malformed, nested-domain, missing frontend JS, or version/tag mapping is wrong.
+- **Must not change:** product behavior; gitignore of `www/*.js`.
+- **Deliverable:** a GitHub pre-release with the actual HACS-installable ZIP attached (human-facing first beta, conceptually `v0.1.0-beta.1`).
+
+### Slice 7 — Clean-install and external beta
+
+- **Objective:** Validate the **Slice 6** beta release artifact first on the owner’s clean HA/HACS environment, then on independent external HAOS environments.
+- **Order:**
+  1. Owner clean-install gate (§10) of that real beta artifact
+  2. External beta cohort (§11)
+  3. If bugs require a later beta, cut it (same workflow as Slice 6) and verify HACS upgrade from the previous beta
+- **Files:** Implementation Notes (coverage record, findings); bugfixes if the artifact/install path is wrong; tester brief if not already in Slice 5.
+- **Tests:** existing automated suite still green after any fixes.
+- **Layer 3 / manual:** owner clean-install (no bind mount, no local npm, no source checkout); then external testers — install, setup, entities, card picker, all card modes, restart persistence; upgrade between betas if a second beta is needed.
+- **Stop if:** the real release artifact cannot be installed cleanly without npm/source checkout/bind mounts; do not paper over with “clone main”; do not treat a dropped tester as silent coverage reduction.
+- **Must not change:** allowlist, polling, Q1; do not expand product scope to satisfy nice-to-haves.
+- **Deliverable:** recorded owner clean-install PASS; beta findings list; blocking items fixed or explicitly deferred; coverage record (who tested, who dropped and why, equivalent coverage if needed).
+
+### Slice 8 — Stable `v0.1.0` and Phase 5 closure
+
+- **Objective:** Non-pre-release `v0.1.0`; PRODUCT/README status; completion gate.
+- **Files:** version bump per mapping; PRODUCT HACS Current for custom-repo; this file’s Implementation Notes gate table.
+- **Tests:** CI green on the tag.
+- **Layer 3 / manual:** one more clean HACS install of stable.
+- **Stop if:** beta blockers remain; independent external coverage was silently reduced.
+- **Must not change:** scope creep.
+- **Deliverable:** public `v0.1.0` ready; default-store PR explicitly **out of this slice**.
+
+---
+
+## 14. Completion gate
+
+Phase 5 is complete only if all are true:
+
+1. Domain is `high_school_sports_scores`; integration title High School Sports Scores; no `custom_components/maxpreps/` in the tree.
+2. Card type is `custom:high-school-sports-scores-card`; no requirement to keep the old type.
+3. `hacs.json` uses `zip_release` + `filename` + `hide_default_branch`.
+4. Generated JS is gitignored; **release ZIP** contains `www/*.js` at zip-root layout.
+5. HACS custom-repository install of the release artifact works without npm.
+6. Developer clean-install gate passed against a real GitHub Release artifact (Slice 7 after Slice 6; no bind mount, no local npm, no source checkout as the gate).
+7. Meaningful independent external HAOS validation is recorded (planned cohort: three nearby testers). If a tester cannot complete, the reason is documented and equivalent independent coverage exists. External coverage was not silently reduced.
+8. `v0.1.0` published using the documented version mapping; hassfest + HACS Action green without ignores.
+9. README has disclaimer, MIT source-code vs MaxPreps-material distinction, HACS install, setup, sports, card, user-language limitations (no “Q1”), troubleshooting.
+10. No MaxPreps logos as project branding; attribution present.
+11. No live MaxPreps in CI; Phase 3/4 runtime contracts unchanged aside from identity strings/paths.
+12. Public-repo hygiene on every release commit.
+
+---
+
+## 15. Explicit non-goals
+
+Do **not** add or solve:
+
+- region record, state rank, league/region/class metadata
+- new sports
+- adaptive/game-day polling
+- PRE / IN / POST / OFF implementation (Q1 stays open in PRODUCT.md)
+- timezone correction
+- calendar entities
+- live-score guarantees
+- historical seasons
+- major card redesign
+- unrelated infrastructure
+- provider scraping changes except as required by packaging/rename
+- HACS default-store submission (`hacs/default`)
+- Home Assistant Core inclusion
+- dual-domain migration
+- custom installer
+- committing minified JS to git
+- broad legal analysis as a release gate
+
+---
+
+## 16. Documentation impact
+
+| File | When |
+|------|------|
+| [docs/PHASE5_PLAN.md](PHASE5_PLAN.md) | This planning deliverable; Implementation Notes per slice |
+| [docs/PRODUCT.md](PRODUCT.md) | Slice 0 Phase 4 Current; Slice 8 HACS custom-repo Current |
+| [docs/HA_DEVELOPMENT.md](HA_DEVELOPMENT.md) | Paths, domain, card, CI pins, ZIP vs bind-mount, version mapping |
+| `README.md` | Slice 5 — user docs (no internal Q1 shorthand) |
+| [docs/PHASE4_PLAN.md](PHASE4_PLAN.md) | Do not rewrite; cite as complete |
+| [docs/PHASE3_PLAN.md](PHASE3_PLAN.md) | Do not rewrite |
+| `.cursor/rules/ha-integration.mdc` | Slice 1 glob/path |
+| `LICENSE` | Slice 2 — MIT |
+
+---
+
+## 17. Open owner checkpoints
+
+No remaining **product** owner checkpoints. Identity, MIT, card type, domain, ZIP-release architecture, and attribution posture are locked.
+
+Remaining items are **technical or Layer 3 visual**, not product decisions:
+
+1. **Version-file syntax mapping** (§7.1 / Slice 3). Close with hassfest/AwesomeVersion/PEP 440 evidence before Slice 6 tagging. Not an owner taste choice.
+2. **Brand icon artwork.** Slice 2 ships a simple original mark (not MaxPreps). Owner visual OK at Layer 3; not a legal-release review.
+
+If implementation evidence (hassfest/HACS) conflicts with a locked identifier or with `zip_release`, **stop and report** — do not silently change direction.
+
+---
+
+# Implementation Notes
+
+_Template only. Coding slices append below this heading. Do not edit the approved plan text above to match later implementation._
+
+Each slice note should include: what landed, decisions, pytest/npm/CI command/result, deviations (technical correction vs newly discovered constraint vs **proposed** product change), and PRODUCT drift check.
+
+## Slice 0 — PRODUCT / Phase 4 reconciliation (2026-09-09)
+
+### What landed
+
+- **`docs/PRODUCT.md`:** Promoted landed Phase 4 Lovelace card behavior from **Future / Desired** → **Current / Decided** using the PHASE4_PLAN Slice 6 proposed wording (snapshot table, §§2.1–2.2, 17, 18, 24 items 10–11, 27.B, §28 assumption 10, §31 working definition). HACS store listing remains **Future / Desired** (Phase 5). Identity strings unchanged (`maxpreps`, `custom:maxpreps-program-card`).
+- **`docs/HA_DEVELOPMENT.md`:** Corrected leftover “Phase 4 gate not closed / partial” sandbox language to match PHASE4_PLAN owner visual gate closure (light, dark, narrow/mobile, explicit `last_next`, explicit `schedule` = PASS; stale/rollover notice deferred/non-blocking).
+- **This file:** Slice 0 Implementation Notes (this block).
+
+### Tests
+
+None (docs-only slice). No pytest, npm, or live MaxPreps.
+
+### Deviations
+
+None.
+
+### PRODUCT drift check
+
+Phase 3 entity state/attributes, polling, allowlist, coordinator `programs[].terms[]` contract, and no full schedule on entity attributes unchanged. Q1 `PRE` / `IN` / `POST` / `OFF` remains **Open / TBD**. No HACS install marked Current. No invented timezone, live-score, or calendar behavior.
+
+## Slice 1 — Identity cutover (2026-09-10)
+
+### What landed
+
+- **Package move:** `custom_components/maxpreps/` → `custom_components/high_school_sports_scores/` (old directory removed).
+- **Integration identity:** `DOMAIN = "high_school_sports_scores"`; manifest `domain` / `name` → `high_school_sports_scores` / `High School Sports Scores`; `USER_AGENT` → `HomeAssistant-HighSchoolSportsScores/{VERSION}`; `ATTRIBUTION` unchanged.
+- **HA product classes:** `HighSchoolSportsScoresConfigFlow`, `HighSchoolSportsScoresOptionsFlow`, `HighSchoolSportsScoresProgramSensor`.
+- **Websocket:** commands `high_school_sports_scores/get_program_schedule` and `high_school_sports_scores/subscribe_program_schedule_updates`; error code `not_program_sensor` (was `not_maxpreps_program`).
+- **Frontend:** `frontend/src/high-school-sports-scores-card.ts`; element/picker type `high-school-sports-scores-card`; Lovelace type `custom:high-school-sports-scores-card`; picker display name **High School Sports Scores**; Vite output `custom_components/high_school_sports_scores/www/high-school-sports-scores-card.js` (gitignored).
+- **Docs/rules:** `README.md`, `docs/HA_DEVELOPMENT.md`, `docs/PRODUCT.md` (identity strings + §2.2 frontend TBD reconciled to Phase 4 custom card); `.gitignore`; `.cursor/rules/ha-integration.mdc`.
+- **Not in this slice:** `hacs.json`, `LICENSE`, brands, CI/release packaging, `www/*.js` committed, migration shims.
+- **Slice 1 correction (identity cleanup):** Renamed integration-facing frontend heuristic `isMaxPrepsProgramEntity` → `isProgramEntity`; card config helper and websocket user-facing errors now say “High School Sports Scores program sensor” (not “MaxPreps program sensor”). Provider/client symbols unchanged.
+
+### Tests
+
+| Command | Result |
+|---------|--------|
+| `.venv/bin/pip install -e ".[dev]" && .venv/bin/pytest` (host Python 3.12) | **202 passed**, 10 skipped (Layer 2 modules importorskip without HA on host) |
+| `cd frontend && npm ci && npm test` | **78 passed** (after `isProgramEntity` rename) |
+| `cd frontend && npm run build` | Success → `custom_components/high_school_sports_scores/www/high-school-sports-scores-card.js` (~50 kB) |
+| **Layer 2 (canonical)** — `ghcr.io/home-assistant/home-assistant:2026.9.0` container (Python 3.14); two-step install per [HA_DEVELOPMENT.md](HA_DEVELOPMENT.md); `PYTHONPATH=/work python3 -m pytest --import-mode=importlib --rootdir=/work` on the canonical file list including `tests/test_websocket.py` | **103 passed** in 8.04s |
+
+Layer 2 container command (mount checkout at `/work`):
+
+```bash
+docker run --rm -v <checkout>:/work -w /work ghcr.io/home-assistant/home-assistant:2026.9.0 bash -lc '
+python3 -m pip install pytest-homeassistant-custom-component==0.13.362
+python3 -m pip install homeassistant==2026.9.0
+python3 -m pip install -e .
+PYTHONPATH=/work python3 -m pytest --import-mode=importlib --rootdir=/work \
+  tests/test_manifest.py tests/test_init.py tests/test_ha_transport.py \
+  tests/test_config_flow.py tests/test_programs.py tests/test_coordinator.py \
+  tests/test_sensor.py tests/test_options_flow.py tests/test_multi_school.py \
+  tests/test_failure.py tests/test_rollover.py tests/test_websocket.py
+'
+```
+
+Pins: `homeassistant==2026.9.0`, `pytest-homeassistant-custom-component==0.13.362` (pip reports phacc wants `2026.9.0b6`; two-step install per HA_DEVELOPMENT is intentional). Zero live MaxPreps.
+
+### Identity-cutover audit (remaining `maxpreps` / `MaxPreps` hits)
+
+| Area | Classification | Notes |
+|------|----------------|-------|
+| `MaxPrepsClient`, `AsyncMaxPrepsClient`, `MaxPrepsError`, `MaxPrepsDataUpdateCoordinator`, `MaxPrepsCoordinatorData` | **A — provider** | Upstream client/coordinator names retained per §5 |
+| `parsing/`, `urls.py`, `maxpreps.com` / `maxpreps.io` in fixtures/tests | **A — provider** | |
+| `ATTRIBUTION`, config-flow/search copy naming MaxPreps data source | **A — provider** | |
+| `tests/fixtures/maxpreps/`, `tests/helpers/fixtures.py` path | **A — provider** | |
+| `isProgramEntity` (was `isMaxPrepsProgramEntity`) | **B → renamed** | Integration/card compatibility heuristic; neutral name |
+| Card config helper + websocket user-facing errors (was “MaxPreps program sensor”) | **B → renamed** | Now “High School Sports Scores program sensor” / coordinator wording |
+| `docs/PHASE3_PLAN.md`, `docs/PHASE4_PLAN.md`, `docs/MAXPREPS_RESEARCH.md` | **A — historical** | Not rewritten |
+| Active runtime tree (`custom_components/high_school_sports_scores/`, `frontend/`, `tests/*.py`) | **No stale B hits** | No `DOMAIN = "maxpreps"`, no `custom_components.maxpreps` imports, no old card type/path/WS namespace, no integration-facing `isMaxPreps*` symbols |
+
+### Deviations
+
+None. `ConfigFlow.VERSION` remains 1; config entry `unique_id` remains MaxPreps `school_id`; entity `unique_id` formula unchanged; no `async_migrate_entry`.
+
+### PRODUCT drift check
+
+Updated identity strings only (`custom_components/high_school_sports_scores/`, `custom:high-school-sports-scores-card`, websocket command names, bind-mount paths). §2.2 stale “exact frontend implementation Open / TBD” reconciled to Phase 4 custom card (factual cleanup). Polling, compact state, allowlist, coordinator `programs[].terms[]`, no `terms[]` on entity attributes, Q1 open, HACS install still **Future / Desired** — unchanged.
+
+## Slice 2 — HACS metadata, MIT LICENSE, brands, GitHub repo fields (2026-09-10)
+
+### What landed
+
+- **Hygiene cleanup:** Removed leftover `custom_components/maxpreps/` containing only Slice 1 disposable frontend build output (`www/high-school-sports-scores-card.js`). No tracked or unexpected source files remained. Working tree now has exactly one integration directory: `custom_components/high_school_sports_scores/`.
+- **`hacs.json`:** Root file with locked keys only — `name`, `zip_release`, `filename`, `hide_default_branch`, `homeassistant`. No `content_in_root`, no `render_readme`, no `iot_class`, no `info.md`.
+- **`LICENSE`:** Conventional MIT text; copyright year 2026; holder **High School Sports Scores contributors**.
+- **`manifest.json`:** Added `issue_tracker` (`https://github.com/willbur83/hacs-highschoolscores/issues`). `documentation` unchanged. No `frontend`/`http` dependencies. Domain/name/version unchanged (`0.0.0`).
+- **Brand assets (owner-provided):** `custom_components/high_school_sports_scores/brand/icon.png` (512×512 scoreboard icon) and optional `logo.png` (512×153 horizontal wordmark). No MaxPreps logos/wordmarks. No `dark_*` or `@2x` variants in this slice.
+- **`README.md`:** License section replaced TBD with MIT + pointer to `LICENSE` and source-code vs MaxPreps-material distinction (one sentence).
+- **`tests/test_manifest.py`:** Required keys now include `issue_tracker`, `documentation`, `codeowners`; `test_brand_icon_exists` asserts `brand/icon.png` on disk; module docstring no longer says “MaxPreps integration”.
+- **Not in this slice:** CI workflows, version bump, GitHub Release, `hacs/action` workflow, `info.md`, `CODEOWNERS` file, `content_in_root`, committed `www/*.js`.
+
+### GitHub repo metadata (applied)
+
+Owner-authorized updates via `gh repo edit`:
+
+| Field | Before | After |
+|-------|--------|-------|
+| Description | `Home Assistant integration for MaxPreps school sports schedules and scores` | `High School Sports Scores — a Home Assistant integration for high school sports schedules and scores.` |
+| Topics | *(empty)* | `custom-integration`, `hacs`, `high-school-sports`, `home-assistant`, `lovelace` |
+| Issues | enabled | enabled (unchanged) |
+
+Verified with `gh repo view willbur83/hacs-highschoolscores --json description,repositoryTopics,hasIssuesEnabled`.
+
+### Tests
+
+| Command | Result |
+|---------|--------|
+| `.venv/bin/pip install -e ".[dev]" && .venv/bin/pytest` (host Python 3.12) | **203 passed**, 10 skipped |
+| **Layer 2 (canonical)** — `ghcr.io/home-assistant/home-assistant:2026.9.0` container; two-step phacc + `homeassistant==2026.9.0`; canonical file list including `tests/test_websocket.py` | **104 passed** in 9.08s |
+
+Layer 2 container command (mount checkout at `/work`):
+
+```bash
+docker run --rm -v <checkout>:/work -w /work ghcr.io/home-assistant/home-assistant:2026.9.0 bash -lc '
+python3 -m pip install pytest-homeassistant-custom-component==0.13.362
+python3 -m pip install homeassistant==2026.9.0
+python3 -m pip install -e .
+PYTHONPATH=/work python3 -m pytest --import-mode=importlib --rootdir=/work \
+  tests/test_manifest.py tests/test_init.py tests/test_ha_transport.py \
+  tests/test_config_flow.py tests/test_programs.py tests/test_coordinator.py \
+  tests/test_sensor.py tests/test_options_flow.py tests/test_multi_school.py \
+  tests/test_failure.py tests/test_rollover.py tests/test_websocket.py
+'
+```
+
+Pins: `homeassistant==2026.9.0`, `pytest-homeassistant-custom-component==0.13.362`. Zero live MaxPreps.
+
+**Layer 3 / manual:** Not run — no Core sandbox bind-mount was available in this session. Owner should confirm HA 2026.9 **Settings → Devices & services** shows the local `brand/icon.png` for High School Sports Scores after bind-mounting `custom_components/high_school_sports_scores`.
+
+### Deviations
+
+None.
+
+### PRODUCT drift check
+
+No `docs/PRODUCT.md` changes. HACS install remains **Future / Desired**. Version stays `0.0.0`. Parsers/client/fixtures, unique_id formula, polling, DTO schema, Q1, provider symbols, ATTRIBUTION, and MaxPreps search copy unchanged.
+
+## Slice 3 — CI validation and version-syntax evidence (2026-09-10)
+
+### What landed
+
+- **`.github/workflows/validate.yml`:** push, `pull_request`, nightly (`0 3 * * *` UTC), `workflow_dispatch`; top-level `permissions: contents: read`. Jobs reproduce proven commands:
+  - Layer 1 — `actions/setup-python` 3.12 → `pip install -e ".[dev]"` → `pytest`
+  - Frontend — Node LTS → `cd frontend && npm ci && npm test`
+  - Layer 2 — `docker run` `ghcr.io/home-assistant/home-assistant:2026.9.0` with two-step `pytest-homeassistant-custom-component==0.13.362` then `homeassistant==2026.9.0`, `pip install -e .`, canonical `PYTHONPATH` / `--import-mode=importlib` / file list (unchanged)
+  - Packaging dry-run — `npm ci && npm run build`, `scripts/ci/pack_release_zip.sh`, `scripts/ci/assert_release_zip.sh`
+  - hassfest — `home-assistant/actions/hassfest@master`
+  - HACS — `hacs/action@main`, `category: integration`, no ignores
+- **`scripts/ci/pack_release_zip.sh`:** zips `custom_components/high_school_sports_scores/` with integration files at archive root (HACS `extractall` layout); excludes `__pycache__` / `*.pyc`.
+- **`scripts/ci/assert_release_zip.sh`:** asserts `manifest.json`, `brand/icon.png`, `www/high-school-sports-scores-card.js` at zip root; no nested `high_school_sports_scores/`; zip basename matches `hacs.json` `filename` (`high_school_sports_scores.zip`); fails when JS bundle absent.
+- **`tests/test_version_mapping.py`:** Layer 1 re-check of §7.1 candidate matrix and locked first-beta / first-stable mapping (uses hassfest-equivalent `AwesomeVersion` `ensure_strategy` list).
+- **`pyproject.toml` `[dev]`:** added `awesomeversion` + `packaging` for version-evidence tests only.
+- **`docs/HA_DEVELOPMENT.md`:** CI section documenting that Actions jobs mirror the Layer 1 / frontend / Layer 2 commands above.
+- **hassfest hygiene (no version bump):** `manifest.json` keys sorted per hassfest (`iot_class` before `issue_tracker`); `frontend_register.py` uses `importlib.import_module` for optional `http` / `frontend` registration so hassfest dependencies validation passes **without** adding `frontend` / `http` manifest dependencies (Phase 4 phacc constraint preserved).
+- **Not in this slice:** `release.yml`, GitHub Release, version bump off `0.0.0`, committed `www/*.js`.
+
+### §7.1 version-syntax evidence (HA 2026.9.0 / awesomeversion 25.8.0)
+
+Source: hassfest `verify_version` in `home-assistant/core` `script/hassfest/manifest.py` (2026.9.0) — `AwesomeVersion(value, ensure_strategy=[CALVER, SEMVER, SIMPLEVER, BUILDVER, PEP440])`. Evidence run inside `ghcr.io/home-assistant/home-assistant:2026.9.0` after `pip install homeassistant==2026.9.0`.
+
+| candidate | hassfest | parsed (AwesomeVersion) | strategy | PEP 440 `.public` | PEP 440 prerelease |
+|-----------|----------|---------------------------|----------|-------------------|-------------------|
+| `v0.1.0-beta.1` | PASS | `v0.1.0-beta.1` | SEMVER | `0.1.0b1` | yes |
+| `0.1.0-beta.1` | PASS | `0.1.0-beta.1` | SEMVER | `0.1.0b1` | yes |
+| `0.1.0b1` | PASS | `0.1.0b1` | PEP440 | `0.1.0b1` | yes |
+| `v0.1.0b1` | PASS | `v0.1.0b1` | PEP440 | `0.1.0b1` | yes |
+| `v0.1.0` | PASS | `v0.1.0` | SEMVER | `0.1.0` | no |
+| `0.1.0` | PASS | `0.1.0` | SEMVER | `0.1.0` | no |
+
+**Equality (AwesomeVersion, hassfest strategies):**
+
+- `AwesomeVersion("v0.1.0-beta.1") == AwesomeVersion("0.1.0b1")` → **False** (SEMVER vs PEP440 strings)
+- `AwesomeVersion("v0.1.0-beta.1") == AwesomeVersion("0.1.0-beta.1")` → **True**
+- `AwesomeVersion("v0.1.0b1") == AwesomeVersion("0.1.0b1")` → **True**
+- `AwesomeVersion("v0.1.0") == AwesomeVersion("0.1.0")` → **True**
+
+**Naive `tag.removeprefix("v") == manifest_version`:**
+
+| tag | manifest | passes naive strip |
+|-----|----------|-------------------|
+| `v0.1.0-beta.1` | `0.1.0b1` | **no** |
+| `v0.1.0-beta.1` | `0.1.0-beta.1` | **yes** |
+| `v0.1.0` | `0.1.0` | **yes** |
+| `v0.1.0` | `0.1.0b1` | **no** |
+| `v0.1.0b1` | `0.1.0b1` | **yes** |
+
+**Locked mapping (Slice 4 / Slice 6):**
+
+| Field | First beta | First stable |
+|-------|------------|--------------|
+| GitHub tag | `v0.1.0-beta.1` | `v0.1.0` |
+| GitHub Release pre-release flag | **yes** | **no** |
+| `manifest.json` `"version"` / `const.VERSION` | `0.1.0-beta.1` | `0.1.0` |
+| `pyproject.toml` `[project].version` | Same string as manifest on the Slice 6 release PR only; stays `0.0.0` until then. Pyproject is for local `pip install -e` / Layer 1 tests — **not** shipped in the HACS ZIP. |
+| Slice 4 tag ↔ manifest check | `tag.removeprefix("v") == manifest["version"]` (sufficient for both locked pairs above). Equivalent: `AwesomeVersion(tag, ensure_strategy=hassfest_list) == AwesomeVersion(manifest["version"], …)` for callers that prefer normalized comparison. |
+
+**Do not** use manifest `0.1.0b1` with tag `v0.1.0-beta.1` — naive strip fails and AwesomeVersion equality fails across SEMVER vs PEP440 spellings. Human-facing beta tag stays `v0.1.0-beta.1`; internal manifest uses matching SEMVER `0.1.0-beta.1` (PEP 440 still normalizes both to public `0.1.0b1`).
+
+### Tests
+
+**Local / pre-push verification:**
+
+| Command | Result |
+|---------|--------|
+| `.venv/bin/pip install -e ".[dev]" && .venv/bin/pytest` (host Python 3.12) | **219 passed**, 10 skipped (includes `tests/test_version_mapping.py`) |
+| `cd frontend && npm ci && npm test` | **78 passed** |
+| **Layer 2 (canonical)** — `ghcr.io/home-assistant/home-assistant:2026.9.0` container; two-step phacc + `homeassistant==2026.9.0`; canonical file list | **104 passed** in 7.67s |
+| Packaging dry-run — `npm run build`, `pack_release_zip.sh`, `assert_release_zip.sh` | **PASS** (assert script **fails** when `www/high-school-sports-scores-card.js` missing — verified) |
+| hassfest — `ghcr.io/home-assistant/hassfest` on checkout | **PASS** (0 errors; `CONFIG_SCHEMA` warning only — config-entry-only integration, pre-existing) |
+| Version evidence | Recorded above; re-checked by `tests/test_version_mapping.py` |
+
+**GitHub Actions verification:**
+
+workflow authored; remote CI result pending — `origin/main` still contains the pre–Slice 1 `maxpreps` tree; this slice’s `validate.yml` and integration rename land with the pending Slices 1–2 push. HACS Action not exercised locally (requires `GITHUB_TOKEN`); `zip_release: true` will be validated on first remote run after Slices 1–3 are on GitHub.
+
+Pins unchanged: `homeassistant==2026.9.0`, `pytest-homeassistant-custom-component==0.13.362`. Zero live MaxPreps.
+
+### Deviations
+
+- **`frontend_register.py`:** switched `http` / `frontend` imports to `importlib.import_module` so hassfest dependencies validation passes without manifest `dependencies` / `after_dependencies` on `http` / `frontend` (Phase 4 phacc constraint). Runtime behavior unchanged.
+- **`manifest.json`:** key order only (`iot_class` before `issue_tracker`) for hassfest; no version or domain change.
+
+### PRODUCT drift check
+
+No `docs/PRODUCT.md` changes. Version stays `0.0.0`. HACS install remains **Future / Desired**. Polling, DTO, Q1, provider symbols, `hacs.json` `zip_release` policy, and MaxPreps client/fixtures unchanged.

@@ -13,8 +13,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from custom_components.maxpreps.client import MaxPrepsClient
-from custom_components.maxpreps.models import Game, Schedule, School, TeamSeason
+from custom_components.high_school_sports_scores.client import MaxPrepsClient
+from custom_components.high_school_sports_scores.models import Game, Schedule, School, TeamSeason
 from tests.helpers.fixture_transport import FixtureTransport
 from tests.test_schedule import BASEBALL_SPORT_SEASON_ID, FOOTBALL_SPORT_SEASON_ID
 from tests.test_search import CENTENNIAL_ROSWELL_ID

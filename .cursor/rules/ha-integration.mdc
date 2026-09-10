@@ -1,7 +1,7 @@
 ---
 alwaysApply: true
 globs:
-  - custom_components/maxpreps/**
+  - custom_components/high_school_sports_scores/**
   - tests/test_config*.py
   - tests/test_coordinator*.py
   - tests/test_sensor*.py
@@ -10,7 +10,7 @@ globs:
 
 # Home Assistant integration discipline
 
-Apply when editing `custom_components/maxpreps/**` or HA integration tests (`tests/test_{config,coordinator,sensor,init}*`).
+Apply when editing `custom_components/high_school_sports_scores/**` or HA integration tests (`tests/test_{config,coordinator,sensor,init}*`).
 
 - MaxPreps HTML/JSON parsing stays in `parsing/` and the existing client; HA modules consume normalized models only
 - All network I/O goes through the injectable async transport and coordinator; entities must not fetch

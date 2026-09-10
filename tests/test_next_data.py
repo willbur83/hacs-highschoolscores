@@ -1,7 +1,7 @@
 import pytest
 
-from custom_components.maxpreps.exceptions import MalformedNextDataError, NextDataNotFoundError
-from custom_components.maxpreps.parsing.next_data import extract_page_props
+from custom_components.high_school_sports_scores.exceptions import MalformedNextDataError, NextDataNotFoundError
+from custom_components.high_school_sports_scores.parsing.next_data import extract_page_props
 from tests.helpers.fixtures import (
     load_schedule_page_props,
     load_search_page_props,

@@ -1,8 +1,8 @@
 import pytest
 
-from custom_components.maxpreps.exceptions import SportSeasonsSchemaError
-from custom_components.maxpreps.models import TeamSeason
-from custom_components.maxpreps.parsing.sport_seasons import parse_sport_seasons
+from custom_components.high_school_sports_scores.exceptions import SportSeasonsSchemaError
+from custom_components.high_school_sports_scores.models import TeamSeason
+from custom_components.high_school_sports_scores.parsing.sport_seasons import parse_sport_seasons
 from tests.helpers.fixtures import load_sport_seasons
 from tests.test_search import (
     BAINBRIDGE,

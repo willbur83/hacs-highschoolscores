@@ -1,8 +1,8 @@
 import pytest
 
-from custom_components.maxpreps.exceptions import SearchSchemaError
-from custom_components.maxpreps.models import School
-from custom_components.maxpreps.parsing.search import parse_search_page_props
+from custom_components.high_school_sports_scores.exceptions import SearchSchemaError
+from custom_components.high_school_sports_scores.models import School
+from custom_components.high_school_sports_scores.parsing.search import parse_search_page_props
 from tests.helpers.fixtures import load_search_page_props
 
 CENTENNIAL = "centennial"

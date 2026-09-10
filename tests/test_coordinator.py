@@ -12,27 +12,27 @@ pytest.importorskip("homeassistant")
 from homeassistant.config_entries import ConfigEntryState
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.maxpreps.async_client import AsyncMaxPrepsClient
-from custom_components.maxpreps.const import (
+from custom_components.high_school_sports_scores.async_client import AsyncMaxPrepsClient
+from custom_components.high_school_sports_scores.const import (
     CONF_GENDER,
     CONF_LEVEL,
     CONF_SPORT,
     CONF_SUBSCRIPTIONS,
     UPDATE_INTERVAL,
 )
-from custom_components.maxpreps.coordinator import (
+from custom_components.high_school_sports_scores.coordinator import (
     MaxPrepsDataUpdateCoordinator,
     ProgramResolutionStatus,
     TermRefreshStatus,
 )
-from custom_components.maxpreps.exceptions import (
+from custom_components.high_school_sports_scores.exceptions import (
     ContestSchemaError,
     MaxPrepsError,
     TransportHttpError,
 )
-from custom_components.maxpreps.models import TeamSeason
-from custom_components.maxpreps.parsing.sport_seasons import parse_sport_seasons
-from custom_components.maxpreps.urls import build_schedule_url
+from custom_components.high_school_sports_scores.models import TeamSeason
+from custom_components.high_school_sports_scores.parsing.sport_seasons import parse_sport_seasons
+from custom_components.high_school_sports_scores.urls import build_schedule_url
 from tests.helpers.async_fixture_transport import AsyncFixtureTransport
 from tests.helpers.fixtures import load_sport_seasons, wrap_page_props_in_html
 from tests.helpers.schedule_page_props_builder import build_minimal_schedule_page_props
@@ -155,7 +155,7 @@ def _centennial_entry(
 @pytest.fixture
 def frozen_applicable_date():
     with patch(
-        "custom_components.maxpreps.school_year.homeassistant_local_date",
+        "custom_components.high_school_sports_scores.school_year.homeassistant_local_date",
         return_value=FROZEN_APPLICABLE_DATE,
     ):
         yield FROZEN_APPLICABLE_DATE
@@ -166,7 +166,7 @@ def coordinator_client():
     transport = CoordinatorTestTransport()
     client = AsyncMaxPrepsClient(transport)
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         yield client, transport
@@ -233,7 +233,7 @@ async def test_one_freshman_baseball_term_failure_isolates_siblings(
     )
     client = AsyncMaxPrepsClient(transport)
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         entry = _centennial_entry(
@@ -269,7 +269,7 @@ async def test_whole_program_schedule_failures_do_not_affect_siblings(
     )
     client = AsyncMaxPrepsClient(transport)
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         entry = _centennial_entry(
@@ -294,7 +294,7 @@ async def test_school_home_failure_after_success_raises_update_failed_retains_da
     transport = CoordinatorTestTransport()
     client = AsyncMaxPrepsClient(transport)
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         entry = _centennial_entry([FRESHMAN_BASEBALL_SUBSCRIPTION])
@@ -309,7 +309,7 @@ async def test_school_home_failure_after_success_raises_update_failed_retains_da
         failing_transport = CoordinatorTestTransport(school_home_fail=True)
         failing_client = AsyncMaxPrepsClient(failing_transport)
         with patch(
-            "custom_components.maxpreps.client_factory.create_async_client",
+            "custom_components.high_school_sports_scores.client_factory.create_async_client",
             return_value=failing_client,
         ):
             await coordinator.async_refresh()
@@ -325,7 +325,7 @@ async def test_first_setup_school_home_failure_raises_config_entry_not_ready(
     transport = CoordinatorTestTransport(school_home_fail=True)
     client = AsyncMaxPrepsClient(transport)
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         entry = _centennial_entry([FOOTBALL_SUBSCRIPTION])
@@ -345,7 +345,7 @@ async def test_unresolved_subscription_has_unavailable_payload(
     client = AsyncMaxPrepsClient(transport)
     subscriptions = [FOOTBALL_SUBSCRIPTION, UNRESOLVED_SUBSCRIPTION]
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         entry = _centennial_entry(subscriptions)
@@ -367,7 +367,7 @@ async def test_stale_term_retains_last_good_schedule_on_refresh_failure(
     transport = CoordinatorTestTransport()
     client = AsyncMaxPrepsClient(transport)
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         entry = _centennial_entry(
@@ -392,7 +392,7 @@ async def test_stale_term_retains_last_good_schedule_on_refresh_failure(
         )
         failing_client = AsyncMaxPrepsClient(failing_transport)
         with patch(
-            "custom_components.maxpreps.client_factory.create_async_client",
+            "custom_components.high_school_sports_scores.client_factory.create_async_client",
             return_value=failing_client,
         ):
             await coordinator.async_refresh()

@@ -12,9 +12,9 @@ from homeassistant.config_entries import ConfigEntryState
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 
-from custom_components.maxpreps.async_client import AsyncMaxPrepsClient
-from custom_components.maxpreps.const import CONF_GENDER, CONF_LEVEL, CONF_SPORT, DOMAIN
-from custom_components.maxpreps.exceptions import MaxPrepsError
+from custom_components.high_school_sports_scores.async_client import AsyncMaxPrepsClient
+from custom_components.high_school_sports_scores.const import CONF_GENDER, CONF_LEVEL, CONF_SPORT, DOMAIN
+from custom_components.high_school_sports_scores.exceptions import MaxPrepsError
 from tests.helpers.async_fixture_transport import AsyncFixtureTransport
 from tests.helpers.coordinator_test_helpers import (
     bainbridge_entry,
@@ -55,7 +55,7 @@ def multi_school_client():
     transport = MultiSchoolTestTransport()
     client = AsyncMaxPrepsClient(transport)
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         yield client, transport
@@ -280,7 +280,7 @@ async def test_school_home_failure_on_one_entry_does_not_affect_other(
     working_transport = MultiSchoolTestTransport()
     working_client = AsyncMaxPrepsClient(working_transport)
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=working_client,
     ):
         centennial, bainbridge = await _setup_two_football_entries(
@@ -299,7 +299,7 @@ async def test_school_home_failure_on_one_entry_does_not_affect_other(
     )
     failing_client = AsyncMaxPrepsClient(failing_transport)
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=failing_client,
     ):
         await centennial_coordinator.async_refresh()

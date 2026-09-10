@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from custom_components.maxpreps.school_year import applicable_school_year
+from custom_components.high_school_sports_scores.school_year import applicable_school_year
 
 
 def test_applicable_school_year_june_30_2026():

@@ -13,7 +13,7 @@ from tests.helpers.fixtures import (
     load_sport_seasons,
     wrap_page_props_in_html,
 )
-from custom_components.maxpreps.urls import build_search_url
+from custom_components.high_school_sports_scores.urls import build_search_url
 
 _BLANK_HTML = (
     "<!DOCTYPE html><html><head><title>Test</title></head><body></body></html>"

@@ -12,13 +12,13 @@ from homeassistant.components.websocket_api.const import TYPE_RESULT
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.helpers import entity_registry as er
 
-from custom_components.maxpreps import async_setup
-from custom_components.maxpreps.const import CONF_GENDER, CONF_LEVEL, CONF_SPORT, DOMAIN
-from custom_components.maxpreps.models import GameStatus
-from custom_components.maxpreps.program_sensor import find_next_game
-from custom_components.maxpreps.websocket import (
+from custom_components.high_school_sports_scores import async_setup
+from custom_components.high_school_sports_scores.const import CONF_GENDER, CONF_LEVEL, CONF_SPORT, DOMAIN
+from custom_components.high_school_sports_scores.models import GameStatus
+from custom_components.high_school_sports_scores.program_sensor import find_next_game
+from custom_components.high_school_sports_scores.websocket import (
     ERR_ENTITY_NOT_FOUND,
-    ERR_NOT_MAXPREPS_PROGRAM,
+    ERR_NOT_PROGRAM_SENSOR,
 )
 from tests.helpers.coordinator_test_helpers import centennial_entry
 from tests.test_coordinator import FOOTBALL_SUBSCRIPTION, coordinator_client, frozen_applicable_date
@@ -55,7 +55,7 @@ async def test_get_program_schedule_football_fixture(
     await websocket_client.send_json(
         {
             "id": 1,
-            "type": "maxpreps/get_program_schedule",
+            "type": "high_school_sports_scores/get_program_schedule",
             "entity_id": entity.entity_id,
         }
     )
@@ -94,7 +94,7 @@ async def test_get_program_schedule_rejects_unknown_entity(
     await websocket_client.send_json(
         {
             "id": 2,
-            "type": "maxpreps/get_program_schedule",
+            "type": "high_school_sports_scores/get_program_schedule",
             "entity_id": "sensor.does_not_exist",
         }
     )
@@ -134,14 +134,14 @@ async def test_get_program_schedule_rejects_non_maxpreps_registry_owner(
     await websocket_client.send_json(
         {
             "id": 3,
-            "type": "maxpreps/get_program_schedule",
+            "type": "high_school_sports_scores/get_program_schedule",
             "entity_id": foreign.entity_id,
         }
     )
     msg = await websocket_client.receive_json()
 
     assert msg["success"] is False
-    assert msg["error"]["code"] == ERR_NOT_MAXPREPS_PROGRAM
+    assert msg["error"]["code"] == ERR_NOT_PROGRAM_SENSOR
 
 
 @pytest.mark.asyncio
@@ -166,7 +166,7 @@ async def test_subscribe_notifies_when_schedule_changes_without_last_next_delta(
     await websocket_client.send_json(
         {
             "id": 10,
-            "type": "maxpreps/subscribe_program_schedule_updates",
+            "type": "high_school_sports_scores/subscribe_program_schedule_updates",
             "entity_id": entity.entity_id,
         }
     )

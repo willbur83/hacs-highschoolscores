@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from custom_components.maxpreps.models import TeamSeason
-from custom_components.maxpreps.urls import build_schedule_url
+from custom_components.high_school_sports_scores.models import TeamSeason
+from custom_components.high_school_sports_scores.urls import build_schedule_url
 
 
 def build_minimal_schedule_page_props(team_season: TeamSeason) -> dict[str, Any]:

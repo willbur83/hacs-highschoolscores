@@ -8,20 +8,20 @@ from typing import Any
 
 import pytest
 
-from custom_components.maxpreps.async_transport import AiohttpTransport
-from custom_components.maxpreps.const import (
+from custom_components.high_school_sports_scores.async_transport import AiohttpTransport
+from custom_components.high_school_sports_scores.const import (
     MAX_RESPONSE_BYTES,
     USER_AGENT,
     VERSION,
 )
-from custom_components.maxpreps.exceptions import (
+from custom_components.high_school_sports_scores.exceptions import (
     TransportError,
     TransportHttpError,
     TransportInvalidResponseError,
     TransportResponseTooLargeError,
     TransportTimeoutError,
 )
-from custom_components.maxpreps.urls import build_search_url
+from custom_components.high_school_sports_scores.urls import build_search_url
 from tests.helpers.async_fixture_transport import (
     AsyncFixtureTransport,
     FixtureUrlNotMappedError,
@@ -192,7 +192,7 @@ async def test_network_client_error_maps_to_transport_error_without_retry() -> N
 @pytest.mark.asyncio
 async def test_timeout_raises_without_retry(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        "custom_components.maxpreps.async_transport.REQUEST_TIMEOUT_SECONDS",
+        "custom_components.high_school_sports_scores.async_transport.REQUEST_TIMEOUT_SECONDS",
         0.01,
     )
     session = _TimeoutSession()
@@ -282,6 +282,6 @@ async def test_html_without_content_type_accepted_when_plausible() -> None:
 def test_user_agent_version_matches_manifest() -> None:
     assert VERSION == "0.0.0"
     assert USER_AGENT == (
-        "HomeAssistant-MaxPreps/0.0.0 "
+        "HomeAssistant-HighSchoolSportsScores/0.0.0 "
         "(+https://github.com/willbur83/hacs-highschoolscores)"
     )

@@ -1,9 +1,9 @@
 import pytest
 
-from custom_components.maxpreps.client import MaxPrepsClient
-from custom_components.maxpreps.exceptions import NextDataNotFoundError, SearchSchemaError
-from custom_components.maxpreps.models import GameStatus, School, TeamSeason
-from custom_components.maxpreps.urls import build_schedule_url, build_search_url
+from custom_components.high_school_sports_scores.client import MaxPrepsClient
+from custom_components.high_school_sports_scores.exceptions import NextDataNotFoundError, SearchSchemaError
+from custom_components.high_school_sports_scores.models import GameStatus, School, TeamSeason
+from custom_components.high_school_sports_scores.urls import build_schedule_url, build_search_url
 from tests.helpers.fixture_transport import FixtureTransport, FixtureUrlNotMappedError
 from tests.helpers.fixtures import wrap_page_props_in_html
 from tests.test_schedule import (

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from custom_components.maxpreps.models import (
+from custom_components.high_school_sports_scores.models import (
     Game,
     GameStatus,
     HomeAway,

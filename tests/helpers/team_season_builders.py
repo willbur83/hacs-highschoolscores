@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from custom_components.maxpreps.models import TeamSeason
+from custom_components.high_school_sports_scores.models import TeamSeason
 
 _DEFAULT_SCHOOL_ID = "test-school-id"
 

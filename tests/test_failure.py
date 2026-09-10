@@ -11,9 +11,9 @@ pytest.importorskip("homeassistant")
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.helpers import entity_registry as er
 
-from custom_components.maxpreps.async_client import AsyncMaxPrepsClient
-from custom_components.maxpreps.coordinator import TermRefreshStatus
-from custom_components.maxpreps.exceptions import NextDataNotFoundError
+from custom_components.high_school_sports_scores.async_client import AsyncMaxPrepsClient
+from custom_components.high_school_sports_scores.coordinator import TermRefreshStatus
+from custom_components.high_school_sports_scores.exceptions import NextDataNotFoundError
 from tests.helpers.coordinator_test_helpers import bainbridge_entry, centennial_entry
 from tests.test_coordinator import (
     FRESHMAN_BASEBALL_SPRING_SCHEDULE_URL,
@@ -60,7 +60,7 @@ async def test_school_home_no_next_data_after_success_retains_football_games(
     entry.add_to_hass(hass)
 
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
@@ -81,7 +81,7 @@ async def test_school_home_no_next_data_after_success_retains_football_games(
     failing_transport = CoordinatorTestTransport(school_home_no_next_data=True)
     failing_client = AsyncMaxPrepsClient(failing_transport)
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=failing_client,
     ):
         await coordinator.async_refresh()
@@ -112,7 +112,7 @@ async def test_first_setup_school_home_no_next_data_raises_config_entry_not_read
     entry.add_to_hass(hass)
 
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         assert not await hass.config_entries.async_setup(entry.entry_id)
@@ -123,7 +123,7 @@ async def test_first_setup_school_home_no_next_data_raises_config_entry_not_read
     with pytest.raises(NextDataNotFoundError):
         await client.get_school_teams(
             __import__(
-                "custom_components.maxpreps.coordinator",
+                "custom_components.high_school_sports_scores.coordinator",
                 fromlist=["school_from_entry"],
             ).school_from_entry(entry)
         )
@@ -140,7 +140,7 @@ async def test_429_on_one_freshman_term_isolates_siblings(
     entry.add_to_hass(hass)
 
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
@@ -161,7 +161,7 @@ async def test_429_on_one_freshman_term_isolates_siblings(
     )
     failing_client = AsyncMaxPrepsClient(failing_transport)
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=failing_client,
     ):
         await coordinator.async_refresh()
@@ -199,7 +199,7 @@ async def test_empty_contests_program_refreshed_with_unknown_state(
     entry.add_to_hass(hass)
 
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
@@ -241,7 +241,7 @@ async def test_reload_keeps_entity_unique_ids(
     entry.add_to_hass(hass)
 
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
@@ -257,7 +257,7 @@ async def test_reload_keeps_entity_unique_ids(
     }
 
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         assert await hass.config_entries.async_reload(entry.entry_id)
@@ -284,7 +284,7 @@ async def test_unload_not_loaded_then_setup_leaves_second_school_untouched(
     working_transport = MultiSchoolTestTransport()
     working_client = AsyncMaxPrepsClient(working_transport)
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=working_client,
     ):
         centennial, bainbridge = await _setup_two_football_entries(
@@ -317,7 +317,7 @@ async def test_unload_not_loaded_then_setup_leaves_second_school_untouched(
     assert bainbridge_state_mid.state == "scheduled"
 
     with patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=working_client,
     ):
         assert await hass.config_entries.async_setup(centennial.entry_id)

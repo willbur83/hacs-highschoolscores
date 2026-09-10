@@ -3,9 +3,9 @@ from datetime import datetime
 
 import pytest
 
-from custom_components.maxpreps.exceptions import ContestSchemaError
-from custom_components.maxpreps.models import GameStatus, HomeAway
-from custom_components.maxpreps.parsing.contests import (
+from custom_components.high_school_sports_scores.exceptions import ContestSchemaError
+from custom_components.high_school_sports_scores.models import GameStatus, HomeAway
+from custom_components.high_school_sports_scores.parsing.contests import (
     CONTEST_ROW_ARITY,
     check_featured_game_consistency,
     decode_contest_row,

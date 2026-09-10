@@ -8,8 +8,8 @@ pytest.importorskip("homeassistant")
 
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from custom_components.maxpreps.async_transport import AiohttpTransport
-from custom_components.maxpreps.ha_transport import create_ha_transport
+from custom_components.high_school_sports_scores.async_transport import AiohttpTransport
+from custom_components.high_school_sports_scores.ha_transport import create_ha_transport
 
 
 @pytest.mark.asyncio

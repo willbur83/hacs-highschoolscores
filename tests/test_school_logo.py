@@ -2,7 +2,7 @@
 
 from types import SimpleNamespace
 
-from custom_components.maxpreps.school_logo import (
+from custom_components.high_school_sports_scores.school_logo import (
     automatic_team_logo_from_programs,
     resolve_school_entity_picture,
     validate_school_logo_override,

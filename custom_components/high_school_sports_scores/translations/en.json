@@ -1,0 +1,54 @@
+{
+  "entity": {
+    "sensor": {
+      "program": {
+        "name": "{gender} {level} {sport}"
+      }
+    }
+  },
+  "config": {
+    "abort": {
+      "already_configured": "This school is already configured.",
+      "current_cohort_ambiguous": "MaxPreps returned conflicting current-season programs for this school.",
+      "current_cohort_empty": "MaxPreps returned no team programs for this school.",
+      "no_supported_sports": "No supported sports are available for the current season at this school."
+    },
+    "error": {
+      "invalid": "Invalid selection.",
+      "invalid_logo": "Enter an https:// image URL or a /local/ path.",
+      "no_results": "No schools matched that name. Try a shorter name without city or state.",
+      "required": "Required.",
+      "school_load_failed": "Could not load programs for the selected school.",
+      "search_failed": "School search failed. Try again later."
+    },
+    "step": {
+      "init": {
+        "data": {
+          "school_logo_override": "School logo override",
+          "subscriptions": "Sports"
+        },
+        "description": "Optional school logo: https:// image URL or /local/ path. Leave blank to use MaxPreps automatic logo.",
+        "title": "Manage sport subscriptions"
+      },
+      "school": {
+        "data": {
+          "school": "School"
+        },
+        "title": "Select school"
+      },
+      "subscriptions": {
+        "data": {
+          "subscriptions": "Sports"
+        },
+        "title": "Subscribe to sports"
+      },
+      "user": {
+        "data": {
+          "query": "School name"
+        },
+        "description": "Search MaxPreps by short school name (for example, Centennial).",
+        "title": "High School Sports Scores"
+      }
+    }
+  }
+}

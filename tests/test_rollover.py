@@ -12,25 +12,25 @@ pytest.importorskip("homeassistant")
 
 from homeassistant.helpers import entity_registry as er
 
-from custom_components.maxpreps.async_client import AsyncMaxPrepsClient
-from custom_components.maxpreps.const import (
+from custom_components.high_school_sports_scores.async_client import AsyncMaxPrepsClient
+from custom_components.high_school_sports_scores.const import (
     ROLLOVER_UPDATE_INTERVAL,
     UPDATE_INTERVAL,
 )
-from custom_components.maxpreps.coordinator import (
+from custom_components.high_school_sports_scores.coordinator import (
     MaxPrepsDataUpdateCoordinator,
     ProgramResolutionStatus,
     TermRefreshStatus,
 )
-from custom_components.maxpreps.models import TeamSeason
-from custom_components.maxpreps.parsing.sport_seasons import parse_sport_seasons
-from custom_components.maxpreps.program_sensor import (
+from custom_components.high_school_sports_scores.models import TeamSeason
+from custom_components.high_school_sports_scores.parsing.sport_seasons import parse_sport_seasons
+from custom_components.high_school_sports_scores.program_sensor import (
     find_last_game,
     program_is_available,
     program_unique_id,
 )
-from custom_components.maxpreps.school_year import applicable_school_year
-from custom_components.maxpreps.urls import build_schedule_url
+from custom_components.high_school_sports_scores.school_year import applicable_school_year
+from custom_components.high_school_sports_scores.urls import build_schedule_url
 from tests.helpers.coordinator_test_helpers import centennial_entry
 from tests.helpers.fixtures import load_schedule_page_props, load_sport_seasons, wrap_page_props_in_html
 from tests.helpers.schedule_page_props_builder import build_minimal_schedule_page_props
@@ -189,7 +189,7 @@ def patch_local_date():
 
     def _apply(local_date: date):
         return patch(
-            "custom_components.maxpreps.school_year.homeassistant_local_date",
+            "custom_components.high_school_sports_scores.school_year.homeassistant_local_date",
             return_value=local_date,
         )
 
@@ -216,7 +216,7 @@ async def test_september_2026_applicable_year_and_football_unique_id(
     entry.add_to_hass(hass)
 
     with patch_local_date(SEPTEMBER_2026), patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         coordinator = MaxPrepsDataUpdateCoordinator(hass, entry)
@@ -243,7 +243,7 @@ async def test_july_1_rollover_retains_last_good_without_new_year_rows(
     entry.add_to_hass(hass)
 
     with patch_local_date(SEPTEMBER_2026), patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
@@ -255,7 +255,7 @@ async def test_july_1_rollover_retains_last_good_without_new_year_rows(
     assert find_last_game(football_before) is not None
 
     with patch_local_date(JULY_1_2027), patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         await coordinator.async_refresh()
@@ -301,14 +301,14 @@ async def test_27_28_football_row_appears_restores_twelve_hour_interval(
     entry.add_to_hass(hass)
 
     with patch_local_date(SEPTEMBER_2026), patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         coordinator = MaxPrepsDataUpdateCoordinator(hass, entry)
         await coordinator.async_refresh()
 
     with patch_local_date(JULY_1_2027), patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         await coordinator.async_refresh()
@@ -322,7 +322,7 @@ async def test_27_28_football_row_appears_restores_twelve_hour_interval(
     )
     published_client = AsyncMaxPrepsClient(published_transport)
     with patch_local_date(JULY_1_2027), patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=published_client,
     ):
         await coordinator.async_refresh()
@@ -362,7 +362,7 @@ async def test_multi_term_27_28_freshman_baseball_two_fetches_one_entity(
     entry.add_to_hass(hass)
 
     with patch_local_date(JULY_1_2027), patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         coordinator = MaxPrepsDataUpdateCoordinator(hass, entry)
@@ -402,7 +402,7 @@ async def test_coexistence_of_adjacent_years_does_not_abort(
     entry.add_to_hass(hass)
 
     with patch_local_date(JULY_1_2027), patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         coordinator = MaxPrepsDataUpdateCoordinator(hass, entry)
@@ -431,14 +431,14 @@ async def test_27_28_row_with_failing_schedule_keeps_prior_year_until_success(
     entry.add_to_hass(hass)
 
     with patch_local_date(SEPTEMBER_2026), patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         coordinator = MaxPrepsDataUpdateCoordinator(hass, entry)
         await coordinator.async_refresh()
 
     with patch_local_date(JULY_1_2027), patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         await coordinator.async_refresh()
@@ -457,7 +457,7 @@ async def test_27_28_row_with_failing_schedule_keeps_prior_year_until_success(
     )
     failing_client = AsyncMaxPrepsClient(failing_transport)
     with patch_local_date(JULY_1_2027), patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=failing_client,
     ):
         await coordinator.async_refresh()
@@ -478,7 +478,7 @@ async def test_27_28_row_with_failing_schedule_keeps_prior_year_until_success(
     )
     success_client = AsyncMaxPrepsClient(success_transport)
     with patch_local_date(JULY_1_2027), patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=success_client,
     ):
         await coordinator.async_refresh()
@@ -517,7 +517,7 @@ async def test_multi_term_rollover_replaces_prior_year_when_both_terms_publish(
     entry.add_to_hass(hass)
 
     with patch_local_date(SEPTEMBER_2026), patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=client,
     ):
         coordinator = MaxPrepsDataUpdateCoordinator(hass, entry)
@@ -532,7 +532,7 @@ async def test_multi_term_rollover_replaces_prior_year_when_both_terms_publish(
     _register_freshman_baseball_schedules(published_transport, "27-28")
     published_client = AsyncMaxPrepsClient(published_transport)
     with patch_local_date(JULY_1_2027), patch(
-        "custom_components.maxpreps.client_factory.create_async_client",
+        "custom_components.high_school_sports_scores.client_factory.create_async_client",
         return_value=published_client,
     ):
         await coordinator.async_refresh()

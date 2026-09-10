@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from custom_components.maxpreps.program_identity import (
+from custom_components.high_school_sports_scores.program_identity import (
     ParsedProgramUniqueId,
     parse_program_unique_id,
     program_identity_matches,

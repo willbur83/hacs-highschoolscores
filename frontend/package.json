@@ -1,12 +1,16 @@
 {
-  "name": "maxpreps-program-card",
+  "name": "high-school-sports-scores-card",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "vite build",
     "test": "vitest run"
   },
+  "dependencies": {
+    "lit": "^3.3.1"
+  },
   "devDependencies": {
+    "happy-dom": "^18.0.1",
     "typescript": "^5.9.2",
     "vite": "^7.1.5",
     "vitest": "^3.2.4"
