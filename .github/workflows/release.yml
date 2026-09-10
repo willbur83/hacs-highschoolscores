@@ -1,0 +1,123 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package-only:
+    name: Package validation (manual)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+      - name: Build and test frontend
+        run: npm ci && npm test && npm run build
+        working-directory: frontend
+      - name: Pack release zip
+        run: bash scripts/ci/pack_release_zip.sh
+      - name: Assert release zip layout
+        run: bash scripts/ci/assert_release_zip.sh
+
+  publish:
+    name: Publish GitHub Release
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate release version consistency
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          python3 <<'PY'
+          import json
+          import os
+          import re
+          import sys
+          import tomllib
+          from pathlib import Path
+
+          tag = os.environ["TAG"]
+          integration = Path("custom_components/high_school_sports_scores")
+          manifest_ver = json.loads((integration / "manifest.json").read_text())[
+              "version"
+          ]
+
+          stripped = tag.removeprefix("v")
+          if stripped != manifest_ver:
+              print(
+                  f"Tag {tag!r} → {stripped!r} does not equal manifest version {manifest_ver!r}",
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          const_text = (integration / "const.py").read_text()
+          const_match = re.search(r'^VERSION\s*=\s*"([^"]+)"', const_text, re.M)
+          const_ver = const_match.group(1) if const_match else None
+          if const_ver != manifest_ver:
+              print(
+                  f"const.VERSION {const_ver!r} does not match manifest {manifest_ver!r}",
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          py_ver = tomllib.load(open("pyproject.toml", "rb"))["project"]["version"]
+          if py_ver != manifest_ver:
+              print(
+                  f"pyproject.toml version {py_ver!r} does not match manifest {manifest_ver!r}",
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          if manifest_ver == "0.0.0":
+              print("Release version must not be 0.0.0", file=sys.stderr)
+              sys.exit(1)
+
+          print(f"Release version consistency OK: tag={tag!r} manifest={manifest_ver!r}")
+
+          github_env = os.environ.get("GITHUB_ENV")
+          if github_env:
+              with open(github_env, "a", encoding="utf-8") as env_file:
+                  env_file.write(f"MANIFEST_VERSION={manifest_ver}\n")
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+      - name: Build and test frontend
+        run: npm ci && npm test && npm run build
+        working-directory: frontend
+      - name: Pack release zip
+        run: bash scripts/ci/pack_release_zip.sh
+      - name: Assert release zip layout
+        run: bash scripts/ci/assert_release_zip.sh
+      - name: Create GitHub Release with asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          zip_path="dist/high_school_sports_scores.zip"
+          if [[ ! -f "${zip_path}" ]]; then
+            echo "Missing release zip: ${zip_path}" >&2
+            exit 1
+          fi
+
+          prerelease_flag=()
+          if ! python3 -c 'import re, sys; sys.exit(0 if re.fullmatch(r"[0-9]+\\.[0-9]+\\.[0-9]+", sys.argv[1]) else 1)' "${MANIFEST_VERSION}"; then
+            prerelease_flag=(--prerelease)
+          fi
+
+          gh release create "${TAG}" \
+            --title "${TAG}" \
+            "${prerelease_flag[@]}" \
+            "${zip_path}"

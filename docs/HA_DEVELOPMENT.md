@@ -16,6 +16,12 @@ GitHub Actions ([`.github/workflows/validate.yml`](../.github/workflows/validate
 
 Version-syntax evidence for the first beta tag ↔ manifest mapping is in [PHASE5_PLAN.md](PHASE5_PLAN.md) Slice 3 Implementation Notes and re-checked by `tests/test_version_mapping.py`.
 
+## GitHub Releases (HACS zip)
+
+The default branch does **not** contain the built Lovelace bundle (`custom_components/high_school_sports_scores/www/high-school-sports-scores-card.js` is gitignored). End users and HACS `zip_release` installs should use the GitHub Release asset `high_school_sports_scores.zip`, produced by [`.github/workflows/release.yml`](../.github/workflows/release.yml) when a version tag is pushed.
+
+**Slice 6 (first beta) tag cut (owner):** after a PR bumps `manifest.json`, `const.VERSION`, and `pyproject.toml` `[project].version` to the same literal (for example `0.1.0-beta.1`), create and push git tag `v0.1.0-beta.1` (leading `v` only on the tag). The release workflow checks `tag.removeprefix("v") == manifest["version"]`, rejects `0.0.0`, builds the frontend, packs with `scripts/ci/pack_release_zip.sh`, and runs `gh release create` with the zip attached in that single call (pre-release when the manifest version is not a plain `X.Y.Z` stable core). Use **workflow_dispatch** on the same workflow only to validate pack layout locally in CI — it never creates a GitHub Release.
+
 ## Version pins
 
 | Component | Pin | Notes |

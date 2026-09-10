@@ -856,3 +856,45 @@ Disposable copy of the repo with `[project].version = "0.1.0-beta.1"` only (real
 ### PRODUCT drift check
 
 No `docs/PRODUCT.md` changes. Version stays `0.0.0`. HACS install remains **Future / Desired**. Polling, DTO, Q1, provider symbols, `hacs.json` `zip_release` policy, and MaxPreps client/fixtures unchanged.
+
+## Slice 4 — Release ZIP automation (2026-09-10)
+
+### What landed
+
+- **`.github/workflows/release.yml`:** Tag-driven GitHub Release automation (`on.push.tags: v*`) plus **`workflow_dispatch`** pack-only validation (never calls `gh release create`).
+  - Default workflow `permissions: contents: read`; **`publish`** job alone requests `contents: write`.
+  - **Tag path:** checkout at the pushed tag → **version gate** (before frontend build or release) using source literals from git:
+    - `github.ref_name.removeprefix("v") == manifest.json["version"]`
+    - `const.VERSION == manifest.json["version"]`
+    - `pyproject.toml [project].version == manifest.json["version"]`
+    - manifest version must not be `0.0.0` (blocks accidental `v0.0.0` even when strip matches the current tree)
+  - Frontend: `cd frontend && npm ci && npm test && npm run build`
+  - Reuses **`scripts/ci/pack_release_zip.sh`** and **`scripts/ci/assert_release_zip.sh`** (HACS `extractall` layout; asset basename `high_school_sports_scores.zip` per `hacs.json`)
+  - **`gh release create`** attaches `dist/high_school_sports_scores.zip` in the **same invocation** (no separate upload step). Pre-release flag: `--prerelease` when manifest version is not a plain stable `X.Y.Z` core (e.g. `0.1.0-beta.1` → pre-release; `0.1.0` → stable release).
+- **`docs/HA_DEVELOPMENT.md`:** Short “GitHub Releases (HACS zip)” section — `main` has no committed JS; Slice 6 tag cut steps; release workflow is the supported artifact path; `workflow_dispatch` is CI pack validation only.
+- **Not in this slice:** No git tag pushed, no GitHub Release published, no version bump off `0.0.0`, no README rewrite (Slice 5), no Slice 6 beta tag `v0.1.0-beta.1`.
+
+### Version mapping enforcement (release workflow)
+
+Same locked rules as Slice 3 Implementation Notes — **no** `0.1.0b1` manifest pairing with `v0.1.0-beta.1`; ZIP carries `manifest.json` from the tagged tree without rewritten versions.
+
+### Tests
+
+| Command | Result |
+|---------|--------|
+| `.venv/bin/pytest` (host Python 3.12, `[dev]`) | **219 passed**, 10 skipped |
+| `cd frontend && npm ci && npm test` | **78 passed** |
+| Packaging dry-run — `npm run build`, `pack_release_zip.sh`, `assert_release_zip.sh` | **PASS** (zip root: `manifest.json`, `brand/icon.png`, `www/high-school-sports-scores-card.js`; no nested `high_school_sports_scores/`) |
+| `actionlint` on `release.yml` | **skipped** (`actionlint` not installed in dev environment) |
+| Layer 2 container | **not run** (no Python/HA test changes) |
+| GitHub Release / tag push | **not run** (Slice 4 deliverable is workflow + docs only) |
+
+Zero live MaxPreps.
+
+### Deviations
+
+None.
+
+### PRODUCT drift check
+
+No `docs/PRODUCT.md` changes. Repository version files remain **`0.0.0`**. HACS install remains **Future / Desired**. `validate.yml`, `hacs.json`, parsers/client/fixtures, polling, DTO, Q1, and product behavior unchanged.
