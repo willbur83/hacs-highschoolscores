@@ -807,16 +807,51 @@ Source: hassfest `verify_version` in `home-assistant/core` `script/hassfest/mani
 | hassfest — `ghcr.io/home-assistant/hassfest` on checkout | **PASS** (0 errors; `CONFIG_SCHEMA` warning only — config-entry-only integration, pre-existing) |
 | Version evidence | Recorded above; re-checked by `tests/test_version_mapping.py` |
 
-**GitHub Actions verification:**
+**GitHub Actions verification (`validate.yml` on `willbur83/hacs-highschoolscores`):**
 
-workflow authored; remote CI result pending — `origin/main` still contains the pre–Slice 1 `maxpreps` tree; this slice’s `validate.yml` and integration rename land with the pending Slices 1–2 push. HACS Action not exercised locally (requires `GITHUB_TOKEN`); `zip_release: true` will be validated on first remote run after Slices 1–3 are on GitHub.
+| Run | Trigger | Result |
+|-----|---------|--------|
+| [34502930544](https://github.com/willbur83/hacs-highschoolscores/actions/runs/34502930544) | push `phase5-slices-1-3-validate` (Slices 1–3 only) | **failure** — see interim notes below |
+| [34503317968](https://github.com/willbur83/hacs-highschoolscores/actions/runs/34503317968) | push `main` (Slices 1–3 + Layer 2 CI fix) | **success** — all required jobs green |
+
+**Run 34503317968 job results (authoritative closure):**
+
+| Job | Result |
+|-----|--------|
+| Layer 1 (Python 3.12) | **success** |
+| Frontend unit | **success** |
+| Layer 2 (HA Core container) | **success** |
+| Packaging dry-run | **success** |
+| hassfest | **success** |
+| HACS Action | **success** |
+
+Interim run **34502930544** (branch-only, before `main` had `LICENSE`):
+
+- **Layer 2:** `104 passed`, **1 error** — phacc lingering `DataUpdateCoordinator` refresh timer on `tests/test_options_flow.py::test_clear_logo_override_preserves_subscriptions` teardown. Fixed by `await hass.async_block_till_done()` after options `CREATE_ENTRY` (commit on `main`, no test weakening).
+- **HACS Action:** `<Validation license> failed: The repository has no license` — GitHub repo `.license` metadata was empty while `LICENSE` existed only on the feature branch (`main` still pointed at pre–Slice 2 `maxpreps`). After Slices 1–3 landed on **`main`**, HACS license validation passed with **no** `zip_release` / release-asset workaround and **no** `hacs.json` changes.
 
 Pins unchanged: `homeassistant==2026.9.0`, `pytest-homeassistant-custom-component==0.13.362`. Zero live MaxPreps.
+
+### pyproject.toml beta spelling (toolchain evidence, disposable copy)
+
+Disposable copy of the repo with `[project].version = "0.1.0-beta.1"` only (real tree unchanged at `0.0.0`):
+
+| Check | Result |
+|-------|--------|
+| `python -m build --wheel` (setuptools **84.0.0** build backend) | **accepted** — built `hacs_highschoolscores-0.1.0b1-py3-none-any.whl` |
+| Wheel `METADATA` `Version:` | `0.1.0b1` (PEP 440 normalization from source `0.1.0-beta.1`) |
+| `pip install` wheel → `pip show` / `importlib.metadata.version` | `0.1.0b1` |
+| `pip install -e .` → `PKG-INFO` `Version:` | `0.1.0b1` |
+
+**Mapping impact:** none. Slice 6 release PR still sets **source** `pyproject.toml` / `manifest.json` / `const.VERSION` to the literal `0.1.0-beta.1` (hassfest SEMVER + `tag.removeprefix("v")` alignment). Setuptools/pip **installed metadata** may report canonical `0.1.0b1`; the HACS ZIP carries `manifest.json` from the integration tree, not wheel metadata.
+
+**Repository version files after Slice 3 closure:** `pyproject.toml`, `manifest.json`, and `const.VERSION` remain **`0.0.0`**.
 
 ### Deviations
 
 - **`frontend_register.py`:** switched `http` / `frontend` imports to `importlib.import_module` so hassfest dependencies validation passes without manifest `dependencies` / `after_dependencies` on `http` / `frontend` (Phase 4 phacc constraint). Runtime behavior unchanged.
 - **`manifest.json`:** key order only (`iot_class` before `issue_tracker`) for hassfest; no version or domain change.
+- **`tests/test_options_flow.py`:** one `async_block_till_done()` after options configure (CI phacc timer teardown; behavior unchanged).
 
 ### PRODUCT drift check
 
