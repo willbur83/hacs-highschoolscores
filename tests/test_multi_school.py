@@ -12,6 +12,8 @@ from homeassistant.config_entries import ConfigEntryState
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 
+from tests.device_registry_compat import async_get_device_for_config_entry
+
 from custom_components.high_school_sports_scores.async_client import AsyncMaxPrepsClient
 from custom_components.high_school_sports_scores.const import CONF_GENDER, CONF_LEVEL, CONF_SPORT, DOMAIN
 from custom_components.high_school_sports_scores.exceptions import MaxPrepsError
@@ -113,11 +115,13 @@ async def test_two_schools_two_devices_non_colliding_football_unique_ids(
     centennial, bainbridge = await _setup_two_football_entries(hass, multi_school_client)
 
     device_registry = dr.async_get(hass)
-    centennial_device = device_registry.async_get_device_by_identifier(
+    centennial_device = async_get_device_for_config_entry(
+        device_registry,
         (DOMAIN, CENTENNIAL_ROSWELL_ID),
         centennial.entry_id,
     )
-    bainbridge_device = device_registry.async_get_device_by_identifier(
+    bainbridge_device = async_get_device_for_config_entry(
+        device_registry,
         (DOMAIN, BAINBRIDGE_GA_ID),
         bainbridge.entry_id,
     )

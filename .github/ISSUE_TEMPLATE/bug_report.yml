@@ -20,8 +20,8 @@ body:
     id: ha_version
     attributes:
       label: Home Assistant version
-      description: e.g. 2026.9.0 — **Settings → About**
-      placeholder: "2026.9.0"
+      description: Home Assistant version shown in **Settings → About**
+      placeholder: "e.g. 2025.8.0 or newer"
     validations:
       required: true
 

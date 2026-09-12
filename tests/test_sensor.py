@@ -14,6 +14,8 @@ from homeassistant.config_entries import ConfigEntryState
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 
+from tests.device_registry_compat import async_get_device_for_config_entry
+
 from custom_components.high_school_sports_scores.const import (
     ATTRIBUTION,
     CONF_GENDER,
@@ -159,7 +161,8 @@ async def test_device_identifiers_and_school_configuration_url(
     three_program_entry, hass
 ) -> None:
     device_registry = dr.async_get(hass)
-    device = device_registry.async_get_device_by_identifier(
+    device = async_get_device_for_config_entry(
+        device_registry,
         (DOMAIN, CENTENNIAL_ROSWELL_ID),
         three_program_entry.entry_id,
     )

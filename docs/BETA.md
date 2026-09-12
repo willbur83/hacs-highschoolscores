@@ -12,7 +12,7 @@ User-facing overview and limitations: [README](../README.md).
 
 - Home Assistant **2025.8.0** or newer  
 - HACS installed and working  
-- A test school and at least one allowlisted sport you can verify (Football, Baseball, Basketball, or Volleyball)
+- A test school and at least one supported sport you can verify (Football, Baseball, Basketball, or Volleyball)
 
 Beta builds are **pre-releases**. GitHub marks them as pre-release; HACS does not always install the newest pre-release by default.
 

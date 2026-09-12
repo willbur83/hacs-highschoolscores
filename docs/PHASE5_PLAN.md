@@ -975,3 +975,31 @@ Initial Slice 5 README/BETA listed **`2026.9.0`** as the user minimum — that m
 #### PRODUCT drift check
 
 Still no `docs/PRODUCT.md` changes. No Slice 6 tag/release/version bump. Minimum supported version documentation only.
+
+### Slice 5 correction — Layer 2 green on documented HA floor (2026-09-12)
+
+#### Test-only 2025.8.0 failures
+
+Two Layer 2 tests called `DeviceRegistry.async_get_device_by_identifier`, added in newer Home Assistant for config-entry-scoped device lookup. That API is **not** present on Core **2025.8.0** and is **not** used by integration runtime (`DeviceInfo` only).
+
+#### Fix
+
+- **`tests/device_registry_compat.py`:** `async_get_device_for_config_entry()` uses `async_get_device_by_identifier` when available (2026.9+), otherwise `async_get_device(identifiers=…)` plus `config_entry_id in device.config_entries` (2025.8+).
+- **`tests/test_sensor.py`**, **`tests/test_multi_school.py`:** device assertions routed through the helper.
+
+Runtime integration code unchanged.
+
+#### Layer 2 re-check (canonical file list; zero live MaxPreps)
+
+| Core tag | Result |
+|----------|--------|
+| **2025.7.4** | **Expected boundary failure** — `ImportError: cannot import name 'OptionsFlowWithReload'` loading `config_flow.py` |
+| **2025.8.0** | **104 passed** (documented minimum; `phacc==0.13.316`, image Core, no HA pip override) |
+| **2026.9.0** | **104 passed** (primary CI pin; `phacc==0.13.362`, `homeassistant==2026.9.0`) |
+
+Primary CI target remains **2026.9.0** in `.github/workflows/validate.yml`; no old-version CI matrix added.
+
+#### Public-doc wording
+
+- **`docs/BETA.md`:** “allowlisted sport” → “supported sport” in tester prerequisites.
+- **`.github/ISSUE_TEMPLATE/bug_report.yml`:** neutral HA version placeholder (“e.g. 2025.8.0 or newer”).
