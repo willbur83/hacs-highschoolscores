@@ -1003,3 +1003,61 @@ Primary CI target remains **2026.9.0** in `.github/workflows/validate.yml`; no o
 
 - **`docs/BETA.md`:** “allowlisted sport” → “supported sport” in tester prerequisites.
 - **`.github/ISSUE_TEMPLATE/bug_report.yml`:** neutral HA version placeholder (“e.g. 2025.8.0 or newer”).
+
+## Slice 6 — First beta release artifact (2026-09-12)
+
+### What landed
+
+- **Version bump (PR [#2](https://github.com/willbur83/hacs-highschoolscores/pull/2)):** `manifest.json`, `const.VERSION`, and `pyproject.toml` `[project].version` set to **`0.1.0-beta.1`** (same literal in all three; not `0.1.0b1`). Layer 1 tests updated (`test_version_mapping`, `test_manifest`, `test_async_transport` User-Agent).
+- **`.github/workflows/release.yml`:** `--generate-notes` on tag-driven `gh release create` (pre-release flag unchanged for non-`X.Y.Z` manifest cores).
+- **Git tag / GitHub pre-release:** Annotated tag **`v0.1.0-beta.1`** on validated merge commit; workflow attached **`high_school_sports_scores.zip`** in the same `gh release create` invocation.
+- **`README.md` / `docs/BETA.md`:** Public beta status (post-release); HACS custom-repo install via published pre-releases; removed “beta not published yet” prerequisite wording.
+
+**Prerequisite closure (Slice 5 Layer 2 on HA 2025.8.0):** merged PR [#1](https://github.com/willbur83/hacs-highschoolscores/pull/1) (`tests/device_registry_compat.py`) before the version bump.
+
+### Locked version mapping used
+
+| Field | Value |
+|-------|-------|
+| GitHub tag | `v0.1.0-beta.1` |
+| Pre-release | yes |
+| `manifest.json` `"version"` | `0.1.0-beta.1` |
+| `const.VERSION` | `0.1.0-beta.1` |
+| `pyproject.toml` `[project].version` | `0.1.0-beta.1` |
+| Gate | `tag.removeprefix("v") == manifest == const == pyproject` |
+
+### Tag / commit / CI
+
+| Item | Value |
+|------|-------|
+| Validated merge commit (tag target) | `f61e0657dab7f68a3b3ce9b8686658432beb971d` |
+| `validate.yml` on that commit | [34706748189](https://github.com/willbur83/hacs-highschoolscores/actions/runs/34706748189) — **success** |
+| Version-bump PR CI | [34706599329](https://github.com/willbur83/hacs-highschoolscores/actions/runs/34706599329) — **success** |
+| `release.yml` publish (tag push) | [34706930956](https://github.com/willbur83/hacs-highschoolscores/actions/runs/34706930956) — **success** |
+| GitHub Release | [v0.1.0-beta.1](https://github.com/willbur83/hacs-highschoolscores/releases/tag/v0.1.0-beta.1) — pre-release, not draft |
+| Release asset basename | `high_school_sports_scores.zip` (only zip asset) |
+
+### Release asset verification (downloaded from GitHub Release)
+
+Used `gh release download v0.1.0-beta.1` (not local `dist/`). `scripts/ci/assert_release_zip.sh` **PASS**. Archive-root `manifest.json` **`"version": "0.1.0-beta.1"`**. Required entries present: `brand/icon.png`, `www/high-school-sports-scores-card.js`. No nested `high_school_sports_scores/` folder.
+
+**ZIP archive root (top-level names):** `manifest.json`, `brand/`, `www/`, `parsing/`, `translations/`, plus integration Python modules at archive root (`__init__.py`, `config_flow.py`, `coordinator.py`, `sensor.py`, `websocket.py`, … — flat HACS `extractall` layout).
+
+### Tests
+
+| Command / check | Result |
+|-----------------|--------|
+| `validate.yml` on version-bump PR #2 | **success** (Layer 1/2, hassfest, HACS action, packaging dry-run, frontend) |
+| `validate.yml` on merge commit `f61e0657` | **success** ([34706748189](https://github.com/willbur83/hacs-highschoolscores/actions/runs/34706748189)) |
+| `release.yml` tag `v0.1.0-beta.1` | **success** — version gate, frontend build/test, pack, assert, `gh release create` |
+| Downloaded release ZIP assert | **PASS** (layout + manifest version) |
+
+Zero live MaxPreps.
+
+### Deviations
+
+None.
+
+### PRODUCT drift check
+
+No `docs/PRODUCT.md` changes. HACS **default store** listing remains **Future / Desired** (Slice 8). Custom-repo install documented in README/BETA only; not promoted to PRODUCT Current. No stable `v0.1.0` tag. Slice 7/8 scope not started.
