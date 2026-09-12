@@ -91,7 +91,8 @@ def test_pep440_stable_candidates_not_prerelease() -> None:
         assert not Version(candidate.removeprefix("v")).is_prerelease
 
 
-def test_current_manifest_stays_0_0_0() -> None:
+def test_current_manifest_matches_locked_first_beta() -> None:
+    """Tree manifest must match FIRST_BETA_MANIFEST (not PEP440 0.1.0b1)."""
     manifest_path = (
         Path(__file__).resolve().parent.parent
         / "custom_components"
@@ -99,7 +100,8 @@ def test_current_manifest_stays_0_0_0() -> None:
         / "manifest.json"
     )
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    assert manifest["version"] == "0.0.0"
+    assert manifest["version"] == FIRST_BETA_MANIFEST
+    assert manifest["version"] != "0.1.0b1"
 
 
 @pytest.mark.parametrize("candidate", CANDIDATES)
