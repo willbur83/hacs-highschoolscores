@@ -1061,3 +1061,7 @@ None.
 ### PRODUCT drift check
 
 No `docs/PRODUCT.md` changes. HACS **default store** listing remains **Future / Desired** (Slice 8). Custom-repo install documented in README/BETA only; not promoted to PRODUCT Current. No stable `v0.1.0` tag. Slice 7/8 scope not started.
+
+### Slice 6 correction — user-facing release body (2026-09-12)
+
+The GitHub pre-release **`v0.1.0-beta.1`** description was edited with `gh release edit` to add beta-user install, feedback, and limitation text above the existing generated “What’s Changed” section. **No** tag, version, ZIP asset, or new release was created or replaced.
