@@ -1,0 +1,99 @@
+name: Bug report
+description: Report a problem with High School Sports Scores (integration or Lovelace card)
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve High School Sports Scores. Please redact private information before submitting.
+
+        **Do not include** in this issue:
+        - Private hostnames, internal IP addresses, or VPN-only URLs
+        - Full filesystem paths (`/home/...`, operator paths, or unsanitized `/config/...` trees)
+        - Docker Compose files, `.env` files, secrets, API tokens, or cookies
+        - Unrelated Home Assistant configuration or a full unredacted diagnostics/config dump
+
+        A short log excerpt around the error is enough. See [README — Beta feedback](https://github.com/willbur83/hacs-highschoolscores/blob/main/README.md#beta-feedback-and-issues) and [docs/BETA.md](https://github.com/willbur83/hacs-highschoolscores/blob/main/docs/BETA.md).
+
+  - type: input
+    id: ha_version
+    attributes:
+      label: Home Assistant version
+      description: e.g. 2026.9.0 — **Settings → About**
+      placeholder: "2026.9.0"
+    validations:
+      required: true
+
+  - type: input
+    id: integration_version
+    attributes:
+      label: High School Sports Scores version
+      description: From HACS or the integration device **About** / manifest
+      placeholder: "0.1.0-beta.1 (example — use your installed version)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install_method
+    attributes:
+      label: Install method
+      options:
+        - HACS custom repository (GitHub Release ZIP)
+        - Other / unsure
+    validations:
+      required: true
+
+  - type: input
+    id: hacs_version_selected
+    attributes:
+      label: HACS version selected (if applicable)
+      description: Release tag or version string chosen in HACS (especially for pre-releases)
+      placeholder: "e.g. v0.1.0-beta.1"
+
+  - type: textarea
+    id: context
+    attributes:
+      label: School / program / sport (if relevant)
+      description: Sanitized context only — no need for full entity IDs if you prefer generic descriptions
+      placeholder: "One school, Boys Varsity Football, issue appears on last_game attribute…"
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Install …
+        2. Add integration …
+        3. …
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs (sanitized)
+      description: Paste a **short** excerpt from **Settings → System → Logs** — redact hostnames, paths, and tokens
+      render: shell
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmation
+      options:
+        - label: I have removed private hostnames, IPs, secrets, and full config dumps from this report
+          required: true

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Beta testing guide
+    url: https://github.com/willbur83/hacs-highschoolscores/blob/main/docs/BETA.md
+    about: HACS custom repo, pre-release install, and what to verify before reporting
+  - name: User documentation (README)
+    url: https://github.com/willbur83/hacs-highschoolscores/blob/main/README.md
+    about: Installation, setup, card modes, and known limitations

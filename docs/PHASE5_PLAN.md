@@ -912,3 +912,66 @@ None.
 ### PRODUCT drift check
 
 No `docs/PRODUCT.md` changes. Repository version files remain **`0.0.0`**. HACS install remains **Future / Desired**. `validate.yml`, `hacs.json`, parsers/client/fixtures, polling, DTO, Q1, and product behavior unchanged.
+
+## Slice 5 — Public README and user docs (2026-09-12)
+
+### What landed
+
+- **`README.md`:** Rewritten from Phase 3/4 development log to stranger-facing user documentation — pre-release status banner, independent-project disclaimer (§9), MIT vs MaxPreps-material license distinction, HACS custom-repository install path targeting GitHub Release ZIP (`high_school_sports_scores.zip`, `hide_default_branch`), my.home-assistant.io optional custom-repo link, first-time setup (short school name, allowlisted sports, options/logo override), supported sports table, Lovelace card picker + `custom:high-school-sports-scores-card` modes, user-language limitations (naive datetimes, no live/in-progress, ~12h/daily rollover polling), troubleshooting (clone vs release, search tips, reload/restart, main not supported), beta/issue reporting hygiene, developer pointer to `docs/HA_DEVELOPMENT.md` only (no bind-mount/npm as user install).
+- **`docs/BETA.md`:** External beta workflow — custom repo, pre-release version selection (HACS wording kept flexible for Slice 7 tightening), restart, integration setup, entity/card mode/restart checks, upgrade between betas, GitHub Issues with public-safe diagnostics rules aligned with §11 coverage intent.
+- **`.github/ISSUE_TEMPLATE/bug_report.yml`** + **`config.yml`:** Conventional bug report form requesting HA/integration/HACS install context, repro steps, sanitized logs; explicit do-not-include list (hostnames, IPs, paths, compose, secrets, full dumps). Links to README and BETA.md.
+- **This file:** Slice 5 Implementation Notes (this block).
+
+### Tests
+
+Docs-only slice. No pytest, npm, or live MaxPreps. Manual link/path sanity on new markdown and issue template URLs.
+
+### Deviations
+
+None.
+
+### PRODUCT drift check
+
+No `docs/PRODUCT.md` changes. HACS custom-repo install remains **Future / Desired** (Slice 8). No version bump, no git tag, no GitHub Release (Slice 6). No README use of Q1 or PRE/IN/POST/OFF end-user terminology. Runtime, `hacs.json`, LICENSE legal text, parsers/client/fixtures, and `ATTRIBUTION` unchanged.
+
+### Slice 5 correction — minimum Home Assistant version + doc hygiene (2026-09-12)
+
+#### Compatibility audit (runtime APIs)
+
+| API / usage | Code | Earliest Core tag (evidence) | Hard vs presentation |
+|-------------|------|------------------------------|----------------------|
+| `OptionsFlowWithReload` | `config_flow.py` | **2025.8.0** — [core#146910](https://github.com/home-assistant/core/pull/146910) merged 2025-07-19; class absent in `config_entries.py` at tag `2025.7.4`, present at `2025.8.0` (raw tag file grep) | **Hard** (import fails below floor) |
+| `ConfigEntry.runtime_data` | `__init__.py`, `websocket.py`, `sensor.py` | **2024.6.0** — [core#115669](https://github.com/home-assistant/core/pull/115669); `runtime_data` absent at `2024.5.4`, present at `2024.6.0` | Hard |
+| `http.StaticPathConfig` + `async_register_static_paths` | `frontend_register.py` | **2024.7.0** — [dev blog 2024-06-18](https://developers.home-assistant.io/blog/2024/06/18/async_register_static_paths/); symbol absent at tag `2024.6.0`, present at `2024.7.0` | Hard for card static path (integration still loads if bundle missing) |
+| `async_forward_entry_setups` / `async_unload_platforms` | `__init__.py` | Pre-2024.6 (platform forward API migrations, e.g. core#86565) | Hard |
+| `DataUpdateCoordinator`, `CoordinatorEntity`, `DeviceInfo`, selectors, websocket commands, `add_extra_js_url` | coordinator / sensor / websocket / frontend | Well before 2025.8 | Hard where used |
+| `custom_components/.../brand/icon.png` | on-disk for hassfest | **2026.3+** branding convention per `tests/test_manifest.py` comment | **Presentation / hassfest only** — not runtime minimum |
+
+**Recommended minimum supported Core version:** **`2025.8.0`** (maximum of hard runtime rows above).
+
+#### Layer 2 empirical checks (canonical file list; zero live MaxPreps)
+
+| Core tag | Result | Notes |
+|----------|--------|-------|
+| **2025.7.4** (one release before floor) | **Integration does not import** — `ImportError: cannot import name 'OptionsFlowWithReload'` when loading `config_flow.py` | Expected below-floor failure |
+| **2025.8.0** (candidate minimum) | **102 passed**, 2 failed in 6.61s | Failures are **tests only** (`DeviceRegistry.async_get_device_by_identifier` helper absent on 2025.8; integration runtime does not call it). Container: `phacc==0.13.316`, no `pip install homeassistant` override (use image Core). |
+| **2026.9.0** (primary CI pin) | **104 passed** in 7.22s | Matches `.github/workflows/validate.yml` Layer 2 command (`phacc==0.13.362`, `homeassistant==2026.9.0`). |
+
+#### Files changed (minimum version + README cleanup)
+
+- **`hacs.json`:** `homeassistant` **`2025.8.0`** (HACS minimum gate; was incorrectly pinned to CI target `2026.9.0`).
+- **`README.md`:** Requirements **`2025.8.0+`**; end-user install wording (published release via HACS; development branch not supported); reduced `hide_default_branch` / `main` implementation detail in primary prose.
+- **`docs/BETA.md`:** Minimum **`2025.8.0+`**; same release-vs-development-branch wording.
+- **`docs/HA_DEVELOPMENT.md`:** New **Supported Home Assistant versions** table (minimum vs primary CI pin **`2026.9.0`** unchanged in Layer 2 job).
+
+#### Public-doc hygiene audit
+
+Grepped `README.md`, `docs/BETA.md`, `.github/ISSUE_TEMPLATE/**` for `vscode-remote`, `vscode-resource`, private hostnames/IPs, and local infra paths. **No VS Code remote or `/srv/` install links** in those files. README/BETA retain **sanitized examples** of paths users must not post in issues (`/home/...`, `/srv/...`). Repository-relative Markdown links only (`docs/BETA.md`, `hacs.json`, `LICENSE`, etc.).
+
+#### Deviations
+
+Initial Slice 5 README/BETA listed **`2026.9.0`** as the user minimum — that mirrored the CI/dev pin, not a compatibility audit. Corrected without runtime code changes.
+
+#### PRODUCT drift check
+
+Still no `docs/PRODUCT.md` changes. No Slice 6 tag/release/version bump. Minimum supported version documentation only.

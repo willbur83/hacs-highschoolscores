@@ -22,6 +22,15 @@ The default branch does **not** contain the built Lovelace bundle (`custom_compo
 
 **Slice 6 (first beta) tag cut (owner):** after a PR bumps `manifest.json`, `const.VERSION`, and `pyproject.toml` `[project].version` to the same literal (for example `0.1.0-beta.1`), create and push git tag `v0.1.0-beta.1` (leading `v` only on the tag). The release workflow checks `tag.removeprefix("v") == manifest["version"]`, rejects `0.0.0`, builds the frontend, packs with `scripts/ci/pack_release_zip.sh`, and runs `gh release create` with the zip attached in that single call (pre-release when the manifest version is not a plain `X.Y.Z` stable core). Use **workflow_dispatch** on the same workflow only to validate pack layout locally in CI — it never creates a GitHub Release.
 
+## Supported Home Assistant versions
+
+| Role | Version | Notes |
+|------|---------|-------|
+| **Minimum supported** (runtime + `hacs.json` `homeassistant`) | **2025.8.0** | Driven by `OptionsFlowWithReload` in `config_flow.py` ([home-assistant/core#146910](https://github.com/home-assistant/core/pull/146910)); first present on Core tag `2025.8.0`, absent on `2025.7.4`. |
+| **Primary CI / Layer 2 / dev container pin** | **2026.9.0** | Canonical pytest and owner sandbox target; not the HACS minimum gate. |
+
+Other runtime APIs in this integration (for example `ConfigEntry.runtime_data`, `async_register_static_paths`, websocket commands, `DataUpdateCoordinator`) appear on earlier Core releases; **2025.8.0** is the maximum of the audited introduction versions. The optional `brand/icon.png` file is a hassfest/branding convenience on newer Core builds and does **not** raise the runtime minimum.
+
 ## Version pins
 
 | Component | Pin | Notes |
