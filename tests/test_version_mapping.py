@@ -26,6 +26,8 @@ HASSFEST_STRATEGIES = [
 CANDIDATES = (
     "v0.1.0-beta.1",
     "0.1.0-beta.1",
+    "v0.1.0-beta.2",
+    "0.1.0-beta.2",
     "0.1.0b1",
     "v0.1.0b1",
     "v0.1.0",
@@ -35,6 +37,8 @@ CANDIDATES = (
 # Locked mapping for Slice 4/6 (see docs/PHASE5_PLAN.md Slice 3 Implementation Notes).
 FIRST_BETA_TAG = "v0.1.0-beta.1"
 FIRST_BETA_MANIFEST = "0.1.0-beta.1"
+CURRENT_BETA_TAG = "v0.1.0-beta.2"
+CURRENT_BETA_MANIFEST = "0.1.0-beta.2"
 FIRST_STABLE_TAG = "v0.1.0"
 FIRST_STABLE_MANIFEST = "0.1.0"
 
@@ -80,10 +84,16 @@ def test_naive_removeprefix_matches_locked_stable_pair() -> None:
 
 
 def test_pep440_beta_candidates_are_prerelease() -> None:
-    for candidate in ("0.1.0-beta.1", "0.1.0b1", "v0.1.0-beta.1", "v0.1.0b1"):
+    for candidate, public in (
+        ("0.1.0-beta.1", "0.1.0b1"),
+        ("0.1.0-beta.2", "0.1.0b2"),
+        ("0.1.0b1", "0.1.0b1"),
+        ("v0.1.0-beta.1", "0.1.0b1"),
+        ("v0.1.0b1", "0.1.0b1"),
+    ):
         pep_input = candidate.removeprefix("v")
         assert Version(pep_input).is_prerelease
-        assert Version(pep_input).public == "0.1.0b1"
+        assert Version(pep_input).public == public
 
 
 def test_pep440_stable_candidates_not_prerelease() -> None:
@@ -91,8 +101,8 @@ def test_pep440_stable_candidates_not_prerelease() -> None:
         assert not Version(candidate.removeprefix("v")).is_prerelease
 
 
-def test_current_manifest_matches_locked_first_beta() -> None:
-    """Tree manifest must match FIRST_BETA_MANIFEST (not PEP440 0.1.0b1)."""
+def test_current_manifest_matches_release_version() -> None:
+    """Tree manifest must match CURRENT_BETA_MANIFEST (not PEP440 0.1.0b2)."""
     manifest_path = (
         Path(__file__).resolve().parent.parent
         / "custom_components"
@@ -100,8 +110,12 @@ def test_current_manifest_matches_locked_first_beta() -> None:
         / "manifest.json"
     )
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    assert manifest["version"] == FIRST_BETA_MANIFEST
-    assert manifest["version"] != "0.1.0b1"
+    assert manifest["version"] == CURRENT_BETA_MANIFEST
+    assert manifest["version"] != "0.1.0b2"
+
+
+def test_current_beta_tag_removeprefix_matches_manifest() -> None:
+    assert CURRENT_BETA_TAG.removeprefix("v") == CURRENT_BETA_MANIFEST
 
 
 @pytest.mark.parametrize("candidate", CANDIDATES)

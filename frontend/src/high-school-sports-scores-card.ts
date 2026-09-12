@@ -70,6 +70,12 @@ export class HighSchoolSportsScoresCard extends LitElement {
 
   private _scheduleActive = false;
 
+  private _resizeObserver: ResizeObserver | undefined;
+
+  private _resizeObservedElement: Element | null = null;
+
+  private _layoutNotifyFrame: number | null = null;
+
   public setConfig(config: HighSchoolSportsScoresCardConfig): void {
     if (!config.entity) {
       throw new Error("entity is required");
@@ -135,22 +141,34 @@ export class HighSchoolSportsScoresCard extends LitElement {
   }
 
   public getCardSize(): number {
-    return 6;
+    return this._computeCardSizeUnits();
   }
 
   public getGridOptions() {
     return {
-      rows: 6,
       columns: 6,
-      min_rows: 3,
       min_columns: 3,
       max_columns: 12,
+      // Let sections/masonry grow with content; fixed rows caused empty gap
+      // collapsed and overlap when the schedule expanded.
+      rows: "auto",
+      min_rows: 1,
     };
   }
 
   disconnectedCallback(): void {
+    this._resizeObserver?.disconnect();
+    this._resizeObservedElement = null;
+    if (this._layoutNotifyFrame !== null) {
+      cancelAnimationFrame(this._layoutNotifyFrame);
+      this._layoutNotifyFrame = null;
+    }
     this._teardownSchedule();
     super.disconnectedCallback();
+  }
+
+  protected firstUpdated(): void {
+    queueMicrotask(() => this._observeCardRoot());
   }
 
   protected updated(changed: PropertyValues<this>): void {
@@ -160,6 +178,70 @@ export class HighSchoolSportsScoresCard extends LitElement {
           this._syncScheduleLifecycle();
         }
       });
+    }
+    queueMicrotask(() => {
+      if (this.isConnected) {
+        this._observeCardRoot();
+      }
+    });
+  }
+
+  private _computeCardSizeUnits(): number {
+    const mode = resolveCardMode(this.config?.mode);
+    if (mode === "last_next") {
+      return 3;
+    }
+    if (mode === "both" && !this._expanded) {
+      return 3;
+    }
+    const gameCount = this._countScheduleGames();
+    return Math.min(18, Math.max(5, 4 + Math.ceil(gameCount / 2)));
+  }
+
+  private _countScheduleGames(): number {
+    const payload = this._schedulePayload;
+    if (!payload?.terms?.length) {
+      return 8;
+    }
+    let count = 0;
+    for (const term of payload.terms) {
+      count += term.games?.length ?? 0;
+    }
+    return count > 0 ? count : 8;
+  }
+
+  private _notifyLayoutSizeChange(): void {
+    if (this._layoutNotifyFrame !== null) {
+      cancelAnimationFrame(this._layoutNotifyFrame);
+    }
+    this._layoutNotifyFrame = requestAnimationFrame(() => {
+      this._layoutNotifyFrame = null;
+      this.dispatchEvent(new Event("card-refresh", { bubbles: true, composed: true }));
+    });
+  }
+
+  private _observeCardRoot(): void {
+    const card = this.shadowRoot?.querySelector("ha-card");
+    if (!card) {
+      return;
+    }
+    if (!this._resizeObserver) {
+      let scheduled = false;
+      this._resizeObserver = new ResizeObserver(() => {
+        if (scheduled) {
+          return;
+        }
+        scheduled = true;
+        requestAnimationFrame(() => {
+          scheduled = false;
+          this._notifyLayoutSizeChange();
+        });
+      });
+    }
+    if (this._resizeObservedElement !== card) {
+      this._resizeObserver.disconnect();
+      this._resizeObserver.observe(card);
+      this._resizeObservedElement = card;
     }
   }
 
@@ -263,6 +345,7 @@ export class HighSchoolSportsScoresCard extends LitElement {
       if (this._isFetchCurrent(generation, entityId)) {
         this._scheduleLoading = false;
         this.requestUpdate();
+        this._notifyLayoutSizeChange();
       }
     }
   }
@@ -327,6 +410,7 @@ export class HighSchoolSportsScoresCard extends LitElement {
     this._expanded = !this._expanded;
     this._syncScheduleLifecycle();
     this.requestUpdate();
+    this._notifyLayoutSizeChange();
   }
 
   private _handleExpandKeydown(event: KeyboardEvent): void {

@@ -1065,3 +1065,160 @@ No `docs/PRODUCT.md` changes. HACS **default store** listing remains **Future / 
 ### Slice 6 correction — user-facing release body (2026-09-12)
 
 The GitHub pre-release **`v0.1.0-beta.1`** description was edited with `gh release edit` to add beta-user install, feedback, and limitation text above the existing generated “What’s Changed” section. **No** tag, version, ZIP asset, or new release was created or replaced.
+
+## Slice 7 — Clean-install and external beta (in progress)
+
+**Slice status:** **Owner clean-install gate not yet recorded** — awaiting Layer 3 evidence from the owner. **No owner PASS/FAIL claimed** in this note. External beta cohort (§11) **not started** until owner gate is **PASS**.
+
+**Artifact under test (from Slice 6):**
+
+| Item | Value |
+|------|-------|
+| GitHub pre-release | [v0.1.0-beta.1](https://github.com/willbur83/hacs-highschoolscores/releases/tag/v0.1.0-beta.1) |
+| Release asset | `high_school_sports_scores.zip` |
+| Tag commit | `f61e0657dab7f68a3b3ce9b8686658432beb971d` |
+| `manifest.json` version | `0.1.0-beta.1` |
+
+**Forbidden gate paths:** Phase 3/4 Core bind-mount sandbox; `npm` on the HA host; install from `main`/git checkout; unpacking a locally built `dist/` zip instead of the GitHub Release asset.
+
+**Acceptable gate paths:** HACS custom repository → download published pre-release (preferred). Manual unpack of the **GitHub Release** ZIP into `custom_components/high_school_sports_scores/` only as a **documented fallback** when HACS itself is the failure under test — not a substitute for “HACS worked” unless HACS is unavailable (then stop/report).
+
+**Clean install definition:** This integration has **never** been installed on that Home Assistant instance before the gate run; no leftover dev copy, bind mount, manual `custom_components` tree, or Lovelace resource from prior testing. The HA instance itself does **not** need to be newly created.
+
+**Tester brief:** [docs/BETA.md](BETA.md) (Slice 5). No wording changes in Slice 7 until owner/external testing shows a materially wrong instruction.
+
+**Follow-up beta:** None cut in this slice so far. Upgrade-between-betas validation applies only if a later pre-release (e.g. `v0.1.0-beta.2` / `0.1.0-beta.2`) is published after a release-blocking fix.
+
+### Owner install failure — HACS + GitHub pre-release (release-blocking, 2026-09-12)
+
+**Symptom:** HACS error downloading `willbur83/hacs-highschoolscores` with version **`e497188`** (short `main` commit), not **`v0.1.0-beta.1`**.
+
+**Cause:** `hacs.json` uses **`zip_release`** + **`hide_default_branch`** (required: `main` has no built card JS). Slice 6 **`release.yml`** also marked GitHub Releases as **`--prerelease`** when manifest ≠ plain `X.Y.Z`. With **only** a GitHub pre-release and no stable release, HACS 2.x does not set `last_version`; default **Download** targets **`main`**, which has no `high_school_sports_scores.zip` release asset → generic “Could not download”.
+
+**Fix (not tester homework):**
+
+| Action | Status |
+|--------|--------|
+| `gh release edit v0.1.0-beta.1 --prerelease=false` (same ZIP asset) | **done** |
+| `release.yml`: stop auto `--prerelease` for zip_release repos | **local change** (merge to `main` for future tags) |
+| README / BETA / HA_DEVELOPMENT: install = custom repo → **Download** → restart | **updated** |
+
+**Still required (normal for custom integrations):** one-time **custom repository** add (not in HACS default store until Slice 8). **Not** required: HACS beta switch entity, “Need a different version?”, or enabling GitHub pre-releases in the UI.
+
+**Owner gate:** Re-try HACS **Update information** → **Download** after the release flag change; record PASS/FAIL in the template below.
+
+---
+
+### Owner clean-install gate — recording template (§10)
+
+Fill this table from a **real** owner machine. Do not use the developer bind-mount path.
+
+#### Environment
+
+| Field | Record here |
+|-------|-------------|
+| Date | |
+| Machine class | HAOS / supervised / container / other (no private hostname) |
+| Home Assistant version | |
+| HACS version | (if known) |
+| Prior High School Sports Scores on this instance? | must be **no** for clean install |
+| Install path used | HACS custom repo (preferred) / Release ZIP manual fallback (document why) |
+| HACS pre-release UI path | exact menus/buttons used to select `0.1.0-beta.1` |
+| Developer npm / git clone / bind-mount on this machine? | must be **no** |
+
+#### Checklist (PASS / FAIL / N/A)
+
+| Step | Result | Notes |
+|------|--------|-------|
+| Add custom repository `willbur83/hacs-highschoolscores`, category **Integration** | | |
+| Download GitHub pre-release **v0.1.0-beta.1** (`high_school_sports_scores.zip` via HACS or documented fallback) | | |
+| Restart Home Assistant | | |
+| Bundled Lovelace card: appears in **card picker** | | |
+| Bundled card: registered JS/resource loads (no npm on HA host) | | |
+| If normal filesystem access already available: `www/high-school-sports-scores-card.js` under installed integration dir | yes / no / not checked | Do not add SSH/Terminal solely for this |
+| Config flow: short school name → pick school → subscribe supported sport (Football, Baseball, Basketball, Volleyball) | | |
+| Program sensors appear; `unique_id` pattern unchanged from pre-release docs | | |
+| Lovelace: picker **High School Sports Scores**; type `custom:high-school-sports-scores-card` | | |
+| Card mode **`both`** | | |
+| Card mode **`last_next`** | | |
+| Card mode **`schedule`** | | |
+| Second restart: config entries, entities, card still work | | |
+
+#### Owner gate outcome
+
+| Outcome | |
+|---------|---|
+| **Overall §10 gate** | **PASS** / **FAIL** / **pending** |
+| Blocking findings | (list; empty if PASS) |
+| Deferred (non-blocking) findings | (list) |
+
+**Stop rule:** If overall gate is **FAIL** (artifact won’t install cleanly, or tree missing card JS), do **not** invite external testers as complete; fix packaging/release or cut a follow-up beta per Slice 6 workflow.
+
+---
+
+### External beta coverage — recording template (§11)
+
+**Prerequisite:** Owner §10 gate **PASS** recorded above.
+
+**Planned cohort (anonymous labels only):** Tester A, Tester B, Tester C — mature HAOS (or equivalent), preferably different schools/programs. Gate is **coverage**, not headcount.
+
+#### Per-tester record
+
+| Label | Machine class | HA version | HACS version | School/program tested (optional) | Install version | Overall | Dropped? Why? |
+|-------|---------------|------------|--------------|-----------------------------------|-----------------|---------|---------------|
+| Tester A | | | | | `0.1.0-beta.1` | PASS/FAIL/pending | |
+| Tester B | | | | | `0.1.0-beta.1` | PASS/FAIL/pending | |
+| Tester C | | | | | `0.1.0-beta.1` | PASS/FAIL/pending | |
+
+**Exercise each active tester:** custom repo + pre-release, setup, entities, card picker, all three card modes, schedule, restart persistence. **Beta upgrade path:** N/A until a second beta exists.
+
+**Equivalent coverage (if someone drops):**
+
+| Original slot | Reason dropped | Replacement coverage |
+|---------------|----------------|----------------------|
+| | | |
+
+#### External gate outcome
+
+| Outcome | |
+|---------|---|
+| **§11 coverage complete** | **yes** / **no** / **pending** |
+| Blocking issues (install, load, config flow, entities, card, modes, restart, beta upgrade) | |
+| Deferred issues (cosmetic, nice-to-have) | |
+
+Reports: GitHub Issues ([bug report template](../.github/ISSUE_TEMPLATE/bug_report.yml)). No real names, emails, hostnames, or IPs in this file.
+
+---
+
+### Automated tests (Slice 7)
+
+No Layer 3 pytest for owner/external gates. Existing CI expectations unchanged: **zero live MaxPreps**. Re-run full suite only if release-blocking bugfixes land in this slice.
+
+### Deviations
+
+None yet.
+
+### Follow-up beta `v0.1.0-beta.2` (Slice 7 — in flight)
+
+**Why:** Owner HAOS testing found release-blocking / high-impact issues after `v0.1.0-beta.1`: HACS default download targeted `main` when GitHub **pre-release** flag was set; Lovelace card fixed **6-row** grid sizing caused gap collapsed and overlap expanded.
+
+**Version bump (PR branch `slice7-beta-2`):** `manifest.json` / `const.VERSION` / `pyproject.toml` → **`0.1.0-beta.2`** (same literal trio; tag **`v0.1.0-beta.2`** after merge).
+
+**Shipped in artifact (not exhaustive):**
+
+- `release.yml`: no GitHub `--prerelease` for `zip_release` repos (HACS “latest release” install).
+- Lovelace: `getGridOptions().rows: "auto"`, dynamic `getCardSize`, `ResizeObserver` + `card-refresh` on expand/schedule load.
+- README / BETA / HA_DEVELOPMENT install wording (no HACS beta-switch ceremony).
+- Live GitHub edit: `v0.1.0-beta.1` **pre-release flag cleared** (same ZIP); upgrade path still testable beta.1 → beta.2.
+
+**After merge:** push annotated tag `v0.1.0-beta.2`; `release.yml` publishes `high_school_sports_scores.zip`. Owner: HACS **Redownload** → restart HA → verify card layout + upgrade from beta.1 if desired.
+
+### PRODUCT drift check
+
+No `docs/PRODUCT.md` changes. No stable `v0.1.0`. No HACS default-store / PRODUCT **Current** promotion (Slice 8). Allowlist, polling, Q1 unchanged.
+
+### Resume instructions for coding agent
+
+1. Owner supplies completed **Owner clean-install gate** table with evidence → update outcome row; if **PASS**, external cohort may proceed using [docs/BETA.md](BETA.md).  
+2. External testers supply results → fill **External beta coverage** tables; classify blocking vs deferred; cut follow-up beta only if required.  
+3. Do **not** simulate or infer human PASS. Do **not** publish stable `v0.1.0` in Slice 7.

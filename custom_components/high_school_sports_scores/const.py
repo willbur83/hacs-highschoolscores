@@ -6,7 +6,7 @@ DOMAIN = "high_school_sports_scores"
 ATTRIBUTION = "Data provided by MaxPreps"
 
 # Keep in sync with manifest.json "version".
-VERSION = "0.1.0-beta.1"
+VERSION = "0.1.0-beta.2"
 
 INTEGRATION_REPO_URL = "https://github.com/willbur83/hacs-highschoolscores"
 USER_AGENT = f"HomeAssistant-HighSchoolSportsScores/{VERSION} (+{INTEGRATION_REPO_URL})"

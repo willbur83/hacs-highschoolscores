@@ -280,8 +280,8 @@ async def test_html_without_content_type_accepted_when_plausible() -> None:
 
 
 def test_user_agent_version_matches_manifest() -> None:
-    assert VERSION == "0.1.0-beta.1"
+    assert VERSION == "0.1.0-beta.2"
     assert USER_AGENT == (
-        "HomeAssistant-HighSchoolSportsScores/0.1.0-beta.1 "
+        "HomeAssistant-HighSchoolSportsScores/0.1.0-beta.2 "
         "(+https://github.com/willbur83/hacs-highschoolscores)"
     )
