@@ -2,7 +2,7 @@
 
 A Home Assistant custom integration and optional Lovelace card for high school sports schedules and final scores from publicly available MaxPreps data.
 
-> **Status:** Public **beta**. Install published pre-releases through HACS (custom repository). See [GitHub Releases](https://github.com/willbur83/hacs-highschoolscores/releases) and [Beta testing](docs/BETA.md).
+> **Status:** Public **beta** (version names like `0.1.0-beta.2`). Install the latest [GitHub Release](https://github.com/willbur83/hacs-highschoolscores/releases) through HACS (custom repository). See [Beta testing](docs/BETA.md).
 
 High School Sports Scores is an independent, open-source Home Assistant integration and is not affiliated with, endorsed by, sponsored by, or associated with MaxPreps. The integration retrieves publicly available sports schedule and score data from MaxPreps.com. MaxPreps remains the original source of that data. Users are encouraged to visit and support MaxPreps and the services they provide to high school sports communities.
 
@@ -12,14 +12,13 @@ High School Sports Scores is an independent, open-source Home Assistant integrat
 
 ## Installation (HACS custom repository)
 
-This project is **not** in the HACS default store. Install it by adding a **custom repository**, then downloading a **published GitHub Release** (including pre-releases) through HACS.
+This project is **not** in the HACS default store. Add the **custom repository** once, then use normal HACS **Download** (the integration ships as a GitHub Release ZIP — not from the `main` branch).
 
 1. In Home Assistant, open **HACS** → **Integrations**.
 2. Open the menu (⋮) → **Custom repositories**.
 3. Add repository **`https://github.com/willbur83/hacs-highschoolscores`**, category **Integration**, then **Add**.
-4. Find **High School Sports Scores** in HACS → **Integrations** → **Download** (or **Redownload** when upgrading).
-5. Choose the **release version** you want (beta/pre-release versions are not selected by default — see [docs/BETA.md](docs/BETA.md)).
-6. **Restart Home Assistant** when HACS prompts you to.
+4. Find **High School Sports Scores** in HACS → **Integrations** → **Download** (or **Redownload** when upgrading). HACS should offer the latest GitHub Release (for example **`v0.1.0-beta.2`**).
+5. **Restart Home Assistant** when HACS prompts you to.
 
 Optional shortcut to add the custom repository on a phone or tablet: [Create my.home-assistant.io link](https://my.home-assistant.io/create-link/?redirect=hacs_repository&owner=willbur83&repository=hacs-highschoolscores&category=integration).
 
@@ -103,7 +102,7 @@ One subscribed sport failing to load does not remove your other sports for that 
 | Card missing after **git clone** | Expected. End users should install a **GitHub Release** via HACS so `www/high-school-sports-scores-card.js` is on disk. Developers build the frontend locally — see [docs/HA_DEVELOPMENT.md](docs/HA_DEVELOPMENT.md). |
 | School search returns nothing | Use a **short** name; pick from the result list. Try alternate spelling or a nearby city name if your school shares a common name. |
 | Entities stale or `unknown` | Wait for the next coordinator refresh (\~12h, or daily during new-year wait). If data still appears stuck, try **Reload** on the integration. Restart Home Assistant after installing or upgrading the integration when HACS prompts you to. |
-| HACS download fails or no release listed | Confirm the [GitHub Releases](https://github.com/willbur83/hacs-highschoolscores/releases) page lists a release, and in HACS select a **release version** (including pre-release). Do not install from the development branch — use a GitHub Release ZIP. |
+| HACS download fails with a **commit hash** (not a `v…` release tag) | HACS is trying to install `main`, which has no release ZIP. In HACS, use **Update information**, then **Download** again so the latest GitHub Release is offered. The release must not be marked **pre-release** on GitHub for default HACS install (see [Releases](https://github.com/willbur83/hacs-highschoolscores/releases)). |
 | Wrong or missing logo | Options → optional **school logo override**, or leave blank for automatic MaxPreps logo when available. Missing logos never block scores. |
 
 Check **Settings** → **System** → **Logs** for errors mentioning `high_school_sports_scores` after a restart.

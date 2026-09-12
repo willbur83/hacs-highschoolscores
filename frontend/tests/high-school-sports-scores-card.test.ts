@@ -154,6 +154,28 @@ describe("HighSchoolSportsScoresCard", () => {
     vi.useRealTimers();
   });
 
+  it("uses compact masonry height collapsed and auto grid rows", () => {
+    const card = createCard({ entity: FOOTBALL_ENTITY_ID, mode: "both" });
+    expect(card.getCardSize()).toBe(3);
+    expect(card.getGridOptions()).toMatchObject({
+      columns: 6,
+      rows: "auto",
+      min_rows: 1,
+    });
+    expect(card.getGridOptions().rows).not.toBe(6);
+  });
+
+  it("increases masonry height when schedule mode is active", async () => {
+    const card = createCard({ entity: FOOTBALL_ENTITY_ID, mode: "schedule" });
+    const { hass } = createMockHass({ schedulePayload: FOOTBALL_SCHEDULE_PAYLOAD });
+    card.hass = hass;
+    await card.updateComplete;
+    await vi.waitFor(async () => {
+      await card.updateComplete;
+      expect(card.getCardSize()).toBeGreaterThan(3);
+    });
+  });
+
   it("shows an error when the entity is missing", async () => {
     const card = createCard({ entity: "sensor.missing_program" });
     card.hass = { states: {} };
