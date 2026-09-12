@@ -46,7 +46,7 @@ def test_manifest_required_keys():
     for key in REQUIRED_MANIFEST_KEYS:
         assert key in manifest, f"missing manifest key: {key}"
     assert manifest["domain"] == DOMAIN
-    assert manifest["version"] == "0.0.0"
+    assert manifest["version"] == "0.1.0-beta.1"
 
 
 def test_version_constant_matches_manifest():

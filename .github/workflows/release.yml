@@ -119,5 +119,6 @@ jobs:
 
           gh release create "${TAG}" \
             --title "${TAG}" \
+            --generate-notes \
             "${prerelease_flag[@]}" \
             "${zip_path}"
