@@ -103,7 +103,7 @@ async def test_domain_setup_succeeds_when_frontend_registration_unavailable(
             return_value=True,
         ),
         patch(
-            "custom_components.high_school_sports_scores.frontend_register._register_bundle_paths_and_js",
+            "custom_components.high_school_sports_scores.frontend_register._register_static_http_path",
             side_effect=ImportError("No module named 'hass_frontend'"),
         ),
     ):
@@ -135,7 +135,7 @@ async def test_config_entry_loads_when_frontend_registration_unavailable(
             return_value=True,
         ),
         patch(
-            "custom_components.high_school_sports_scores.frontend_register._register_bundle_paths_and_js",
+            "custom_components.high_school_sports_scores.frontend_register._register_static_http_path",
             side_effect=ImportError("No module named 'hass_frontend'"),
         ),
     ):
@@ -159,8 +159,8 @@ async def test_domain_setup_succeeds_when_frontend_not_initialized(
             return_value=True,
         ),
         patch(
-            "custom_components.high_school_sports_scores.frontend_register._register_bundle_paths_and_js",
-            side_effect=KeyError("frontend_extra_module_url"),
+            "custom_components.high_school_sports_scores.frontend_register._register_static_http_path",
+            side_effect=KeyError("lovelace"),
         ),
     ):
         assert await async_setup(hass, {})
@@ -191,8 +191,8 @@ async def test_config_entry_loads_when_frontend_not_initialized(
             return_value=True,
         ),
         patch(
-            "custom_components.high_school_sports_scores.frontend_register._register_bundle_paths_and_js",
-            side_effect=KeyError("frontend_extra_module_url"),
+            "custom_components.high_school_sports_scores.frontend_register._register_static_http_path",
+            side_effect=KeyError("lovelace"),
         ),
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)

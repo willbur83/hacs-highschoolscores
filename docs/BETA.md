@@ -2,7 +2,7 @@
 
 This document is for **beta testers** installing High School Sports Scores through HACS on real Home Assistant OS (or other) environments — without developer bind mounts, git checkouts, or npm on the Home Assistant host.
 
-Published beta builds are **GitHub Releases** with the **`high_school_sports_scores.zip`** asset (version names like `0.1.0-beta.2`). Use normal HACS **Download** after adding the custom repository.
+Published beta builds are **GitHub Releases** with the **`high_school_sports_scores.zip`** asset (version names like `0.1.0-beta.3`). Use normal HACS **Download** after adding the custom repository.
 
 User-facing overview and limitations: [README](../README.md).
 
@@ -31,7 +31,7 @@ Optional link helper: [my.home-assistant.io custom repository link](https://my.h
 ## 2. Install the beta release
 
 1. In **HACS** → **Integrations**, open **High School Sports Scores**.  
-2. Use **Download** (first install) or **Redownload** (upgrade). HACS should install the latest GitHub Release (for example **`v0.1.0-beta.2`**).  
+2. Use **Download** (first install) or **Redownload** (upgrade). HACS should install the latest GitHub Release (for example **`v0.1.0-beta.3`**).  
 3. If **Download** fails with a commit hash (such as `e497188`) instead of a release tag, the GitHub Release may still be marked **pre-release** — that blocks default HACS install for this repo; use a release published without the pre-release flag or ask the maintainer to fix it.  
 4. **Restart Home Assistant** when HACS requests it.
 

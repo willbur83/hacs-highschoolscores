@@ -73,7 +73,7 @@ cd frontend && npm run build
 
 Writes `custom_components/high_school_sports_scores/www/high-school-sports-scores-card.js`. The existing `custom_components/high_school_sports_scores` bind-mount is enough when that file is present; no separate frontend mount.
 
-**Missing bundle (non-fatal):** `frontend_register.py` checks for the built file at startup. If absent, it logs a warning and skips `StaticPathConfig` + `frontend.add_extra_js_url`. Config entries, coordinators, and sensors load normally. Layer 2 tests in `tests/test_init.py` cover missing-bundle and registration-unavailable paths. The integration does **not** declare `frontend` / `http` manifest dependencies (avoids `hass_frontend` import failures under `pytest-homeassistant-custom-component`).
+**Missing bundle (non-fatal):** `frontend_register.py` checks for the built file at startup. If absent, it logs a warning and skips static path + Lovelace module resource registration. When present, it registers the HTTP static path and (storage-mode Lovelace only) a versioned **`type: module`** resource — not `frontend.add_extra_js_url`. Config entries, coordinators, and sensors load normally. See `tests/test_init.py` and `tests/test_frontend_register.py`. The integration does **not** declare `frontend` / `http` manifest dependencies (avoids `hass_frontend` import failures under `pytest-homeassistant-custom-component`).
 
 ### Layer 2 — integration (Home Assistant, no live MaxPreps)
 
