@@ -1068,7 +1068,7 @@ The GitHub pre-release **`v0.1.0-beta.1`** description was edited with `gh relea
 
 ## Slice 7 — Clean-install and external beta (in progress)
 
-**Slice status:** **Owner clean-install gate not yet recorded** — awaiting Layer 3 evidence from the owner. **No owner PASS/FAIL claimed** in this note. External beta cohort (§11) **not started** until owner gate is **PASS**.
+**Slice status:** **Owner §10 gate: FAIL** (release-blocking frontend). **Do not invite external testers.** **No owner PASS claimed.** Slice 8 not started.
 
 **Artifact under test (from Slice 6):**
 
@@ -1148,9 +1148,90 @@ Fill this table from a **real** owner machine. Do not use the developer bind-mou
 
 | Outcome | |
 |---------|---|
-| **Overall §10 gate** | **PASS** / **FAIL** / **pending** |
-| Blocking findings | (list; empty if PASS) |
-| Deferred (non-blocking) findings | (list) |
+| **Overall §10 gate** | **FAIL** |
+| Blocking findings | Bundled Lovelace card not reliably registered on **Android Companion** after normal app lifecycle (lock/unlock). Desktop OK. Companion frontend cache reset temporarily restores card; failure recurs after lock/unlock. Error: `Custom element not found: high-school-sports-scores-card`. Integration install via HACS release artifact **v0.1.0-beta.1**; backend/entities OK. |
+| Deferred (non-blocking) findings | HACS list icon placeholder (CDN); desktop layout spacing (addressed in later beta — see below). |
+
+**Stop rule:** Gate **FAIL** — **do not** invite external testers until mobile card lifecycle is fixed and owner re-runs §10 on a release artifact that includes the fix.
+
+### Owner gate — Android Companion card lifecycle (2026-09-13)
+
+**Environment (owner):** HAOS clean install path; HACS release **`v0.1.0-beta.1`**; integration + entities functional; Lovelace card works on desktop.
+
+| Check | Result |
+|-------|--------|
+| HACS release artifact install | **PASS** |
+| Config flow / entities | **PASS** |
+| Card desktop | **PASS** |
+| Card Android Companion (normal use) | **FAIL** — intermittent `Custom element not found: high-school-sports-scores-card` |
+| Companion “reset frontend cache” | Temporarily **PASS** |
+| After lock/unlock phone | **FAIL** returns |
+
+**Current registration (released):** `frontend.add_extra_js_url(hass, "/high_school_sports_scores/high-school-sports-scores-card.js")` plus static path in `frontend_register.py` (no Lovelace **resource** row).
+
+**Upstream context:** [home-assistant/frontend#52570](https://github.com/home-assistant/frontend/issues/52570) — custom modules from `add_extra_js_url` (and resource loading races) can leave custom elements undefined until reload; masonry/sections may recover differently than panel views; mobile WebView suspend/resume amplifies timing.
+
+**External beta (§11):** **Not started — do not invite testers.**
+
+---
+
+### Investigation — smallest robust registration fix (pending owner diagnostic)
+
+**Do not implement a permanent change until the owner diagnostic below is run** (unless owner already completed it and reports results).
+
+#### Compare paths
+
+| Path | Behavior | Pros | Cons / risks |
+|------|----------|------|----------------|
+| **A. `add_extra_js_url` only** (shipped in beta.1/beta.2) | Module URL injected into frontend bootstrap; not a persisted Lovelace resource | No writes to `.storage/lovelace_resources`; works without storage-mode resource APIs; YAML-mode dashboards still get the script if HA loads extras | Matches #52570 race class; Companion resume may render before module/custom element is defined; cache reset “fixes” until next lifecycle event |
+| **B. Lovelace resource (`type: module`) only** | Persisted row in storage-mode resources; URL e.g. `/high_school_sports_scores/high-school-sports-scores-card.js?v=<manifest version>` | Same URL users can add manually; version query busts cache on beta upgrade; loads through Lovelace resource pipeline (closer to HACS plugin cards) | **Storage mode only** — YAML `ui-lovelace.yaml` users must add resource manually (document in README troubleshooting); must **wait** until `hass.data["lovelace"].resources.loaded` before `async_items` / `async_create_item` / `async_update_item` (avoid wiping resources on HA &lt; eager-load fix); idempotent create/update by path + version only |
+| **A + B together** | Both extra JS and resource | — | **Avoid** unless proven safe: double fetch/evaluate; duplicate `window.customCards` entries; only `customElements.define` is guarded in bundle |
+
+**Recommended direction (if diagnostic confirms B):** **Replace A with B** on storage-mode Lovelace — static HTTP path unchanged; **remove** `add_extra_js_url` when resource registration succeeds; use `VERSION` from `const.py` for `?v=` cache bust; update existing resource row when version changes (beta.1 → beta.2). **Do not** register both paths in steady state.
+
+**HA minimum 2025.8.0:** Use dynamic `lovelace` import; guard `hass.data.get("lovelace")`; if `mode != "storage"`, log once and skip resource write (keep static path + document YAML resource). Poll/wait for `resources.loaded` (community pattern) before any storage mutation.
+
+**Unload/reload:** Resource row may remain after integration remove (acceptable for many integrations); optional future cleanup on `async_remove` — out of scope unless required for gate.
+
+**Tests (when implementing):** Extend `tests/test_init.py` with mocked `lovelace` collection (`loaded=True`), assert create vs update URL with version; assert `add_extra_js_url` not called when resource path used; zero live MaxPreps.
+
+#### Owner diagnostic (required before permanent fix)
+
+**Result (2026-09-13): owner reports diagnostic **PASS** — manual Lovelace module resource stable across Companion lock/unlock / lifecycle.**
+
+**Code fix (in `v0.1.0-beta.3`):** `frontend_register.py` registers storage-mode Lovelace `type: module` resource with `?v=<manifest version>`; **removed** `frontend.add_extra_js_url`. Owner should remove duplicate manual diagnostic resource after upgrade if present.
+
+**Not a gate PASS.** Manual resource only validates whether path **B** fixes Companion lifecycle.
+
+1. **Settings** → **Dashboards** → **Resources** (⋮ menu).
+2. **Add resource** → **JavaScript module**.
+3. URL (beta.1 install):
+
+   `/high_school_sports_scores/high-school-sports-scores-card.js?v=0.1.0-beta.1`
+
+4. **Create** → hard refresh dashboard on phone.
+5. Exercise:
+   - normal dashboard load
+   - lock/unlock device
+   - force-close and reopen Companion
+   - several dashboard reloads
+
+**Report:** PASS/FAIL per step; note whether error still mentions `high-school-sports-scores-card`.
+
+- If **diagnostic PASS** (stable across lock/unlock): implement automatic storage-mode resource registration (path B); remove `add_extra_js_url`; add tests; then cut **new** beta (see below).
+- If **diagnostic FAIL**: stop — report findings; do not cut a beta merely to experiment; consider upstream #52570 / Companion-specific follow-up.
+
+#### Beta follow-up policy (after fix only)
+
+**Do not** publish a beta only for experiments. **`v0.1.0-beta.2`** (already on GitHub) shipped HACS install + Lovelace **layout** fixes only; it does **not** change registration mechanism and **does not** clear this gate.
+
+When a **concrete** registration fix is merged and CI is green:
+
+1. Bump **`0.1.0-beta.3`** / tag **`v0.1.0-beta.3`** (or next pair per §7.1).
+2. `release.yml` publish ZIP.
+3. Owner: upgrade **beta.1 → new beta** (and spot-check beta.2 → new if needed).
+4. Re-run owner §10 including **Android Companion lifecycle**.
+5. Only then consider external testers.
 
 **Stop rule:** If overall gate is **FAIL** (artifact won’t install cleanly, or tree missing card JS), do **not** invite external testers as complete; fix packaging/release or cut a follow-up beta per Slice 6 workflow.
 
@@ -1198,20 +1279,32 @@ No Layer 3 pytest for owner/external gates. Existing CI expectations unchanged: 
 
 None yet.
 
-### Follow-up beta `v0.1.0-beta.2` (Slice 7 — in flight)
+### Follow-up beta `v0.1.0-beta.2` (Slice 7 — published; does not clear owner gate)
 
-**Why:** Owner HAOS testing found release-blocking / high-impact issues after `v0.1.0-beta.1`: HACS default download targeted `main` when GitHub **pre-release** flag was set; Lovelace card fixed **6-row** grid sizing caused gap collapsed and overlap expanded.
+**Why:** HACS default download fix (`release.yml` no GitHub pre-release flag) + Lovelace **sections layout** (auto rows / resize).
 
-**Version bump (PR branch `slice7-beta-2`):** `manifest.json` / `const.VERSION` / `pyproject.toml` → **`0.1.0-beta.2`** (same literal trio; tag **`v0.1.0-beta.2`** after merge).
+**Does not fix:** Android Companion `custom element not found` (registration path unchanged).
 
-**Shipped in artifact (not exhaustive):**
+| Item | Value |
+|------|-------|
+| Merge commit | `879f7b9a74c2e2cbdd9c5cb5749c7ec30d0f3d78` (PR [#5](https://github.com/willbur83/hacs-highschoolscores/pull/5)) |
+| Tag / Release | [v0.1.0-beta.2](https://github.com/willbur83/hacs-highschoolscores/releases/tag/v0.1.0-beta.2) |
+| `release.yml` | [34721391919](https://github.com/willbur83/hacs-highschoolscores/actions/runs/34721391919) — **success** |
 
-- `release.yml`: no GitHub `--prerelease` for `zip_release` repos (HACS “latest release” install).
-- Lovelace: `getGridOptions().rows: "auto"`, dynamic `getCardSize`, `ResizeObserver` + `card-refresh` on expand/schedule load.
-- README / BETA / HA_DEVELOPMENT install wording (no HACS beta-switch ceremony).
-- Live GitHub edit: `v0.1.0-beta.1` **pre-release flag cleared** (same ZIP); upgrade path still testable beta.1 → beta.2.
+**Next beta:** **`0.1.0-beta.3`** (registration fix) — see below.
 
-**After merge:** push annotated tag `v0.1.0-beta.2`; `release.yml` publishes `high_school_sports_scores.zip`. Owner: HACS **Redownload** → restart HA → verify card layout + upgrade from beta.1 if desired.
+### Follow-up beta `v0.1.0-beta.3` (Slice 7 — owner mobile gate re-test)
+
+**Why:** Replace `frontend.add_extra_js_url` with storage-mode Lovelace **`type: module`** resource (`frontend_register.py`); versioned `?v=` URL; idempotent create/update on integration load.
+
+**Owner after HACS Redownload:** remove manual diagnostic Lovelace resource if still present → **Restart HA** → re-run §10 on **Android Companion** (lock/unlock, force-close).
+
+| Item | Value |
+|------|-------|
+| PR | (pending) |
+| Merge commit | (pending) |
+| Tag / Release | (pending `v0.1.0-beta.3`) |
+| `release.yml` | (pending) |
 
 ### PRODUCT drift check
 
@@ -1219,6 +1312,6 @@ No `docs/PRODUCT.md` changes. No stable `v0.1.0`. No HACS default-store / PRODUC
 
 ### Resume instructions for coding agent
 
-1. Owner supplies completed **Owner clean-install gate** table with evidence → update outcome row; if **PASS**, external cohort may proceed using [docs/BETA.md](BETA.md).  
-2. External testers supply results → fill **External beta coverage** tables; classify blocking vs deferred; cut follow-up beta only if required.  
-3. Do **not** simulate or infer human PASS. Do **not** publish stable `v0.1.0` in Slice 7.
+1. Merge **`v0.1.0-beta.3`** PR; confirm `release.yml` publishes ZIP.  
+2. Owner: HACS **Redownload** → remove duplicate manual diagnostic resource → **Restart HA** → re-run §10 on **Android Companion**.  
+3. If owner §10 **PASS** → external cohort per [docs/BETA.md](BETA.md). If **FAIL** → document; no external testers; no stable `v0.1.0` (Slice 8).
