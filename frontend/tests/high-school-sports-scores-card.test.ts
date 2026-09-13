@@ -162,7 +162,11 @@ describe("HighSchoolSportsScoresCard", () => {
       rows: "auto",
       min_rows: 1,
     });
+    expect(card.getGridOptions().rows).not.toBe(5);
     expect(card.getGridOptions().rows).not.toBe(6);
+    const stub = HighSchoolSportsScoresCard.getStubConfig();
+    expect(stub.grid_options?.rows).toBe("auto");
+    expect(stub.grid_options?.rows).not.toBe(5);
   });
 
   it("increases masonry height when schedule mode is active", async () => {
@@ -217,13 +221,14 @@ describe("HighSchoolSportsScoresCard", () => {
     await card.updateComplete;
 
     const text = card.shadowRoot?.textContent ?? "";
-    expect(text).toContain("Centennial | Boys Varsity Football | 26-27");
-    expect(text).toContain("Record: 2-0");
+    expect(text).toContain("Boys Varsity Football · Football");
+    expect(text).toContain("2-0");
+    expect(text).not.toContain("Record:");
     expect(text).toContain("No last or next game is available.");
     expect(text).not.toContain("is unknown");
     expect(text).not.toContain("is unavailable");
-    expect(card.shadowRoot?.querySelector(".hero")).toBeNull();
-    expect(card.shadowRoot?.querySelector(".secondary-strip")).toBeNull();
+    expect(card.shadowRoot?.querySelector(".hsss-hero")).toBeNull();
+    expect(card.shadowRoot?.querySelector(".hsss-next")).toBeNull();
   });
 
   it("renders last_game only without a secondary strip", async () => {
@@ -238,9 +243,10 @@ describe("HighSchoolSportsScoresCard", () => {
     await card.updateComplete;
 
     const text = card.shadowRoot?.textContent ?? "";
-    expect(text).toContain("Last");
     expect(text).toContain("Johns Creek");
-    expect(card.shadowRoot?.querySelector(".secondary-strip")).toBeNull();
+    expect(text).toContain("Final · Aug 28");
+    expect(card.shadowRoot?.querySelector(".hero-eyebrow")).toBeNull();
+    expect(card.shadowRoot?.querySelector(".hsss-next")).toBeNull();
   });
 
   it("renders next_game only without a secondary strip", async () => {
@@ -255,10 +261,10 @@ describe("HighSchoolSportsScoresCard", () => {
     await card.updateComplete;
 
     const text = card.shadowRoot?.textContent ?? "";
-    expect(text).toContain("Next");
     expect(text).toContain("Alpharetta");
-    expect(card.shadowRoot?.querySelector(".hero-score")).toBeNull();
-    expect(card.shadowRoot?.querySelector(".secondary-strip")).toBeNull();
+    expect(card.shadowRoot?.querySelector(".hsss-center--matchup")?.textContent?.trim()).toBe("vs");
+    expect(card.shadowRoot?.querySelector(".hero-eyebrow")).toBeNull();
+    expect(card.shadowRoot?.querySelector(".hsss-next")).toBeNull();
   });
 
   it("hides record when team_record is absent", async () => {
@@ -296,9 +302,11 @@ describe("HighSchoolSportsScoresCard", () => {
     await card.updateComplete;
 
     const text = card.shadowRoot?.textContent ?? "";
-    expect(card.shadowRoot?.querySelector(".hero-score")).toBeNull();
+    expect(card.shadowRoot?.querySelector(".hsss-score")).not.toBeNull();
+    expect(text).toContain("—");
     expect(text).not.toMatch(/\b0\s*[–-]\s*0\b/);
-    expect(text).toContain("W");
+    expect(card.shadowRoot?.querySelector(".hsss-center--matchup")).toBeNull();
+    expect(card.shadowRoot?.querySelector(".hero-result")).toBeNull();
   });
 
   it("preserves neutral-site left/right layout without crashing", async () => {
@@ -318,11 +326,11 @@ describe("HighSchoolSportsScoresCard", () => {
     };
     await card.updateComplete;
 
-    const away = card.shadowRoot?.querySelector(".hero-team--away .team-name")?.textContent;
-    const home = card.shadowRoot?.querySelector(".hero-team--home .team-name")?.textContent;
+    const away = card.shadowRoot?.querySelector(".hsss-team.left .hsss-team-name")?.textContent;
+    const home = card.shadowRoot?.querySelector(".hsss-team.right .hsss-team-name")?.textContent;
     expect(away).toBe("Centennial");
     expect(home).toBe("Alpharetta");
-    expect(card.shadowRoot?.querySelector(".hero")).not.toBeNull();
+    expect(card.shadowRoot?.querySelector(".hsss-hero")).not.toBeNull();
   });
 
   it("renders a centered hero with away on the left and home on the right", async () => {
@@ -332,12 +340,21 @@ describe("HighSchoolSportsScoresCard", () => {
     };
     await card.updateComplete;
 
-    const away = card.shadowRoot?.querySelector(".hero-team--away .team-name")?.textContent;
-    const home = card.shadowRoot?.querySelector(".hero-team--home .team-name")?.textContent;
+    const away = card.shadowRoot?.querySelector(".hsss-team.left .hsss-team-name")?.textContent;
+    const home = card.shadowRoot?.querySelector(".hsss-team.right .hsss-team-name")?.textContent;
     expect(away).toBe("Johns Creek");
     expect(home).toBe("Centennial");
-    expect(card.shadowRoot?.querySelector(".hero-at")?.textContent).toBe("AT");
-    expect(card.shadowRoot?.querySelector(".hero-eyebrow")?.textContent).toBe("Last");
+    expect(card.shadowRoot?.querySelector(".hsss-center--matchup")).toBeNull();
+    expect(card.shadowRoot?.querySelector(".hsss-center--scores")).not.toBeNull();
+    const scores = [...(card.shadowRoot?.querySelectorAll(".hsss-score") ?? [])].map(
+      (node) => node.textContent?.trim(),
+    );
+    expect(scores).toEqual(["18", "54"]);
+    expect(card.shadowRoot?.querySelector(".hsss-score.hsss-score--lose")?.textContent?.trim()).toBe(
+      "18",
+    );
+    expect(card.shadowRoot?.querySelector(".hero-eyebrow")).toBeNull();
+    expect(card.shadowRoot?.textContent).toContain("Final · Aug 28");
   });
 
   it("shows last_game as hero with score when it is closer to now", async () => {
@@ -348,17 +365,19 @@ describe("HighSchoolSportsScoresCard", () => {
     await card.updateComplete;
 
     const text = card.shadowRoot?.textContent ?? "";
-    expect(text).toContain("Centennial | Boys Varsity Football | 26-27");
-    expect(text).toContain("Record: 2-0");
-    expect(text).toContain("Last");
-    expect(text).toContain("18 – 54");
-    expect(text).toContain("W");
-    expect(text).toContain("Next:");
-    expect(text).toContain("Alpharetta");
-    expect(text).toContain("FRIDAY - Sep 4 - 7:30 PM");
+    expect(text).toContain("Boys Varsity Football · Football");
+    expect(text).toContain("2-0");
+    expect(text).not.toContain("Record:");
+    expect(text).toContain("18");
+    expect(text).toContain("54");
+    expect(text).toContain("Final · Aug 28");
+    expect(text).not.toContain("Next:");
+    expect(text).not.toMatch(/\bLast:\b/);
+    expect(card.shadowRoot?.querySelector(".secondary-label")).toBeNull();
+    expect(text).toContain("vs Alpharetta · Fri, Sep 4 · 7:30 PM");
     expect(text).not.toContain("Sep 4, 2026");
-    expect(card.shadowRoot?.querySelector(".chrome img")).toBeNull();
-    expect(card.shadowRoot?.querySelector(".secondary-highlight")).not.toBeNull();
+    expect(card.shadowRoot?.querySelector(".hsss-header img")).toBeNull();
+    expect(card.shadowRoot?.querySelector(".hsss-next")).not.toBeNull();
     expect(text).not.toContain("game_url");
   });
 
@@ -371,23 +390,25 @@ describe("HighSchoolSportsScoresCard", () => {
     await card.updateComplete;
 
     const text = card.shadowRoot?.textContent ?? "";
-    expect(text).toContain("Next");
     expect(text).toContain("Alpharetta");
-    expect(text).toContain("FRIDAY - Sep 4 - 7:30 PM");
+    expect(text).toContain("Fri, Sep 4 · 7:30 PM");
     expect(text).not.toContain("2026");
-    expect(card.shadowRoot?.querySelector(".hero-score")).toBeNull();
-    expect(text).toContain("Last:");
-    expect(text).toContain("Johns Creek");
+    expect(card.shadowRoot?.querySelector(".hsss-center--scores")).toBeNull();
+    expect(card.shadowRoot?.querySelector(".hsss-center--matchup")?.textContent).toBe("vs");
+    expect(card.shadowRoot?.querySelector(".hero-eyebrow")).toBeNull();
+    expect(text).not.toMatch(/\bLast:\b/);
+    expect(card.shadowRoot?.querySelector(".hsss-next")).toBeNull();
+    expect(text).not.toContain("Johns Creek");
   });
 
-  it("shows team names beneath hero logos", async () => {
+  it("shows team names inside hero chips", async () => {
     const card = createCard({ entity: FOOTBALL_ENTITY_ID });
     card.hass = {
       states: { [FOOTBALL_ENTITY_ID]: footballProgramState() },
     };
     await card.updateComplete;
 
-    const names = card.shadowRoot?.querySelectorAll(".hero .team-name");
+    const names = card.shadowRoot?.querySelectorAll(".hsss-hero .hsss-team-name");
     expect(names?.length).toBe(2);
     expect(names?.[0]?.textContent).toBeTruthy();
     expect(names?.[1]?.textContent).toBeTruthy();
@@ -400,8 +421,8 @@ describe("HighSchoolSportsScoresCard", () => {
     };
     await card.updateComplete;
 
-    expect(card.shadowRoot?.querySelector(".chrome img")).toBeNull();
-    expect(card.shadowRoot?.querySelector(".hero .logo-image")).not.toBeNull();
+    expect(card.shadowRoot?.querySelector(".hsss-header img")).toBeNull();
+    expect(card.shadowRoot?.querySelector(".hsss-hero .hsss-logo")).not.toBeNull();
   });
 
   it("keeps layout stable when hero logos are missing", async () => {
@@ -418,8 +439,61 @@ describe("HighSchoolSportsScoresCard", () => {
     card.hass = { states: { [FOOTBALL_ENTITY_ID]: state } };
     await card.updateComplete;
 
-    expect(card.shadowRoot?.querySelector(".hero")).not.toBeNull();
-    expect(card.shadowRoot?.querySelectorAll(".team-name").length).toBe(2);
+    expect(card.shadowRoot?.querySelector(".hsss-hero")).not.toBeNull();
+    expect(card.shadowRoot?.querySelectorAll(".hsss-team-name").length).toBe(2);
+    expect(card.shadowRoot?.querySelectorAll(".hsss-logo-tile--monogram").length).toBe(2);
+    expect(card.shadowRoot?.querySelector(".hsss-logo")).toBeNull();
+  });
+
+  it("replaces a broken logo with a monogram tile", async () => {
+    const card = createCard({ entity: FOOTBALL_ENTITY_ID });
+    card.hass = {
+      states: { [FOOTBALL_ENTITY_ID]: footballProgramState() },
+    };
+    await card.updateComplete;
+
+    const logo = card.shadowRoot?.querySelector(".hsss-logo") as HTMLImageElement | null;
+    expect(logo).not.toBeNull();
+    logo?.dispatchEvent(new Event("error"));
+    await card.updateComplete;
+
+    expect(card.shadowRoot?.querySelectorAll(".hsss-logo-tile--monogram").length).toBeGreaterThan(0);
+    expect(card.shadowRoot?.querySelectorAll(".hsss-team").length).toBe(2);
+  });
+
+  it("keeps season year in the header meta and truncates only names", async () => {
+    const card = createCard({ entity: FOOTBALL_ENTITY_ID });
+    card.hass = {
+      states: {
+        [FOOTBALL_ENTITY_ID]: footballProgramState({
+          attributes: {
+            last_game: {
+              ...footballProgramState().attributes.last_game!,
+              opponent_name: "North Gwinnett Longhorn Chargers United",
+            },
+          },
+        }),
+      },
+    };
+    await card.updateComplete;
+
+    expect(card.shadowRoot?.querySelector(".hsss-title")?.textContent).toBe(
+      "Boys Varsity Football · Football",
+    );
+    expect(card.shadowRoot?.querySelector(".hsss-year")?.textContent).toBe("26-27");
+    expect(card.shadowRoot?.querySelector(".hsss-record")?.textContent).toBe("2-0");
+    const sheet = HighSchoolSportsScoresCard.styles;
+    const cssText = Array.isArray(sheet)
+      ? sheet.map((part) => part.cssText).join("\n")
+      : sheet.cssText;
+    expect(cssText).toContain("min-width: 0");
+    expect(cssText).toContain("text-overflow: ellipsis");
+    expect(cssText).toContain("grid-template-columns: 1fr auto 1fr");
+    expect(cssText).not.toContain("@media (max-width");
+    expect(card.shadowRoot?.querySelector(".hsss-team.left .hsss-team-name")?.textContent).toBe(
+      "North Gwinnett Longhorn Chargers United",
+    );
+    expect(card.shadowRoot?.querySelectorAll(".hsss-score").length).toBe(2);
   });
 
   it("defaults mode to both and renders the collapsed hero shell", async () => {
@@ -431,7 +505,8 @@ describe("HighSchoolSportsScoresCard", () => {
     await card.updateComplete;
 
     const text = card.shadowRoot?.textContent ?? "";
-    expect(text).toContain("Last");
+    expect(card.shadowRoot?.querySelector(".hero-eyebrow")).toBeNull();
+    expect(card.shadowRoot?.querySelector(".secondary-label")).toBeNull();
     expect(text).not.toContain("Schedule rendering is not implemented");
   });
 
@@ -478,6 +553,8 @@ describe("HighSchoolSportsScoresCard", () => {
     expect(suggestion).not.toBeNull();
     expect(suggestion?.config.type).toBe("custom:high-school-sports-scores-card");
     expect(suggestion?.config.entity).toBe(FOOTBALL_ENTITY_ID);
+    expect(suggestion?.config.grid_options?.rows).toBe("auto");
+    expect(suggestion?.config.grid_options?.rows).not.toBe(5);
   });
 
   it("suggests the card only for full program sensor attribute shapes", () => {
@@ -665,6 +742,7 @@ describe("HighSchoolSportsScoresCard schedule websocket", () => {
     });
 
     expect(card.shadowRoot?.querySelector(".hero")).toBeNull();
+    expect(card.shadowRoot?.querySelector(".hsss-hero")).toBeNull();
     expect(card.shadowRoot?.textContent).toContain("Centennial | Boys Varsity Football | 26-27");
     expect(card.shadowRoot?.textContent).not.toContain("Schedule rendering is not implemented");
     expect(card.shadowRoot?.querySelector(".program-card--interactive")).toBeNull();

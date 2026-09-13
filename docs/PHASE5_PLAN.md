@@ -1301,9 +1301,22 @@ None yet.
 
 | Item | Value |
 |------|-------|
+| PR | [#6](https://github.com/willbur83/hacs-highschoolscores/pull/6) |
+| Merge commit | `22065bf` |
+| Tag / Release | [v0.1.0-beta.3](https://github.com/willbur83/hacs-highschoolscores/releases/tag/v0.1.0-beta.3) |
+| `release.yml` | [34766028918](https://github.com/willbur83/hacs-highschoolscores/actions/runs/34766028918) — **success** |
+
+### Follow-up beta `v0.1.0-beta.4` (Slice 7 — collapsed card visual)
+
+**Why:** Collapsed Lovelace **team-chip** scoreboard (owner visual spec) plus pending frontend registration wait (`EVENT_HOMEASSISTANT_STARTED` / Lovelace `hass.data` retry). Owner sandbox confirmed the new collapsed UI.
+
+**Does not:** stable `v0.1.0`; dual-domain `maxpreps` migration; live/in-progress scores.
+
+| Item | Value |
+|------|-------|
 | PR | (pending) |
 | Merge commit | (pending) |
-| Tag / Release | (pending `v0.1.0-beta.3`) |
+| Tag / Release | (pending `v0.1.0-beta.4`) |
 | `release.yml` | (pending) |
 
 ### PRODUCT drift check
@@ -1312,6 +1325,6 @@ No `docs/PRODUCT.md` changes. No stable `v0.1.0`. No HACS default-store / PRODUC
 
 ### Resume instructions for coding agent
 
-1. Merge **`v0.1.0-beta.3`** PR; confirm `release.yml` publishes ZIP.  
-2. Owner: HACS **Redownload** → remove duplicate manual diagnostic resource → **Restart HA** → re-run §10 on **Android Companion**.  
+1. Merge **`v0.1.0-beta.4`** PR; confirm `release.yml` publishes ZIP as the latest GitHub Release (not a GitHub pre-release checkbox).  
+2. Owner: HACS **Redownload** `v0.1.0-beta.4` → **Restart HA** → confirm collapsed card + Companion if re-testing §10.  
 3. If owner §10 **PASS** → external cohort per [docs/BETA.md](BETA.md). If **FAIL** → document; no external testers; no stable `v0.1.0` (Slice 8).

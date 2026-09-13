@@ -8,6 +8,7 @@ import pytest
 
 pytest.importorskip("homeassistant")
 
+from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
 from homeassistant.core import HomeAssistant
 
 from custom_components.high_school_sports_scores import async_setup
@@ -65,6 +66,8 @@ async def test_async_setup_creates_lovelace_module_resource(
         ) as mock_extra_js,
     ):
         assert await async_setup(hass, {})
+        hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
+        await hass.async_block_till_done()
 
     mock_resources.async_create_item.assert_awaited_once_with(
         {
@@ -110,6 +113,8 @@ async def test_async_setup_updates_lovelace_resource_when_version_changes(
         ),
     ):
         assert await async_setup(hass, {})
+        hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
+        await hass.async_block_till_done()
 
     mock_resources.async_create_item.assert_not_called()
     mock_resources.async_update_item.assert_awaited_once_with(
