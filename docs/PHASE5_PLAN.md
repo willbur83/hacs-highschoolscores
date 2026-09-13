@@ -1314,7 +1314,7 @@ None yet.
 
 | Item | Value |
 |------|-------|
-| PR | (pending) |
+| PR | [#7](https://github.com/willbur83/hacs-highschoolscores/pull/7) |
 | Merge commit | (pending) |
 | Tag / Release | (pending `v0.1.0-beta.4`) |
 | `release.yml` | (pending) |
