@@ -15,11 +15,25 @@ __all__ = ["DOMAIN", "async_setup", "async_setup_entry", "async_unload_entry"]
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the High School Sports Scores integration."""
+    from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
+    from homeassistant.core import CoreState
+
     from custom_components.high_school_sports_scores.frontend_register import async_register_frontend
     from custom_components.high_school_sports_scores.websocket import async_register_websocket_handlers
 
     async_register_websocket_handlers(hass)
-    await async_register_frontend(hass)
+
+    async def _register_frontend_when_ready(_event=None) -> None:
+        await async_register_frontend(hass)
+
+    if hass.state is CoreState.running:
+        await _register_frontend_when_ready()
+    else:
+        hass.bus.async_listen_once(
+            EVENT_HOMEASSISTANT_STARTED,
+            _register_frontend_when_ready,
+        )
+
     return True
 
 

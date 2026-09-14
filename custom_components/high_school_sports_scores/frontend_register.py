@@ -71,10 +71,16 @@ async def _async_ensure_resources_loaded(resources: Any) -> bool:
 
 async def _async_register_lovelace_module_resource(hass: HomeAssistant, version: str) -> None:
     """Register the card as a storage-mode Lovelace module resource (not add_extra_js_url)."""
-    lovelace = hass.data.get("lovelace")
+    lovelace = None
+    for attempt in range(_MAX_LOVELACE_RESOURCE_WAIT_ATTEMPTS):
+        lovelace = hass.data.get("lovelace")
+        if lovelace is not None:
+            break
+        if attempt + 1 < _MAX_LOVELACE_RESOURCE_WAIT_ATTEMPTS:
+            await asyncio.sleep(_LOVELACE_RESOURCE_RETRY_SECONDS)
     if lovelace is None:
-        _LOGGER.debug(
-            "Lovelace not initialized; card served at %s only",
+        _LOGGER.warning(
+            "Lovelace not initialized after waiting; add JavaScript module resource manually: %s",
             module_resource_url(version),
         )
         return

@@ -2,7 +2,7 @@
 
 A Home Assistant custom integration and optional Lovelace card for high school sports schedules and final scores from publicly available MaxPreps data.
 
-> **Status:** Public **beta** (version names like `0.1.0-beta.3`). Install the latest [GitHub Release](https://github.com/willbur83/hacs-highschoolscores/releases) through HACS (custom repository). See [Beta testing](docs/BETA.md).
+> **Status:** Public **beta** (version names like `0.1.0-beta.4`). Install the latest [GitHub Release](https://github.com/willbur83/hacs-highschoolscores/releases) through HACS (custom repository). See [Beta testing](docs/BETA.md).
 
 High School Sports Scores is an independent, open-source Home Assistant integration and is not affiliated with, endorsed by, sponsored by, or associated with MaxPreps. The integration retrieves publicly available sports schedule and score data from MaxPreps.com. MaxPreps remains the original source of that data. Users are encouraged to visit and support MaxPreps and the services they provide to high school sports communities.
 
@@ -17,7 +17,7 @@ This project is **not** in the HACS default store. Add the **custom repository**
 1. In Home Assistant, open **HACS** → **Integrations**.
 2. Open the menu (⋮) → **Custom repositories**.
 3. Add repository **`https://github.com/willbur83/hacs-highschoolscores`**, category **Integration**, then **Add**.
-4. Find **High School Sports Scores** in HACS → **Integrations** → **Download** (or **Redownload** when upgrading). HACS should offer the latest GitHub Release (for example **`v0.1.0-beta.3`**).
+4. Find **High School Sports Scores** in HACS → **Integrations** → **Download** (or **Redownload** when upgrading). HACS should offer the latest GitHub Release (for example **`v0.1.0-beta.4`**).
 5. **Restart Home Assistant** when HACS prompts you to.
 
 Optional shortcut to add the custom repository on a phone or tablet: [Create my.home-assistant.io link](https://my.home-assistant.io/create-link/?redirect=hacs_repository&owner=willbur83&repository=hacs-highschoolscores&category=integration).

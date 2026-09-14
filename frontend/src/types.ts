@@ -2,10 +2,21 @@
 
 export type CardMode = "both" | "last_next" | "schedule";
 
+/** Sections view sizing (optional; persisted by Lovelace). */
+export interface LovelaceCardGridOptions {
+  columns?: number;
+  rows?: number | "auto";
+  min_columns?: number;
+  max_columns?: number;
+  min_rows?: number;
+  max_rows?: number;
+}
+
 export interface HighSchoolSportsScoresCardConfig {
   type?: string;
   entity: string;
   mode?: CardMode;
+  grid_options?: LovelaceCardGridOptions;
 }
 
 /** One last_game / next_game attribute object from a program sensor. */

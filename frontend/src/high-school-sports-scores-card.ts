@@ -1,13 +1,18 @@
 import { css, html, LitElement, nothing, type PropertyValues } from "lit";
 
 import {
+  buildCollapsedHeaderTitle,
   buildHeaderTitle,
   buildMatchupLayout,
-  buildSecondaryStripContent,
-  formatCardDateLine,
-  formatHeroResult,
-  formatHeroScore,
+  DEFAULT_CARD_GRID_OPTIONS,
+  formatFinalStatusLine,
+  formatHeroScoreCells,
+  formatMatchupVenueLabel,
+  formatNextGameStrip,
+  formatUpcomingStatusLine,
   resolveCardMode,
+  scoreOutcomes,
+  teamMonogram,
   type MatchupTeam,
 } from "./card-helpers";
 import { isProgramEntity } from "./entity-suggestion";
@@ -76,6 +81,8 @@ export class HighSchoolSportsScoresCard extends LitElement {
 
   private _layoutNotifyFrame: number | null = null;
 
+  private _brokenLogoUrls = new Set<string>();
+
   public setConfig(config: HighSchoolSportsScoresCardConfig): void {
     if (!config.entity) {
       throw new Error("entity is required");
@@ -84,6 +91,7 @@ export class HighSchoolSportsScoresCard extends LitElement {
     this.config = config;
     if (previousEntity && previousEntity !== config.entity) {
       this._expanded = false;
+      this._brokenLogoUrls.clear();
       this._resetScheduleState();
     }
   }
@@ -92,6 +100,7 @@ export class HighSchoolSportsScoresCard extends LitElement {
     return {
       entity: "",
       mode: "both",
+      grid_options: { ...DEFAULT_CARD_GRID_OPTIONS },
     };
   }
 
@@ -145,15 +154,7 @@ export class HighSchoolSportsScoresCard extends LitElement {
   }
 
   public getGridOptions() {
-    return {
-      columns: 6,
-      min_columns: 3,
-      max_columns: 12,
-      // Let sections/masonry grow with content; fixed rows caused empty gap
-      // collapsed and overlap when the schedule expanded.
-      rows: "auto",
-      min_rows: 1,
-    };
+    return { ...DEFAULT_CARD_GRID_OPTIONS };
   }
 
   disconnectedCallback(): void {
@@ -613,38 +614,51 @@ export class HighSchoolSportsScoresCard extends LitElement {
 
   private _renderCollapsedCard(state: HassEntityState) {
     const attributes = state.attributes;
-    const header = buildHeaderTitle(attributes);
-    const teamRecord = attributes.team_record;
+    const title = buildCollapsedHeaderTitle(attributes);
+    const teamRecord = attributes.team_record?.trim();
+    const year = attributes.year?.trim();
     const selection = selectHeroGame(
       attributes.last_game,
       attributes.next_game,
       new Date(),
     );
     const interactive = this._isInteractiveBothMode();
+    const showNextStrip =
+      selection?.heroRole === "last" &&
+      selection.secondary != null &&
+      selection.secondaryRole === "next";
 
     return html`
       <ha-card>
         <div
-          class="card-content program-card ${interactive ? "program-card--interactive" : ""}"
+          class="card-content program-card hsss-card ${interactive ? "program-card--interactive" : ""}"
           role=${interactive ? "button" : nothing}
           tabindex=${interactive ? "0" : nothing}
           aria-expanded=${interactive ? String(this._expanded) : nothing}
           @click=${interactive ? this._toggleExpanded : nothing}
           @keydown=${interactive ? this._handleExpandKeydown : nothing}
         >
-          <header class="chrome">
-            <div class="chrome-title">${header}</div>
-            ${teamRecord
-              ? html`<div class="chrome-record">Record: ${teamRecord}</div>`
+          <header class="hsss-header">
+            <div class="hsss-title">${title}</div>
+            ${year || teamRecord
+              ? html`
+                  <div class="hsss-header-meta">
+                    ${year ? html`<span class="hsss-year">${year}</span>` : nothing}
+                    ${teamRecord
+                      ? html`<span class="hsss-record">${teamRecord}</span>`
+                      : nothing}
+                  </div>
+                `
               : nothing}
           </header>
+          <hr class="hsss-divider" />
 
           ${selection
             ? this._renderHero(attributes, selection.hero, selection.heroRole)
             : html`<div class="empty">No last or next game is available.</div>`}
 
-          ${selection?.secondary && selection.secondaryRole
-            ? this._renderSecondaryStrip(selection.secondaryRole, selection.secondary)
+          ${showNextStrip
+            ? this._renderNextStrip(selection!.secondary!)
             : nothing}
         </div>
       </ha-card>
@@ -657,75 +671,107 @@ export class HighSchoolSportsScoresCard extends LitElement {
     heroRole: HeroRole,
   ) {
     const layout = buildMatchupLayout(attributes, game);
-    const dateLine = formatCardDateLine(game.date);
     const isFinal = game.status === "final";
-    const scoreLine = isFinal ? formatHeroScore(game, layout) : null;
-    const result = isFinal ? formatHeroResult(game) : null;
-    const roleLabel = heroRole === "last" ? "Last" : "Next";
+    const ariaLabel = heroRole === "last" ? "Last game" : "Next game";
+
+    if (isFinal) {
+      return this._renderFinalHero(layout, game, ariaLabel);
+    }
+    return this._renderUpcomingHero(layout, game, ariaLabel);
+  }
+
+  private _renderFinalHero(
+    layout: ReturnType<typeof buildMatchupLayout>,
+    game: GameAttribute,
+    ariaLabel: string,
+  ) {
+    const scores = formatHeroScoreCells(layout);
+    const outcomes = scoreOutcomes(layout);
+    const statusLine = formatFinalStatusLine(game.date);
 
     return html`
-      <section class="hero" aria-label="${roleLabel} game">
-        <div class="hero-eyebrow">${roleLabel}</div>
-        <div class="hero-grid">
-          <div class="hero-team hero-team--away">
-            ${this._renderTeamTile(layout.away)}
+      <section class="hsss-hero hero" aria-label="${ariaLabel}">
+        <div class="hsss-body">
+          ${this._renderTeamChip(layout.away, "left")}
+          <div class="hsss-center hsss-center--scores">
+            <span
+              class="hsss-score ${outcomes.away === "lose" ? "hsss-score--lose" : ""}"
+            >${scores?.away ?? "—"}</span>
+            <span
+              class="hsss-score ${outcomes.home === "lose" ? "hsss-score--lose" : ""}"
+            >${scores?.home ?? "—"}</span>
           </div>
-
-          <div class="hero-center">
-            <div class="hero-at">AT</div>
-            ${scoreLine
-              ? html`<div class="hero-score">${scoreLine}</div>`
-              : nothing}
-            ${result ? html`<div class="hero-result">${result}</div>` : nothing}
-            ${dateLine
-              ? html`<div class="hero-datetime ${scoreLine ? "hero-datetime--subordinate" : ""}">
-                  ${dateLine}
-                </div>`
-              : nothing}
-          </div>
-
-          <div class="hero-team hero-team--home">
-            ${this._renderTeamTile(layout.home)}
-          </div>
+          ${this._renderTeamChip(layout.home, "right")}
         </div>
+        <div class="hsss-status hsss-status--final">${statusLine}</div>
       </section>
     `;
   }
 
-  private _renderSecondaryStrip(role: HeroRole, game: GameAttribute) {
-    const strip = buildSecondaryStripContent(role, game);
+  private _renderUpcomingHero(
+    layout: ReturnType<typeof buildMatchupLayout>,
+    game: GameAttribute,
+    ariaLabel: string,
+  ) {
+    const venueLabel = formatMatchupVenueLabel(game);
+    const statusLine = formatUpcomingStatusLine(game.date);
+
     return html`
-      <div class="secondary-strip">
-        <span class="secondary-label">${strip.label}:</span>
-        <span class="secondary-highlight">${strip.highlight}</span>
-        ${strip.dateLine
-          ? html`<span class="secondary-date"> · ${strip.dateLine}</span>`
+      <section class="hsss-hero hero" aria-label="${ariaLabel}">
+        <div class="hsss-body">
+          ${this._renderTeamChip(layout.away, "left")}
+          <div class="hsss-center hsss-center--matchup">${venueLabel}</div>
+          ${this._renderTeamChip(layout.home, "right")}
+        </div>
+        ${statusLine
+          ? html`<div class="hsss-status hsss-status--upcoming">${statusLine}</div>`
           : nothing}
+      </section>
+    `;
+  }
+
+  private _renderNextStrip(game: GameAttribute) {
+    return html`
+      <div class="hsss-next" aria-label="Next game">${formatNextGameStrip(game)}</div>
+    `;
+  }
+
+  private _renderTeamChip(team: MatchupTeam, side: "left" | "right") {
+    return html`
+      <div class="hsss-team ${side}">
+        ${this._renderLogoTile(team)}
+        <span class="hsss-team-name">${team.displayName}</span>
       </div>
     `;
   }
 
-  private _renderTeamTile(team: MatchupTeam) {
-    return html`
-      <div class="logo-tile">
-        ${team.logoUrl
-          ? html`<img
-              class="logo-image"
-              src=${team.logoUrl}
-              alt=""
-              @error=${this._hideImage}
-            />`
-          : nothing}
-      </div>
-      <div class="team-name">${team.displayName}</div>
-    `;
-  }
-
-  private _hideImage(event: Event): void {
-    const target = event.currentTarget;
-    if (target instanceof HTMLImageElement) {
-      target.style.display = "none";
+  private _renderLogoTile(team: MatchupTeam) {
+    const logoUrl = team.logoUrl;
+    const showLogo = Boolean(logoUrl) && !this._brokenLogoUrls.has(logoUrl!);
+    if (showLogo && logoUrl) {
+      return html`
+        <span class="hsss-logo-tile hsss-logo-tile--image">
+          <img
+            class="hsss-logo"
+            src=${logoUrl}
+            alt=""
+            @error=${() => this._markLogoBroken(logoUrl)}
+          />
+        </span>
+      `;
     }
+    const monogram = teamMonogram(team.displayName);
+    return html`
+      <span
+        class="hsss-logo-tile hsss-logo-tile--monogram"
+        style="--hsss-mono-hue: ${monogram.hue}"
+      >${monogram.initial}</span>
+    `;
+  }
+
+  private _markLogoBroken(logoUrl: string): void {
+    this._brokenLogoUrls.add(logoUrl);
+    this.requestUpdate();
   }
 
   static styles = css`
@@ -735,13 +781,14 @@ export class HighSchoolSportsScoresCard extends LitElement {
 
     ha-card {
       display: block;
-      background: var(--ha-card-background, var(--card-background-color, white));
-      border-radius: var(--ha-card-border-radius, 12px);
+      background: var(--ha-card-background, var(--card-background-color));
       overflow: hidden;
+      container-type: inline-size;
+      container-name: hsss-card;
     }
 
     .card-content {
-      padding: 16px;
+      padding: 12px 14px;
       color: var(--primary-text-color, #212121);
     }
 
@@ -760,8 +807,8 @@ export class HighSchoolSportsScoresCard extends LitElement {
 
     .chrome {
       text-align: left;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
       border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
     }
 
@@ -936,127 +983,229 @@ export class HighSchoolSportsScoresCard extends LitElement {
       white-space: nowrap;
     }
 
-    .hero {
-      position: relative;
-      padding: 0 0 4px;
+    .hsss-card {
+      --hsss-logo-size: 28px;
+      --hsss-name-size: 0.9375rem;
+      --hsss-score-size: 2rem;
+      --hsss-grid-gap: 12px;
+      --hsss-chip-pad: 5px 10px;
+      --hsss-center-min: 108px;
     }
 
-    .hero-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-      gap: 12px;
-      align-items: start;
-      text-align: center;
-      padding-top: 1.25em;
-    }
-
-    .hero-team {
+    .hsss-header {
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .hsss-title {
+      min-width: 0;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      line-height: 1.3;
+      color: var(--primary-text-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .hsss-header-meta {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .hsss-year {
+      font-size: 0.75rem;
+      color: var(--secondary-text-color);
+    }
+
+    .hsss-record {
+      flex-shrink: 0;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--secondary-text-color);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .hsss-divider {
+      display: block;
+      height: 0;
+      margin: 0 0 10px;
+      border: 0;
+      border-top: 1px solid var(--divider-color);
+    }
+
+    .hsss-body {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: var(--hsss-grid-gap);
+    }
+
+    .hsss-team {
+      display: inline-flex;
       align-items: center;
       gap: 8px;
+      box-sizing: border-box;
+      max-width: 100%;
       min-width: 0;
+      padding: var(--hsss-chip-pad);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--primary-text-color) 4.5%, transparent);
+      border: 1px solid color-mix(in srgb, var(--primary-text-color) 8%, transparent);
     }
 
-    .logo-tile {
-      width: 72px;
-      height: 72px;
+    .hsss-team.left {
+      justify-self: start;
+    }
+
+    .hsss-team.right {
+      justify-self: end;
+      flex-direction: row-reverse;
+    }
+
+    @supports (background: light-dark(white, black)) {
+      .hsss-team {
+        background: light-dark(rgba(0, 0, 0, 0.035), rgba(255, 255, 255, 0.045));
+        border: 1px solid light-dark(rgba(0, 0, 0, 0.07), rgba(255, 255, 255, 0.08));
+      }
+    }
+
+    .hsss-logo-tile {
+      box-sizing: border-box;
+      flex-shrink: 0;
+      width: var(--hsss-logo-size);
+      height: var(--hsss-logo-size);
+      border-radius: 50%;
+    }
+
+    .hsss-logo-tile--image {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 8px;
-      border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
-      border-radius: calc(var(--ha-card-border-radius, 12px) * 0.75);
-      background: var(--card-background-color, rgba(0, 0, 0, 0.03));
-      box-sizing: border-box;
+      padding: 2px;
+      background: #fff;
+      border: 1px solid rgba(0, 0, 0, 0.18);
     }
 
-    .logo-image {
+    .hsss-logo {
       width: 100%;
       height: 100%;
       object-fit: contain;
     }
 
-    .team-name {
-      font-size: 0.82em;
-      font-weight: 500;
-      line-height: 1.25;
-      color: var(--primary-text-color, #212121);
-      word-break: break-word;
+    @media (prefers-color-scheme: dark) {
+      .hsss-logo {
+        filter: brightness(0.94);
+      }
     }
 
-    .hero-center {
-      display: flex;
-      flex-direction: column;
+    .hsss-logo-tile--monogram {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 4px;
-      min-width: 108px;
-      padding-top: 8px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      line-height: 1;
+      color: #fff;
+      background: hsl(var(--hsss-mono-hue, 220) 45% 35%);
     }
 
-    .hero-eyebrow {
-      position: absolute;
-      top: 0;
-      left: 0;
-      font-size: 0.68em;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--secondary-text-color, #757575);
+    .hsss-team-name {
+      min-width: 0;
+      font-size: var(--hsss-name-size);
+      font-weight: 600;
+      line-height: 1.2;
+      color: var(--primary-text-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .hero-at {
-      font-size: 1.56em;
+    .hsss-center--scores {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      min-width: var(--hsss-center-min);
+      flex-shrink: 0;
+    }
+
+    .hsss-score {
+      font-size: var(--hsss-score-size);
       font-weight: 700;
-      line-height: 1.1;
-      color: var(--secondary-text-color, #757575);
-      text-transform: uppercase;
-    }
-
-    .hero-score {
-      font-size: 1.45em;
-      font-weight: 600;
-      line-height: 1.1;
-      color: var(--primary-text-color, #212121);
-    }
-
-    .hero-result {
-      font-size: 0.95em;
-      font-weight: 600;
-      color: var(--primary-text-color, #212121);
-    }
-
-    .hero-datetime {
-      margin-top: 10px;
-      font-size: 0.82em;
-      color: var(--primary-text-color, #212121);
-      line-height: 1.3;
-      max-width: 13rem;
+      line-height: 1;
+      color: var(--primary-text-color);
+      font-variant-numeric: tabular-nums;
       white-space: nowrap;
     }
 
-    .hero-datetime--subordinate {
-      font-size: 0.75em;
-      color: var(--secondary-text-color, #757575);
+    .hsss-score--lose {
+      opacity: 0.42;
     }
 
-    .secondary-strip {
-      margin-top: 14px;
-      padding-top: 12px;
-      border-top: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
-      text-align: left;
-      line-height: 1.4;
+    @media (prefers-color-scheme: dark) {
+      .hsss-score--lose {
+        opacity: 0.5;
+      }
     }
 
-    .secondary-label,
-    .secondary-date {
-      font-size: 0.8em;
-      color: var(--secondary-text-color, #757575);
+    .hsss-center--matchup {
+      min-width: 52px;
+      text-align: center;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--secondary-text-color);
+      white-space: nowrap;
     }
 
-    .secondary-highlight {
-      font-size: 0.82em;
-      color: var(--primary-text-color, #212121);
+    .hsss-status {
+      margin-top: 8px;
+      text-align: center;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      line-height: 1.3;
+    }
+
+    .hsss-status--final {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--secondary-text-color);
+    }
+
+    .hsss-status--upcoming {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: color-mix(in srgb, var(--primary-text-color) 80%, transparent);
+    }
+
+    .hsss-next {
+      margin-top: 8px;
+      padding-top: 6px;
+      border-top: 1px solid var(--divider-color);
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--secondary-text-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @container hsss-card (max-width: 379px) {
+      .hsss-card {
+        --hsss-logo-size: 24px;
+        --hsss-name-size: 0.875rem;
+        --hsss-score-size: 1.75rem;
+        --hsss-grid-gap: 8px;
+        --hsss-chip-pad: 4px 8px;
+        --hsss-center-min: 88px;
+      }
     }
 
     .empty {
@@ -1102,6 +1251,7 @@ window.customCards.push({
         type: CARD_TYPE,
         entity: entityId,
         mode: "both",
+        grid_options: { ...DEFAULT_CARD_GRID_OPTIONS },
       },
     };
   },
