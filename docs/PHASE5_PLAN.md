@@ -1315,9 +1315,9 @@ None yet.
 | Item | Value |
 |------|-------|
 | PR | [#7](https://github.com/willbur83/hacs-highschoolscores/pull/7) |
-| Merge commit | (pending) |
-| Tag / Release | (pending `v0.1.0-beta.4`) |
-| `release.yml` | (pending) |
+| Merge commit | `95a2296` |
+| Tag / Release | [v0.1.0-beta.4](https://github.com/willbur83/hacs-highschoolscores/releases/tag/v0.1.0-beta.4) |
+| `release.yml` | [34791376032](https://github.com/willbur83/hacs-highschoolscores/actions/runs/34791376032) — **success** |
 
 ### PRODUCT drift check
 
@@ -1328,3 +1328,18 @@ No `docs/PRODUCT.md` changes. No stable `v0.1.0`. No HACS default-store / PRODUC
 1. Merge **`v0.1.0-beta.4`** PR; confirm `release.yml` publishes ZIP as the latest GitHub Release (not a GitHub pre-release checkbox).  
 2. Owner: HACS **Redownload** `v0.1.0-beta.4` → **Restart HA** → confirm collapsed card + Companion if re-testing §10.  
 3. If owner §10 **PASS** → external cohort per [docs/BETA.md](BETA.md). If **FAIL** → document; no external testers; no stable `v0.1.0` (Slice 8).
+
+### Follow-up beta `v0.1.0-beta.5` (Slice 7 — GitHub pre-release restore)
+
+**Why:** Phase 5 wants beta tags published as GitHub **pre-releases** again so HACS install behavior can be tested on a disposable TEST HA. Cut **`v0.1.0-beta.5`** instead of editing **`v0.1.0-beta.4`** (which remains `prerelease: false` on GitHub from the 2026-09-12 intentional workaround — see Slice 7 notes above that incident).
+
+**Does not:** change `hacs.json`, `hide_default_branch`, or `zip_release`; verify HACS default **Download** against this pre-release (next plan step: disposable HACS TEST HA).
+
+| Item | Value |
+|------|-------|
+| `release.yml` | Pass `--prerelease` when `MANIFEST_VERSION` is not plain `X.Y.Z` stable core; stable `v0.1.0` stays a normal release |
+| Version bump | `manifest.json` / `const.VERSION` / `pyproject.toml` → **`0.1.0-beta.5`** |
+| Tag / Release | **`v0.1.0-beta.5`** (annotated); asset **`high_school_sports_scores.zip`** in same `gh release create` |
+| Docs | README, `docs/BETA.md`, `docs/HA_DEVELOPMENT.md` — betas are pre-releases; no promise that default Download works |
+
+**Handoff:** NEXT step is disposable **HACS TEST HA** install gate. If install shows a **commit hash** / `main` instead of **`v0.1.0-beta.5`**, treat as the historical release-blocking bug — stop; do not invite external testers until resolved.
