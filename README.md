@@ -2,7 +2,7 @@
 
 A Home Assistant custom integration and optional Lovelace card for high school sports schedules and final scores from publicly available MaxPreps data.
 
-> **Status:** Public **beta** (version names like `0.1.0-beta.10`). Betas ship as GitHub Releases with the `high_school_sports_scores.zip` asset. Install through HACS (custom repository); default **Download** should offer the latest release tag — see [Beta testing](docs/BETA.md) if your HACS build differs.
+> **Status:** Public **beta** (version names like `0.1.0-beta.11`). Betas ship as GitHub Releases with the `high_school_sports_scores.zip` asset. Install through HACS (custom repository); default **Download** should offer the latest release tag — see [Beta testing](docs/BETA.md) if your HACS build differs.
 
 High School Sports Scores is an independent, open-source Home Assistant integration and is not affiliated with, endorsed by, sponsored by, or associated with MaxPreps. The integration retrieves publicly available sports schedule and score data from MaxPreps.com. MaxPreps remains the original source of that data. Users are encouraged to visit and support MaxPreps and the services they provide to high school sports communities.
 
@@ -12,12 +12,12 @@ High School Sports Scores is an independent, open-source Home Assistant integrat
 
 ## Installation (HACS custom repository)
 
-This project is **not** in the HACS default store. Add the **custom repository** once, then install from the published GitHub Release ZIP (not from the `main` branch). Beta builds are GitHub Releases with the ZIP attached; use HACS **Download** / **Redownload** (for example **`v0.1.0-beta.10`**).
+This project is **not** in the HACS default store. Add the **custom repository** once, then install from the published GitHub Release ZIP (not from the `main` branch). Beta builds are GitHub Releases with the ZIP attached; use HACS **Download** / **Redownload** (for example **`v0.1.0-beta.11`**).
 
 1. In Home Assistant, open **HACS** → **Integrations**.
 2. Open the menu (⋮) → **Custom repositories**.
 3. Add repository **`https://github.com/willbur83/hacs-highschoolscores`**, category **Integration**, then **Add**.
-4. Find **High School Sports Scores** in HACS → **Integrations** → **Download** (or **Redownload** when upgrading). Confirm the offered version is the current beta release (for example **`v0.1.0-beta.10`**).
+4. Find **High School Sports Scores** in HACS → **Integrations** → **Download** (or **Redownload** when upgrading). Confirm the offered version is the current beta release (for example **`v0.1.0-beta.11`**).
 5. **Restart Home Assistant** when HACS prompts you to.
 
 Optional shortcut to add the custom repository on a phone or tablet: [Create my.home-assistant.io link](https://my.home-assistant.io/create-link/?redirect=hacs_repository&owner=willbur83&repository=hacs-highschoolscores&category=integration).

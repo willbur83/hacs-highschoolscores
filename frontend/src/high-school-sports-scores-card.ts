@@ -1249,7 +1249,7 @@ function bootstrapHighSchoolSportsScoresCard(): void {
       type: CARD_TAG,
       name: "High School Sports Scores",
       description: "High school sports program card",
-      preview: true,
+      preview: false,
       getEntitySuggestion: (hass, entityId) => {
         if (!isProgramEntity(hass, entityId)) {
           return null;

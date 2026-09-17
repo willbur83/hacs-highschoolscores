@@ -15,6 +15,7 @@ from custom_components.high_school_sports_scores import async_setup
 from custom_components.high_school_sports_scores.const import VERSION
 from custom_components.high_school_sports_scores.frontend_register import (
     _lovelace_resource_mode,
+    async_register_frontend,
     module_resource_url,
     picker_module_url,
     resource_path_from_url,
@@ -25,6 +26,9 @@ from custom_components.high_school_sports_scores.frontend_register import (
 def test_picker_module_url_includes_version() -> None:
     assert picker_module_url("0.1.0-beta.10") == (
         "/high_school_sports_scores/high-school-sports-scores-card.module.js?v=0.1.0-beta.10"
+    )
+    assert picker_module_url("0.1.0-beta.10", 2) == (
+        "/high_school_sports_scores/high-school-sports-scores-card.module.js?v=0.1.0-beta.10&b=2"
     )
 
 
@@ -132,7 +136,7 @@ async def test_async_setup_creates_lovelace_module_resource(
             "url": module_resource_url(VERSION),
         }
     )
-    mock_extra_js.assert_called_once_with(hass, picker_module_url(VERSION), es5=False)
+    mock_extra_js.assert_called_once_with(hass, picker_module_url(VERSION, 1), es5=False)
 
 
 @pytest.mark.asyncio
@@ -181,3 +185,50 @@ async def test_async_setup_updates_lovelace_resource_when_version_changes(
             "url": module_resource_url(VERSION),
         },
     )
+
+
+@pytest.mark.asyncio
+async def test_prompt_browser_reload_after_config_entry_registration(
+    hass: HomeAssistant,
+    enable_custom_integrations: None,
+) -> None:
+    """Config-entry registration prompts for a browser reload when picker JS changes."""
+    mock_resources = MagicMock()
+    mock_resources.loaded = True
+    mock_resources.async_items.return_value = []
+    mock_resources.async_create_item = AsyncMock()
+
+    mock_lovelace = MagicMock()
+    mock_lovelace.resource_mode = "storage"
+    mock_lovelace.resources = mock_resources
+    hass.data["lovelace"] = mock_lovelace
+
+    with (
+        patch(
+            "custom_components.high_school_sports_scores.frontend_register.card_bundle_available",
+            return_value=True,
+        ),
+        patch(
+            "custom_components.high_school_sports_scores.frontend_register._register_static_http_path",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "homeassistant.components.frontend.add_extra_js_url",
+        ),
+        patch(
+            "homeassistant.components.persistent_notification.async_create",
+        ) as mock_notify,
+        patch(
+            "homeassistant.helpers.issue_registry.async_create_issue",
+        ) as mock_issue,
+        patch.object(
+            hass.config_entries,
+            "async_entries",
+            return_value=[MagicMock()],
+        ),
+    ):
+        await async_register_frontend(hass, prompt_browser_reload=True)
+        await hass.async_block_till_done()
+
+    mock_notify.assert_called_once()
+    mock_issue.assert_called_once()

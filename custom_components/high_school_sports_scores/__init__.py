@@ -53,7 +53,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Domain async_setup runs once; first registration can race Lovelace init (picker needs
     # the module resource before the next HA restart). Retry after config entry is live.
-    await async_register_frontend(hass)
+    await async_register_frontend(hass, prompt_browser_reload=True)
     return True
 
 

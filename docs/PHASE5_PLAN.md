@@ -1421,4 +1421,13 @@ HACS picks the newest **non–pre-release** GitHub Release for default Download 
 | Fix | Ship **`high-school-sports-scores-card.module.js`** for `add_extra_js_url` (`es5=False`); keep **IIFE** `high-school-sports-scores-card.js` as Lovelace **`js`** resource for dashboard load |
 | Tag / Release | **`v0.1.0-beta.10`** |
 
+### Follow-up beta `v0.1.0-beta.11` (Slice 7 — browser reload UX + picker spinner)
+
+**Why:** Card JS registers after the UI tab loads (post–config-entry). Strangers cannot be expected to discover Ctrl+F5. Picker search spinner when `preview: true` before the custom element is defined.
+
+| Item | Value |
+|------|-------|
+| Fix | Repairs issue + persistent notification after config entry registers card JS; re-register picker module URL (`remove`/`add` + `b=` boot); `preview: false` on customCards |
+| Tag / Release | **`v0.1.0-beta.11`** |
+
 **HACS default Download vs GitHub Latest (2026-09-17):** `releases/latest` pointed at **beta.10**, but HACS `zip_release` uses the **first non–pre-release** in `GET /releases` list order. With **beta.6–9** all `prerelease: false`, GitHub listed **beta.9 before beta.10**, so HACS offered **beta.9**. Fix: after each cut, mark **older** release tags `prerelease: true` (automated in `release.yml`); only the current beta stays non–pre-release. Owner: HACS → custom repo → **Update** (or reload entry) after GitHub metadata changes.

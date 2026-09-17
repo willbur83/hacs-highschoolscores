@@ -36,9 +36,12 @@ def module_resource_url(version: str = VERSION) -> str:
     return f"{URL_BASE}/{CARD_FILENAME}?v={version}"
 
 
-def picker_module_url(version: str = VERSION) -> str:
+def picker_module_url(version: str = VERSION, boot: int | None = None) -> str:
     """Versioned ES module URL for ``add_extra_js_url`` (modern HA frontend)."""
-    return f"{URL_BASE}/{CARD_MODULE_FILENAME}?v={version}"
+    url = f"{URL_BASE}/{CARD_MODULE_FILENAME}?v={version}"
+    if boot is not None:
+        url = f"{url}&b={boot}"
+    return url
 
 
 def resource_path_from_url(url: str) -> str:
@@ -104,7 +107,7 @@ async def _async_wait_for_storage_lovelace(hass: HomeAssistant) -> Any | None:
     return None
 
 
-async def _async_register_lovelace_card_resource(hass: HomeAssistant, version: str) -> None:
+async def _async_register_lovelace_card_resource(hass: HomeAssistant, version: str) -> bool:
     """Register the IIFE bundle as a storage-mode Lovelace ``js`` resource."""
     lovelace = await _async_wait_for_storage_lovelace(hass)
     if lovelace is None:
@@ -115,7 +118,7 @@ async def _async_register_lovelace_card_resource(hass: HomeAssistant, version: s
                 "Lovelace YAML mode: add JavaScript resource manually: %s",
                 module_resource_url(version),
             )
-        return
+        return False
 
     resources = lovelace.resources
     resources_ready = False
@@ -130,7 +133,7 @@ async def _async_register_lovelace_card_resource(hass: HomeAssistant, version: s
             "Timed out waiting for Lovelace resources to load; "
             "card script not registered automatically"
         )
-        return
+        return False
 
     target_path = f"{URL_BASE}/{CARD_FILENAME}"
     target_url = module_resource_url(version)
@@ -142,26 +145,42 @@ async def _async_register_lovelace_card_resource(hass: HomeAssistant, version: s
         current_type = resource.get("type")
         if current_version == version and current_type == _LOVELACE_CARD_RESOURCE_TYPE:
             _LOGGER.debug("Lovelace card resource already at version %s", version)
-            return
+            return False
         _LOGGER.info("Updating Lovelace card resource to version %s", version)
         await resources.async_update_item(
             resource["id"],
             {"res_type": _LOVELACE_CARD_RESOURCE_TYPE, "url": target_url},
         )
-        return
+        return True
 
     _LOGGER.info("Registering Lovelace card resource version %s", version)
     await resources.async_create_item(
         {"res_type": _LOVELACE_CARD_RESOURCE_TYPE, "url": target_url},
     )
+    return True
 
 
-def _register_bootstrap_card_script(hass: HomeAssistant, version: str) -> None:
-    """Register picker module for modern browsers (``latestJS`` skips es5 extras)."""
-    url = picker_module_url(version)
+def _register_bootstrap_card_script(
+    hass: HomeAssistant, version: str, *, force_refresh: bool = False
+) -> bool:
+    """Register picker module; return True when the injected URL changed."""
+    domain_data = hass.data.setdefault(DOMAIN, {})
+    previous_url = domain_data.get("picker_module_url")
+    boot = int(domain_data.get("picker_module_boot", 0))
+    if force_refresh or not previous_url:
+        boot += 1
+    url = picker_module_url(version, boot)
+    if previous_url == url:
+        return False
+
     try:
         from homeassistant.components import frontend
 
+        if previous_url:
+            try:
+                frontend.remove_extra_js_url(hass, previous_url, es5=False)
+            except KeyError:
+                pass
         frontend.add_extra_js_url(hass, url, es5=False)
     except KeyError as err:
         _LOGGER.warning(
@@ -169,14 +188,49 @@ def _register_bootstrap_card_script(hass: HomeAssistant, version: str) -> None:
             "card may be missing until a full UI reload",
             err,
         )
+        return False
     except (ImportError, ModuleNotFoundError, AttributeError) as err:
         _LOGGER.warning(
             "Frontend bootstrap script registration skipped: %s",
             err,
         )
+        return False
+
+    domain_data["picker_module_url"] = url
+    domain_data["picker_module_boot"] = boot
+    return True
 
 
-async def async_register_frontend(hass: HomeAssistant) -> None:
+def _async_prompt_browser_reload(hass: HomeAssistant) -> None:
+    """Surface a reload hint when card JS registered after the UI tab was opened."""
+    from homeassistant.components import persistent_notification
+    from homeassistant.helpers import issue_registry as ir
+
+    issue_id = "browser_reload_recommended"
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        issue_id,
+        is_fixable=False,
+        severity=ir.IssueSeverity.WARNING,
+        translation_key="browser_reload_recommended",
+    )
+
+    persistent_notification.async_create(
+        hass,
+        (
+            "The Lovelace card script was registered after this browser tab loaded. "
+            "Reload the page once (Ctrl+F5 or Cmd+Shift+R) so "
+            "High School Sports Scores appears in the dashboard card picker."
+        ),
+        title="High School Sports Scores",
+        notification_id=f"{DOMAIN}_browser_reload",
+    )
+
+
+async def async_register_frontend(
+    hass: HomeAssistant, *, prompt_browser_reload: bool = False
+) -> None:
     """Register static path and Lovelace card script when the bundle exists."""
     if not card_bundle_available():
         _LOGGER.warning(
@@ -201,13 +255,19 @@ async def async_register_frontend(hass: HomeAssistant) -> None:
         )
         return
 
-    await _async_register_lovelace_card_resource(hass, VERSION)
-    _register_bootstrap_card_script(hass, VERSION)
+    resource_changed = await _async_register_lovelace_card_resource(hass, VERSION)
+    picker_changed = _register_bootstrap_card_script(
+        hass, VERSION, force_refresh=prompt_browser_reload
+    )
+
+    if prompt_browser_reload and hass.config_entries.async_entries(DOMAIN):
+        if resource_changed or picker_changed:
+            _async_prompt_browser_reload(hass)
 
     _LOGGER.debug(
         "Registered Lovelace card static path, js resource %s, picker module %s",
         module_resource_url(VERSION),
-        picker_module_url(VERSION),
+        hass.data.get(DOMAIN, {}).get("picker_module_url", picker_module_url(VERSION)),
     )
 
 

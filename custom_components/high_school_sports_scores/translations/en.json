@@ -50,5 +50,11 @@
         "title": "High School Sports Scores"
       }
     }
+  },
+  "issues": {
+    "browser_reload_recommended": {
+      "title": "Reload browser for Lovelace card",
+      "description": "The dashboard card script was registered after this browser tab started. Reload the page once (Ctrl+F5 or Cmd+Shift+R) so **High School Sports Scores** appears in the card picker."
+    }
   }
 }
