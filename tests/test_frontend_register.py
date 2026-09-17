@@ -90,7 +90,7 @@ async def test_async_setup_creates_lovelace_module_resource(
     hass: HomeAssistant,
     enable_custom_integrations: None,
 ) -> None:
-    """Storage-mode Lovelace gets a versioned module resource and bootstrap JS URL."""
+    """Storage-mode Lovelace gets a versioned js resource and es5 bootstrap script."""
     mock_resources = MagicMock()
     mock_resources.loaded = True
     mock_resources.async_items.return_value = []
@@ -121,11 +121,12 @@ async def test_async_setup_creates_lovelace_module_resource(
 
     mock_resources.async_create_item.assert_awaited_once_with(
         {
-            "res_type": "module",
+            "res_type": "js",
             "url": module_resource_url(VERSION),
         }
     )
     mock_extra_js.assert_called_once()
+    assert mock_extra_js.call_args.kwargs.get("es5") is True
 
 
 @pytest.mark.asyncio
@@ -141,7 +142,7 @@ async def test_async_setup_updates_lovelace_resource_when_version_changes(
         {
             "id": existing_id,
             "url": module_resource_url("0.1.0-beta.1"),
-            "res_type": "module",
+            "res_type": "js",
         }
     ]
     mock_resources.async_create_item = AsyncMock()
@@ -170,7 +171,7 @@ async def test_async_setup_updates_lovelace_resource_when_version_changes(
     mock_resources.async_update_item.assert_awaited_once_with(
         existing_id,
         {
-            "res_type": "module",
+            "res_type": "js",
             "url": module_resource_url(VERSION),
         },
     )

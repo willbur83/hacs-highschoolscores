@@ -1216,12 +1216,9 @@ export class HighSchoolSportsScoresCard extends LitElement {
   `;
 }
 
-if (!customElements.get(CARD_TAG)) {
-  customElements.define(CARD_TAG, HighSchoolSportsScoresCard);
-}
-
 declare global {
   interface Window {
+    __hsssCardBootstrapped?: boolean;
     customCards?: Array<{
       type: string;
       name: string;
@@ -1235,26 +1232,39 @@ declare global {
   }
 }
 
-window.customCards = window.customCards ?? [];
-if (!window.customCards.some((entry) => entry.type === CARD_TAG)) {
-  window.customCards.push({
-    // Picker registry type omits the Lovelace custom: prefix; card configs keep it.
-    type: CARD_TAG,
-    name: "High School Sports Scores",
-    description: "High school sports program card",
-    preview: true,
-    getEntitySuggestion: (hass, entityId) => {
-      if (!isProgramEntity(hass, entityId)) {
-        return null;
-      }
-      return {
-        config: {
-          type: CARD_TYPE,
-          entity: entityId,
-          mode: "both",
-          grid_options: { ...DEFAULT_CARD_GRID_OPTIONS },
-        },
-      };
-    },
-  });
+function bootstrapHighSchoolSportsScoresCard(): void {
+  if (window.__hsssCardBootstrapped) {
+    return;
+  }
+  window.__hsssCardBootstrapped = true;
+
+  if (!customElements.get(CARD_TAG)) {
+    customElements.define(CARD_TAG, HighSchoolSportsScoresCard);
+  }
+
+  window.customCards = window.customCards ?? [];
+  if (!window.customCards.some((entry) => entry.type === CARD_TAG)) {
+    window.customCards.push({
+      // Picker registry type omits the Lovelace custom: prefix; card configs keep it.
+      type: CARD_TAG,
+      name: "High School Sports Scores",
+      description: "High school sports program card",
+      preview: true,
+      getEntitySuggestion: (hass, entityId) => {
+        if (!isProgramEntity(hass, entityId)) {
+          return null;
+        }
+        return {
+          config: {
+            type: CARD_TYPE,
+            entity: entityId,
+            mode: "both",
+            grid_options: { ...DEFAULT_CARD_GRID_OPTIONS },
+          },
+        };
+      },
+    });
+  }
 }
+
+bootstrapHighSchoolSportsScoresCard();

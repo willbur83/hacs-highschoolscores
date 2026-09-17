@@ -1402,3 +1402,12 @@ HACS picks the newest **non–pre-release** GitHub Release for default Download 
 |------|-------|
 | Fix | `frontend_register._register_extra_js_module`; card bundle dedupes picker registry |
 | Tag / Release | **`v0.1.0-beta.8`** |
+
+### Follow-up beta `v0.1.0-beta.9` (Slice 7 — stable Lovelace card load)
+
+**Why:** ES-module `import()` bootstrap raced Lovelace render (picker empty, then “Custom element doesn't exist” after refresh). Ship card as **IIFE**; bootstrap via `add_extra_js_url(..., es5=True)`; Lovelace resource **`js`** (upgrade legacy `module` rows on load).
+
+| Item | Value |
+|------|-------|
+| Fix | IIFE Vite build; `_register_bootstrap_card_script`; `resource_mode` wait; config-entry re-register |
+| Tag / Release | **`v0.1.0-beta.9`** |

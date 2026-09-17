@@ -21,6 +21,7 @@ CARD_PATH = WWW_DIR / CARD_FILENAME
 URL_BASE = f"/{DOMAIN}"
 _LOVELACE_RESOURCE_RETRY_SECONDS = 1
 _MAX_LOVELACE_RESOURCE_WAIT_ATTEMPTS = 30
+_LOVELACE_CARD_RESOURCE_TYPE = "js"
 
 
 def card_bundle_available() -> bool:
@@ -29,7 +30,7 @@ def card_bundle_available() -> bool:
 
 
 def module_resource_url(version: str = VERSION) -> str:
-    """Versioned Lovelace module URL (storage-mode resource)."""
+    """Versioned Lovelace card script URL (storage-mode resource)."""
     return f"{URL_BASE}/{CARD_FILENAME}?v={version}"
 
 
@@ -90,21 +91,21 @@ async def _async_wait_for_storage_lovelace(hass: HomeAssistant) -> Any | None:
         if attempt + 1 < _MAX_LOVELACE_RESOURCE_WAIT_ATTEMPTS:
             await asyncio.sleep(_LOVELACE_RESOURCE_RETRY_SECONDS)
     _LOGGER.warning(
-        "Lovelace storage mode not ready after waiting; add JavaScript module resource manually: %s",
+        "Lovelace storage mode not ready after waiting; add JavaScript resource manually: %s",
         module_resource_url(VERSION),
     )
     return None
 
 
-async def _async_register_lovelace_module_resource(hass: HomeAssistant, version: str) -> None:
-    """Register the card as a storage-mode Lovelace module resource (not add_extra_js_url)."""
+async def _async_register_lovelace_card_resource(hass: HomeAssistant, version: str) -> None:
+    """Register the IIFE bundle as a storage-mode Lovelace ``js`` resource."""
     lovelace = await _async_wait_for_storage_lovelace(hass)
     if lovelace is None:
         lovelace_check = hass.data.get("lovelace")
         mode = _lovelace_resource_mode(lovelace_check) if lovelace_check else None
         if mode == "yaml":
             _LOGGER.info(
-                "Lovelace YAML mode: add JavaScript module resource manually: %s",
+                "Lovelace YAML mode: add JavaScript resource manually: %s",
                 module_resource_url(version),
             )
         return
@@ -120,7 +121,7 @@ async def _async_register_lovelace_module_resource(hass: HomeAssistant, version:
     if not resources_ready:
         _LOGGER.warning(
             "Timed out waiting for Lovelace resources to load; "
-            "card module not registered automatically"
+            "card script not registered automatically"
         )
         return
 
@@ -131,43 +132,45 @@ async def _async_register_lovelace_module_resource(hass: HomeAssistant, version:
         if resource_path_from_url(resource["url"]) != target_path:
             continue
         current_version = resource_version_from_url(resource["url"])
-        if current_version == version:
+        current_type = resource.get("type")
+        if current_version == version and current_type == _LOVELACE_CARD_RESOURCE_TYPE:
             _LOGGER.debug("Lovelace card resource already at version %s", version)
             return
         _LOGGER.info("Updating Lovelace card resource to version %s", version)
         await resources.async_update_item(
             resource["id"],
-            {"res_type": "module", "url": target_url},
+            {"res_type": _LOVELACE_CARD_RESOURCE_TYPE, "url": target_url},
         )
         return
 
-    _LOGGER.info("Registering Lovelace card module resource version %s", version)
+    _LOGGER.info("Registering Lovelace card resource version %s", version)
     await resources.async_create_item(
-        {"res_type": "module", "url": target_url},
+        {"res_type": _LOVELACE_CARD_RESOURCE_TYPE, "url": target_url},
     )
 
 
-def _register_extra_js_module(hass: HomeAssistant, version: str) -> None:
-    """Load card module on frontend bootstrap (picker) in addition to Lovelace resources."""
+def _register_bootstrap_card_script(hass: HomeAssistant, version: str) -> None:
+    """Load the IIFE bundle via classic script bootstrap (not ES module import)."""
+    url = module_resource_url(version)
     try:
         from homeassistant.components import frontend
 
-        frontend.add_extra_js_url(hass, module_resource_url(version))
+        frontend.add_extra_js_url(hass, url, es5=True)
     except KeyError as err:
         _LOGGER.warning(
-            "Frontend bootstrap module registration unavailable (%s); "
-            "card may be missing from picker until a full UI reload",
+            "Frontend bootstrap script registration unavailable (%s); "
+            "card may be missing until a full UI reload",
             err,
         )
     except (ImportError, ModuleNotFoundError, AttributeError) as err:
         _LOGGER.warning(
-            "Frontend bootstrap module registration skipped: %s",
+            "Frontend bootstrap script registration skipped: %s",
             err,
         )
 
 
 async def async_register_frontend(hass: HomeAssistant) -> None:
-    """Register static path and Lovelace module resource when the bundle exists."""
+    """Register static path and Lovelace card script when the bundle exists."""
     if not card_bundle_available():
         _LOGGER.warning(
             "Optional Phase 4 Lovelace card is unavailable (%s missing); "
@@ -191,11 +194,11 @@ async def async_register_frontend(hass: HomeAssistant) -> None:
         )
         return
 
-    await _async_register_lovelace_module_resource(hass, VERSION)
-    _register_extra_js_module(hass, VERSION)
+    await _async_register_lovelace_card_resource(hass, VERSION)
+    _register_bootstrap_card_script(hass, VERSION)
 
     _LOGGER.debug(
-        "Registered Lovelace card static path, resource, and bootstrap module at %s",
+        "Registered Lovelace card static path, resource, and bootstrap script at %s",
         module_resource_url(VERSION),
     )
 
