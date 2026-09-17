@@ -113,10 +113,18 @@ jobs:
             exit 1
           fi
 
-          # zip_release + hide_default_branch: do not pass --prerelease. HACS treats GitHub
-          # pre-releases as non-latest; with no stable release that can force main/commit
-          # download failures. Beta status is the version string (e.g. 0.1.0-beta.6).
           gh release create "${TAG}" \
             --title "${TAG}" \
             --generate-notes \
             "${zip_path}"
+
+          # HACS zip_release sets last_version to the first non–pre-release in GET
+          # /repos/.../releases list order (not /releases/latest). Mark every older
+          # release pre-release so default Download tracks the tag we just cut.
+          while IFS= read -r old_tag; do
+            if [[ "${old_tag}" != "${TAG}" ]]; then
+              gh release edit "${old_tag}" --prerelease || true
+            fi
+          done < <(gh release list --limit 100 --json tagName -q '.[].tagName')
+
+          gh release edit "${TAG}" --prerelease=false
