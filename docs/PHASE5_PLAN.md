@@ -1411,3 +1411,12 @@ HACS picks the newest **non–pre-release** GitHub Release for default Download 
 |------|-------|
 | Fix | IIFE Vite build; `_register_bootstrap_card_script`; `resource_mode` wait; config-entry re-register |
 | Tag / Release | **`v0.1.0-beta.9`** |
+
+### Follow-up beta `v0.1.0-beta.10` (Slice 7 — card picker on modern HA)
+
+**Why:** Beta.9 registered picker bootstrap with `add_extra_js_url(..., es5=True)`. On modern browsers HA sets `window.latestJS` and **only loads `extra_modules` via `import()`** — es5 extras are skipped, so `window.customCards` never populated and the picker stayed empty (Lovelace `js` IIFE resource alone is not enough for the catalog).
+
+| Item | Value |
+|------|-------|
+| Fix | Ship **`high-school-sports-scores-card.module.js`** for `add_extra_js_url` (`es5=False`); keep **IIFE** `high-school-sports-scores-card.js` as Lovelace **`js`** resource for dashboard load |
+| Tag / Release | **`v0.1.0-beta.10`** |

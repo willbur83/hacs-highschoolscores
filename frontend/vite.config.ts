@@ -7,8 +7,11 @@ export default defineConfig({
     emptyOutDir: false,
     lib: {
       entry: resolve(__dirname, "src/high-school-sports-scores-card.ts"),
-      formats: ["iife"],
-      fileName: () => "high-school-sports-scores-card.js",
+      formats: ["iife", "es"],
+      fileName: (format) =>
+        format === "iife"
+          ? "high-school-sports-scores-card.js"
+          : "high-school-sports-scores-card.module.js",
       name: "HighSchoolSportsScoresCard",
     },
     rollupOptions: {

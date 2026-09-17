@@ -16,8 +16,10 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 CARD_FILENAME = "high-school-sports-scores-card.js"
+CARD_MODULE_FILENAME = "high-school-sports-scores-card.module.js"
 WWW_DIR = Path(__file__).resolve().parent / "www"
 CARD_PATH = WWW_DIR / CARD_FILENAME
+CARD_MODULE_PATH = WWW_DIR / CARD_MODULE_FILENAME
 URL_BASE = f"/{DOMAIN}"
 _LOVELACE_RESOURCE_RETRY_SECONDS = 1
 _MAX_LOVELACE_RESOURCE_WAIT_ATTEMPTS = 30
@@ -25,13 +27,18 @@ _LOVELACE_CARD_RESOURCE_TYPE = "js"
 
 
 def card_bundle_available() -> bool:
-    """Return whether the built Lovelace card bundle is on disk."""
-    return CARD_PATH.is_file()
+    """Return whether the built Lovelace card bundles are on disk."""
+    return CARD_PATH.is_file() and CARD_MODULE_PATH.is_file()
 
 
 def module_resource_url(version: str = VERSION) -> str:
-    """Versioned Lovelace card script URL (storage-mode resource)."""
+    """Versioned Lovelace card IIFE URL (storage-mode ``js`` resource)."""
     return f"{URL_BASE}/{CARD_FILENAME}?v={version}"
+
+
+def picker_module_url(version: str = VERSION) -> str:
+    """Versioned ES module URL for ``add_extra_js_url`` (modern HA frontend)."""
+    return f"{URL_BASE}/{CARD_MODULE_FILENAME}?v={version}"
 
 
 def resource_path_from_url(url: str) -> str:
@@ -150,12 +157,12 @@ async def _async_register_lovelace_card_resource(hass: HomeAssistant, version: s
 
 
 def _register_bootstrap_card_script(hass: HomeAssistant, version: str) -> None:
-    """Load the IIFE bundle via classic script bootstrap (not ES module import)."""
-    url = module_resource_url(version)
+    """Register picker module for modern browsers (``latestJS`` skips es5 extras)."""
+    url = picker_module_url(version)
     try:
         from homeassistant.components import frontend
 
-        frontend.add_extra_js_url(hass, url, es5=True)
+        frontend.add_extra_js_url(hass, url, es5=False)
     except KeyError as err:
         _LOGGER.warning(
             "Frontend bootstrap script registration unavailable (%s); "
@@ -198,19 +205,23 @@ async def async_register_frontend(hass: HomeAssistant) -> None:
     _register_bootstrap_card_script(hass, VERSION)
 
     _LOGGER.debug(
-        "Registered Lovelace card static path, resource, and bootstrap script at %s",
+        "Registered Lovelace card static path, js resource %s, picker module %s",
         module_resource_url(VERSION),
+        picker_module_url(VERSION),
     )
 
 
 __all__ = [
     "CARD_FILENAME",
+    "CARD_MODULE_FILENAME",
+    "CARD_MODULE_PATH",
     "CARD_PATH",
     "URL_BASE",
     "WWW_DIR",
     "async_register_frontend",
     "card_bundle_available",
     "module_resource_url",
+    "picker_module_url",
     "resource_path_from_url",
     "resource_version_from_url",
 ]

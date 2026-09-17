@@ -16,9 +16,16 @@ from custom_components.high_school_sports_scores.const import VERSION
 from custom_components.high_school_sports_scores.frontend_register import (
     _lovelace_resource_mode,
     module_resource_url,
+    picker_module_url,
     resource_path_from_url,
     resource_version_from_url,
 )
+
+
+def test_picker_module_url_includes_version() -> None:
+    assert picker_module_url("0.1.0-beta.10") == (
+        "/high_school_sports_scores/high-school-sports-scores-card.module.js?v=0.1.0-beta.10"
+    )
 
 
 def test_module_resource_url_includes_version() -> None:
@@ -90,7 +97,7 @@ async def test_async_setup_creates_lovelace_module_resource(
     hass: HomeAssistant,
     enable_custom_integrations: None,
 ) -> None:
-    """Storage-mode Lovelace gets a versioned js resource and es5 bootstrap script."""
+    """Storage-mode Lovelace gets IIFE js resource plus ES module picker bootstrap."""
     mock_resources = MagicMock()
     mock_resources.loaded = True
     mock_resources.async_items.return_value = []
@@ -125,8 +132,7 @@ async def test_async_setup_creates_lovelace_module_resource(
             "url": module_resource_url(VERSION),
         }
     )
-    mock_extra_js.assert_called_once()
-    assert mock_extra_js.call_args.kwargs.get("es5") is True
+    mock_extra_js.assert_called_once_with(hass, picker_module_url(VERSION), es5=False)
 
 
 @pytest.mark.asyncio
