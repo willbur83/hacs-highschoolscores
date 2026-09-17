@@ -2,7 +2,7 @@
 
 This document is for **beta testers** installing High School Sports Scores through HACS on real Home Assistant OS (or other) environments — without developer bind mounts, git checkouts, or npm on the Home Assistant host.
 
-Published beta builds are **GitHub pre-releases** with the **`high_school_sports_scores.zip`** asset (version names like `0.1.0-beta.5`). After adding the custom repository, use HACS **Download** or **Redownload**; you may need **Need a different version?** (or equivalent) to select the beta pre-release. Default **Download** without selecting a pre-release is not verified for this repo.
+Published beta builds are **GitHub Releases** with the **`high_school_sports_scores.zip`** asset (version names like `0.1.0-beta.6`). After adding the custom repository, use HACS **Download** or **Redownload**; default **Download** should target the latest release. If HACS offers a commit hash or `main` instead of a release tag, stop and report — that is a known failure mode.
 
 User-facing overview and limitations: [README](../README.md).
 
@@ -31,7 +31,7 @@ Optional link helper: [my.home-assistant.io custom repository link](https://my.h
 ## 2. Install the beta release
 
 1. In **HACS** → **Integrations**, open **High School Sports Scores**.  
-2. Use **Download** (first install) or **Redownload** (upgrade). Choose the current beta pre-release if HACS does not offer it by default (for example **`v0.1.0-beta.5`**).  
+2. Use **Download** (first install) or **Redownload** (upgrade). Confirm the version is the current beta release (for example **`v0.1.0-beta.6`**).  
 3. If **Download** fails with a **commit hash** (such as `e497188`) instead of a release tag, stop — that is a known release-blocking failure mode (HACS fell back to `main` instead of the release ZIP). Report it; do not treat the install as valid.  
 4. **Restart Home Assistant** when HACS requests it.
 

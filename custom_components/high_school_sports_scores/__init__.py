@@ -48,6 +48,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.runtime_data = coordinator
 
     await hass.config_entries.async_forward_entry_setups(entry, [Platform.SENSOR])
+
+    from custom_components.high_school_sports_scores.frontend_register import async_register_frontend
+
+    # Domain async_setup runs once; first registration can race Lovelace init (picker needs
+    # the module resource before the next HA restart). Retry after config entry is live.
+    await async_register_frontend(hass)
     return True
 
 

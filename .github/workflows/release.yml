@@ -113,16 +113,10 @@ jobs:
             exit 1
           fi
 
-          # GitHub pre-release for non-stable manifest versions (e.g. 0.1.0-beta.5).
-          # Plain X.Y.Z tags are normal releases (e.g. v0.1.0). HACS install behavior
-          # against pre-releases is validated separately (Slice 7 disposable TEST HA).
-          prerelease_args=()
-          if [[ ! "${MANIFEST_VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            prerelease_args=(--prerelease)
-          fi
-
+          # zip_release + hide_default_branch: do not pass --prerelease. HACS treats GitHub
+          # pre-releases as non-latest; with no stable release that can force main/commit
+          # download failures. Beta status is the version string (e.g. 0.1.0-beta.6).
           gh release create "${TAG}" \
             --title "${TAG}" \
             --generate-notes \
-            "${prerelease_args[@]}" \
             "${zip_path}"

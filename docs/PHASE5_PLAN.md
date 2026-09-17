@@ -1343,3 +1343,44 @@ No `docs/PRODUCT.md` changes. No stable `v0.1.0`. No HACS default-store / PRODUC
 | Docs | README, `docs/BETA.md`, `docs/HA_DEVELOPMENT.md` — betas are pre-releases; no promise that default Download works |
 
 **Handoff:** NEXT step is disposable **HACS TEST HA** install gate. If install shows a **commit hash** / `main` instead of **`v0.1.0-beta.5`**, treat as the historical release-blocking bug — stop; do not invite external testers until resolved.
+
+### Disposable HACS TEST HA — stranger-install gate (2026-09-17, in progress)
+
+**Artifact intent:** install **`v0.1.0-beta.5`** (GitHub pre-release, `prerelease: true`).
+
+**Why default Download is not beta.5 (expected, not user error):**
+
+| GitHub release | `prerelease` | HACS role |
+|----------------|--------------|-----------|
+| **`v0.1.0-beta.4`** | **`false`** (2026-09-12 workaround — still on GitHub) | GitHub **Latest** → HACS default **Download** text **`v0.1.0-beta.4`** |
+| **`v0.1.0-beta.5`** | **`true`** (restored beta workflow) | Listed under **Need a different version?** with pre-release badge |
+
+HACS picks the newest **non–pre-release** GitHub Release for default Download when `zip_release` is set. That is **not** the 2026-09-12 commit-hash / `main` failure (no hash shown; ZIP releases exist on both tags).
+
+**What first-time users see today:**
+
+- **Default Download:** **`v0.1.0-beta.4`** (older beta, still a valid release ZIP).
+- **Current project beta under test:** **`v0.1.0-beta.5`** — requires **Need a different version?** → Release **`v0.1.0-beta.5`** → **Download** (extra clicks; documented in README / BETA).
+
+**Gate checklist (partial — owner UI in progress):**
+
+| Step | Result | Notes |
+|------|--------|-------|
+| HACS accepts custom repo | **PASS** | Owner added repo; no extra clicks reported |
+| Expected beta on **default** Download | **FAIL** | Offers **`v0.1.0-beta.4`**, not **`v0.1.0-beta.5`** |
+| Pre-release visible without main/hash fallback | **PASS** | **`v0.1.0-beta.5`** in version picker (pre-release badge) |
+| Commit hash / `main` download | **PASS** (absence) | Not observed — do **not** STOP for historical zip_release bug |
+
+**Owner next (step 3):** Do **not** use default Download for this gate run. Expand **Need a different version?** → select **`v0.1.0-beta.5`** → **Download** → one HA restart when HACS asks. Record whether restart #1 alone is enough for integration + card (persistence restart later).
+
+**External testers:** Default Download still lands on **beta.4** until release policy changes (e.g. only one “latest” beta, or stable `v0.1.0`). README/BETA already warn that default Download against pre-releases is not guaranteed; this run confirms **extra picker steps** are required for **beta.5**. Do not invite external cohort until owner completes full §10-style checklist on **`v0.1.0-beta.5`** specifically.
+
+### Follow-up beta `v0.1.0-beta.6` (Slice 7 — Lovelace registration + HACS default Download)
+
+**Why:** Fix card picker requiring a second HA restart after first config (`async_setup_entry` retries Lovelace module registration; wait for storage-mode Lovelace). Publish as a normal GitHub Release (not pre-release checkbox) so HACS default **Download** tracks the latest beta ZIP.
+
+| Item | Value |
+|------|-------|
+| Fix | `frontend_register.py` storage-mode wait; `__init__.py` register after config entry setup |
+| Tag / Release | **`v0.1.0-beta.6`** + `high_school_sports_scores.zip` |
+| `release.yml` | Omit `--prerelease` for zip_release betas (same policy as beta.4 for HACS Latest) |

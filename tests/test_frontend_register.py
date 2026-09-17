@@ -36,6 +36,44 @@ def test_resource_url_parsing() -> None:
 
 
 @pytest.mark.asyncio
+async def test_async_setup_waits_for_lovelace_storage_mode(
+    hass: HomeAssistant,
+    enable_custom_integrations: None,
+) -> None:
+    """Registration waits until Lovelace mode is storage, not only until hass.data exists."""
+    mock_resources = MagicMock()
+    mock_resources.loaded = True
+    mock_resources.async_items.return_value = []
+    mock_resources.async_create_item = AsyncMock()
+
+    mock_lovelace = MagicMock()
+    mock_lovelace.resources = mock_resources
+    mode_values = iter([None, "storage"])
+    type(mock_lovelace).mode = property(lambda _self: next(mode_values))
+    hass.data["lovelace"] = mock_lovelace
+
+    with (
+        patch(
+            "custom_components.high_school_sports_scores.frontend_register.card_bundle_available",
+            return_value=True,
+        ),
+        patch(
+            "custom_components.high_school_sports_scores.frontend_register._register_static_http_path",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "custom_components.high_school_sports_scores.frontend_register._LOVELACE_RESOURCE_RETRY_SECONDS",
+            0,
+        ),
+    ):
+        assert await async_setup(hass, {})
+        hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
+        await hass.async_block_till_done()
+
+    mock_resources.async_create_item.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_async_setup_creates_lovelace_module_resource(
     hass: HomeAssistant,
     enable_custom_integrations: None,

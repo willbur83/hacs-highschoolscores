@@ -69,28 +69,36 @@ async def _async_ensure_resources_loaded(resources: Any) -> bool:
     return True
 
 
-async def _async_register_lovelace_module_resource(hass: HomeAssistant, version: str) -> None:
-    """Register the card as a storage-mode Lovelace module resource (not add_extra_js_url)."""
-    lovelace = None
+async def _async_wait_for_storage_lovelace(hass: HomeAssistant) -> Any | None:
+    """Wait until Lovelace is in storage mode, or give up on YAML mode / timeout."""
     for attempt in range(_MAX_LOVELACE_RESOURCE_WAIT_ATTEMPTS):
         lovelace = hass.data.get("lovelace")
         if lovelace is not None:
-            break
+            mode = getattr(lovelace, "mode", None)
+            if mode == "storage":
+                return lovelace
+            if mode == "yaml":
+                return None
         if attempt + 1 < _MAX_LOVELACE_RESOURCE_WAIT_ATTEMPTS:
             await asyncio.sleep(_LOVELACE_RESOURCE_RETRY_SECONDS)
-    if lovelace is None:
-        _LOGGER.warning(
-            "Lovelace not initialized after waiting; add JavaScript module resource manually: %s",
-            module_resource_url(version),
-        )
-        return
+    _LOGGER.warning(
+        "Lovelace storage mode not ready after waiting; add JavaScript module resource manually: %s",
+        module_resource_url(VERSION),
+    )
+    return None
 
-    mode = getattr(lovelace, "mode", None)
-    if mode != "storage":
-        _LOGGER.info(
-            "Lovelace YAML mode: add JavaScript module resource manually: %s",
-            module_resource_url(version),
-        )
+
+async def _async_register_lovelace_module_resource(hass: HomeAssistant, version: str) -> None:
+    """Register the card as a storage-mode Lovelace module resource (not add_extra_js_url)."""
+    lovelace = await _async_wait_for_storage_lovelace(hass)
+    if lovelace is None:
+        lovelace_check = hass.data.get("lovelace")
+        mode = getattr(lovelace_check, "mode", None) if lovelace_check else None
+        if mode == "yaml":
+            _LOGGER.info(
+                "Lovelace YAML mode: add JavaScript module resource manually: %s",
+                module_resource_url(version),
+            )
         return
 
     resources = lovelace.resources

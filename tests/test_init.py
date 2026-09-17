@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -15,6 +15,36 @@ from custom_components.high_school_sports_scores import async_setup
 from custom_components.high_school_sports_scores.const import CONF_GENDER, CONF_LEVEL, CONF_SPORT
 from tests.helpers.coordinator_test_helpers import centennial_entry
 from tests.test_coordinator import coordinator_client, frozen_applicable_date
+
+
+@pytest.mark.asyncio
+async def test_config_entry_setup_registers_frontend(
+    hass: HomeAssistant,
+    enable_custom_integrations: None,
+    coordinator_client,
+    frozen_applicable_date,
+) -> None:
+    """Config entry load retries Lovelace registration after domain async_setup."""
+    entry = centennial_entry(
+        [
+            {
+                CONF_SPORT: "Football",
+                CONF_GENDER: "Boys",
+                CONF_LEVEL: "Varsity",
+            }
+        ]
+    )
+    entry.add_to_hass(hass)
+
+    with patch(
+        "custom_components.high_school_sports_scores.frontend_register.async_register_frontend",
+        new_callable=AsyncMock,
+    ) as mock_register:
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+    assert entry.state is ConfigEntryState.LOADED
+    mock_register.assert_awaited()
 
 
 @pytest.mark.asyncio
