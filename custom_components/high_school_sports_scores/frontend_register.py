@@ -147,6 +147,25 @@ async def _async_register_lovelace_module_resource(hass: HomeAssistant, version:
     )
 
 
+def _register_extra_js_module(hass: HomeAssistant, version: str) -> None:
+    """Load card module on frontend bootstrap (picker) in addition to Lovelace resources."""
+    try:
+        from homeassistant.components import frontend
+
+        frontend.add_extra_js_url(hass, module_resource_url(version))
+    except KeyError as err:
+        _LOGGER.warning(
+            "Frontend bootstrap module registration unavailable (%s); "
+            "card may be missing from picker until a full UI reload",
+            err,
+        )
+    except (ImportError, ModuleNotFoundError, AttributeError) as err:
+        _LOGGER.warning(
+            "Frontend bootstrap module registration skipped: %s",
+            err,
+        )
+
+
 async def async_register_frontend(hass: HomeAssistant) -> None:
     """Register static path and Lovelace module resource when the bundle exists."""
     if not card_bundle_available():
@@ -159,7 +178,6 @@ async def async_register_frontend(hass: HomeAssistant) -> None:
 
     try:
         await _register_static_http_path(hass)
-        await _async_register_lovelace_module_resource(hass, VERSION)
     except (
         ImportError,
         ModuleNotFoundError,
@@ -168,13 +186,16 @@ async def async_register_frontend(hass: HomeAssistant) -> None:
         KeyError,
     ) as err:
         _LOGGER.warning(
-            "Optional Phase 4 Lovelace card registration skipped: %s",
+            "Optional Phase 4 Lovelace card static path skipped: %s",
             err,
         )
         return
 
+    await _async_register_lovelace_module_resource(hass, VERSION)
+    _register_extra_js_module(hass, VERSION)
+
     _LOGGER.debug(
-        "Registered Lovelace card static path and module resource at %s",
+        "Registered Lovelace card static path, resource, and bootstrap module at %s",
         module_resource_url(VERSION),
     )
 

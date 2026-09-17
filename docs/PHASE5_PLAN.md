@@ -1393,3 +1393,12 @@ HACS picks the newest **non–pre-release** GitHub Release for default Download 
 |------|-------|
 | Fix | `_lovelace_resource_mode()`; shorter wait interval |
 | Tag / Release | **`v0.1.0-beta.7`** |
+
+### Follow-up beta `v0.1.0-beta.8` (Slice 7 — card picker bootstrap load)
+
+**Why:** Beta.7 created `lovelace_resources` on TEST but the card never appeared in the picker. Lovelace module resources load asynchronously when a dashboard panel opens; the picker reads `window.customCards` before the module runs. Restore **`frontend.add_extra_js_url`** (same versioned URL) alongside the storage resource; dedupe `customCards` if both paths load.
+
+| Item | Value |
+|------|-------|
+| Fix | `frontend_register._register_extra_js_module`; card bundle dedupes picker registry |
+| Tag / Release | **`v0.1.0-beta.8`** |

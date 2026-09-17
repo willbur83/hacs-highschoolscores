@@ -1236,23 +1236,25 @@ declare global {
 }
 
 window.customCards = window.customCards ?? [];
-window.customCards.push({
-  // Picker registry type omits the Lovelace custom: prefix; card configs keep it.
-  type: CARD_TAG,
-  name: "High School Sports Scores",
-  description: "High school sports program card",
-  preview: true,
-  getEntitySuggestion: (hass, entityId) => {
-    if (!isProgramEntity(hass, entityId)) {
-      return null;
-    }
-    return {
-      config: {
-        type: CARD_TYPE,
-        entity: entityId,
-        mode: "both",
-        grid_options: { ...DEFAULT_CARD_GRID_OPTIONS },
-      },
-    };
-  },
-});
+if (!window.customCards.some((entry) => entry.type === CARD_TAG)) {
+  window.customCards.push({
+    // Picker registry type omits the Lovelace custom: prefix; card configs keep it.
+    type: CARD_TAG,
+    name: "High School Sports Scores",
+    description: "High school sports program card",
+    preview: true,
+    getEntitySuggestion: (hass, entityId) => {
+      if (!isProgramEntity(hass, entityId)) {
+        return null;
+      }
+      return {
+        config: {
+          type: CARD_TYPE,
+          entity: entityId,
+          mode: "both",
+          grid_options: { ...DEFAULT_CARD_GRID_OPTIONS },
+        },
+      };
+    },
+  });
+}

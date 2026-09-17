@@ -90,7 +90,7 @@ async def test_async_setup_creates_lovelace_module_resource(
     hass: HomeAssistant,
     enable_custom_integrations: None,
 ) -> None:
-    """Storage-mode Lovelace gets a versioned module resource; no add_extra_js_url."""
+    """Storage-mode Lovelace gets a versioned module resource and bootstrap JS URL."""
     mock_resources = MagicMock()
     mock_resources.loaded = True
     mock_resources.async_items.return_value = []
@@ -125,7 +125,7 @@ async def test_async_setup_creates_lovelace_module_resource(
             "url": module_resource_url(VERSION),
         }
     )
-    mock_extra_js.assert_not_called()
+    mock_extra_js.assert_called_once()
 
 
 @pytest.mark.asyncio
