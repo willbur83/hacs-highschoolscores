@@ -19,8 +19,8 @@ CARD_FILENAME = "high-school-sports-scores-card.js"
 WWW_DIR = Path(__file__).resolve().parent / "www"
 CARD_PATH = WWW_DIR / CARD_FILENAME
 URL_BASE = f"/{DOMAIN}"
-_LOVELACE_RESOURCE_RETRY_SECONDS = 5
-_MAX_LOVELACE_RESOURCE_WAIT_ATTEMPTS = 60
+_LOVELACE_RESOURCE_RETRY_SECONDS = 1
+_MAX_LOVELACE_RESOURCE_WAIT_ATTEMPTS = 30
 
 
 def card_bundle_available() -> bool:
@@ -69,12 +69,20 @@ async def _async_ensure_resources_loaded(resources: Any) -> bool:
     return True
 
 
+def _lovelace_resource_mode(lovelace: Any) -> str | None:
+    """Return storage/yaml resource mode (HA 2026.9+ uses resource_mode on LovelaceData)."""
+    resource_mode = getattr(lovelace, "resource_mode", None)
+    if resource_mode is not None:
+        return resource_mode
+    return getattr(lovelace, "mode", None)
+
+
 async def _async_wait_for_storage_lovelace(hass: HomeAssistant) -> Any | None:
     """Wait until Lovelace is in storage mode, or give up on YAML mode / timeout."""
     for attempt in range(_MAX_LOVELACE_RESOURCE_WAIT_ATTEMPTS):
         lovelace = hass.data.get("lovelace")
         if lovelace is not None:
-            mode = getattr(lovelace, "mode", None)
+            mode = _lovelace_resource_mode(lovelace)
             if mode == "storage":
                 return lovelace
             if mode == "yaml":
@@ -93,7 +101,7 @@ async def _async_register_lovelace_module_resource(hass: HomeAssistant, version:
     lovelace = await _async_wait_for_storage_lovelace(hass)
     if lovelace is None:
         lovelace_check = hass.data.get("lovelace")
-        mode = getattr(lovelace_check, "mode", None) if lovelace_check else None
+        mode = _lovelace_resource_mode(lovelace_check) if lovelace_check else None
         if mode == "yaml":
             _LOGGER.info(
                 "Lovelace YAML mode: add JavaScript module resource manually: %s",

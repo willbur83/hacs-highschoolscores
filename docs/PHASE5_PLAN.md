@@ -1384,3 +1384,12 @@ HACS picks the newest **non–pre-release** GitHub Release for default Download 
 | Fix | `frontend_register.py` storage-mode wait; `__init__.py` register after config entry setup |
 | Tag / Release | **`v0.1.0-beta.6`** + `high_school_sports_scores.zip` |
 | `release.yml` | Omit `--prerelease` for zip_release betas (same policy as beta.4 for HACS Latest) |
+
+### Follow-up beta `v0.1.0-beta.7` (Slice 7 — Lovelace `resource_mode` regression)
+
+**Why:** HA **2026.9** `LovelaceData` exposes **`resource_mode`**, not **`mode`**. Beta.6 registration waited on `.mode == "storage"` (always `None`), blocked config setup ~5 minutes, never created `lovelace_resources`.
+
+| Item | Value |
+|------|-------|
+| Fix | `_lovelace_resource_mode()`; shorter wait interval |
+| Tag / Release | **`v0.1.0-beta.7`** |

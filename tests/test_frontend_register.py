@@ -14,6 +14,7 @@ from homeassistant.core import HomeAssistant
 from custom_components.high_school_sports_scores import async_setup
 from custom_components.high_school_sports_scores.const import VERSION
 from custom_components.high_school_sports_scores.frontend_register import (
+    _lovelace_resource_mode,
     module_resource_url,
     resource_path_from_url,
     resource_version_from_url,
@@ -35,6 +36,17 @@ def test_resource_url_parsing() -> None:
     assert resource_version_from_url(resource_path_from_url(url)) is None
 
 
+def test_lovelace_resource_mode_uses_resource_mode_on_ha_2026_9() -> None:
+    legacy = MagicMock()
+    legacy.resource_mode = "storage"
+    legacy.mode = "yaml"
+    assert _lovelace_resource_mode(legacy) == "storage"
+
+    older = MagicMock(spec=[])
+    older.mode = "storage"
+    assert _lovelace_resource_mode(older) == "storage"
+
+
 @pytest.mark.asyncio
 async def test_async_setup_waits_for_lovelace_storage_mode(
     hass: HomeAssistant,
@@ -49,7 +61,7 @@ async def test_async_setup_waits_for_lovelace_storage_mode(
     mock_lovelace = MagicMock()
     mock_lovelace.resources = mock_resources
     mode_values = iter([None, "storage"])
-    type(mock_lovelace).mode = property(lambda _self: next(mode_values))
+    type(mock_lovelace).resource_mode = property(lambda _self: next(mode_values))
     hass.data["lovelace"] = mock_lovelace
 
     with (
@@ -86,7 +98,7 @@ async def test_async_setup_creates_lovelace_module_resource(
     mock_resources.async_update_item = AsyncMock()
 
     mock_lovelace = MagicMock()
-    mock_lovelace.mode = "storage"
+    mock_lovelace.resource_mode = "storage"
     mock_lovelace.resources = mock_resources
     hass.data["lovelace"] = mock_lovelace
 
@@ -136,7 +148,7 @@ async def test_async_setup_updates_lovelace_resource_when_version_changes(
     mock_resources.async_update_item = AsyncMock()
 
     mock_lovelace = MagicMock()
-    mock_lovelace.mode = "storage"
+    mock_lovelace.resource_mode = "storage"
     mock_lovelace.resources = mock_resources
     hass.data["lovelace"] = mock_lovelace
 
