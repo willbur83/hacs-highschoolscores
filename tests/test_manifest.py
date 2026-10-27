@@ -66,7 +66,8 @@ def test_config_schema_is_config_entry_only():
     init_path = MANIFEST_PATH.parent / "__init__.py"
     source = init_path.read_text(encoding="utf-8")
     assert "async def async_setup(" in source
-    assert "CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)" in source
+    assert "CONFIG_SCHEMA = _config_entry_only_config_schema" in source
+    assert "cv.config_entry_only_config_schema(DOMAIN)" in source
 
 
 def test_brand_icon_exists():
