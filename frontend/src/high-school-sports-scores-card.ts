@@ -47,6 +47,13 @@ import type { HeroRole } from "./hero-selection";
 const CARD_TAG = "high-school-sports-scores-card";
 const CARD_TYPE = "custom:high-school-sports-scores-card";
 
+declare const __HSSS_CARD_VERSION__: string;
+
+/** Manifest version baked in at build time. */
+export const HSSS_CARD_VERSION: string = __HSSS_CARD_VERSION__;
+
+const HSSS_LOG = "[High School Sports Scores]";
+
 export class HighSchoolSportsScoresCard extends LitElement {
   static properties = {
     hass: { type: Object, attribute: false },
@@ -1218,7 +1225,8 @@ export class HighSchoolSportsScoresCard extends LitElement {
 
 declare global {
   interface Window {
-    __hsssCardBootstrapped?: boolean;
+    __hsssCardVersion?: string;
+    __hsssCardAnnounced?: boolean;
     customCards?: Array<{
       type: string;
       name: string;
@@ -1232,14 +1240,15 @@ declare global {
   }
 }
 
-function bootstrapHighSchoolSportsScoresCard(): void {
-  if (window.__hsssCardBootstrapped) {
+export function bootstrapHighSchoolSportsScoresCard(): void {
+  window.__hsssCardVersion = HSSS_CARD_VERSION;
+  try {
+    if (!customElements.get(CARD_TAG)) {
+      customElements.define(CARD_TAG, HighSchoolSportsScoresCard);
+    }
+  } catch (err) {
+    console.error(`${HSSS_LOG} failed to define ${CARD_TAG} (${HSSS_CARD_VERSION})`, err);
     return;
-  }
-  window.__hsssCardBootstrapped = true;
-
-  if (!customElements.get(CARD_TAG)) {
-    customElements.define(CARD_TAG, HighSchoolSportsScoresCard);
   }
 
   window.customCards = window.customCards ?? [];
@@ -1264,6 +1273,11 @@ function bootstrapHighSchoolSportsScoresCard(): void {
         };
       },
     });
+  }
+
+  if (!window.__hsssCardAnnounced) {
+    window.__hsssCardAnnounced = true;
+    console.info(`${HSSS_LOG} card ${HSSS_CARD_VERSION} ready (${CARD_TAG})`);
   }
 }
 

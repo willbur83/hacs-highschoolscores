@@ -2,7 +2,7 @@
 
 This document is for **beta testers** installing High School Sports Scores through HACS on real Home Assistant OS (or other) environments — without developer bind mounts, git checkouts, or npm on the Home Assistant host.
 
-Published beta builds are **GitHub Releases** with the **`high_school_sports_scores.zip`** asset (version names like `0.1.0-beta.11`). After adding the custom repository, use HACS **Download** or **Redownload**; default **Download** should target the latest release. If HACS offers a commit hash or `main` instead of a release tag, stop and report — that is a known failure mode.
+Published beta builds are **GitHub Releases** with the **`high_school_sports_scores.zip`** asset (version names like `0.1.0-beta.12`). After adding the custom repository, use HACS **Download** or **Redownload**; default **Download** should target the latest release. If HACS offers a commit hash or `main` instead of a release tag, stop and report — that is a known failure mode.
 
 User-facing overview and limitations: [README](../README.md).
 
@@ -31,7 +31,7 @@ Optional link helper: [my.home-assistant.io custom repository link](https://my.h
 ## 2. Install the beta release
 
 1. In **HACS** → **Integrations**, open **High School Sports Scores**.  
-2. Use **Download** (first install) or **Redownload** (upgrade). Confirm the version is the current beta release (for example **`v0.1.0-beta.11`**).  
+2. Use **Download** (first install) or **Redownload** (upgrade). Confirm the version is the current beta release (for example **`v0.1.0-beta.12`**).  
 3. If **Download** fails with a **commit hash** (such as `e497188`) instead of a release tag, stop — that is a known release-blocking failure mode (HACS fell back to `main` instead of the release ZIP). Report it; do not treat the install as valid.  
 4. **Restart Home Assistant** when HACS requests it.
 
@@ -69,6 +69,7 @@ When a newer beta pre-release is published:
 1. **HACS** → **Integrations** → **High School Sports Scores** → **Redownload**.  
 2. Select the newer pre-release version if it is not the default offer.  
 3. Restart when prompted; confirm existing config entries and entities remain correct.
+4. Reload always-on kiosk browsers once after that restart. A cache clear is **not** required for this upgrade: the card script URL changes when Home Assistant starts. If a kiosk still shows a red card or the message **High School Sports Scores did not load**, clear that browser’s cache for Home Assistant once.
 
 Report any broken upgrade path as a **release-blocking** issue.
 

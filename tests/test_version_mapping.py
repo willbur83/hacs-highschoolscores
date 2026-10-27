@@ -34,6 +34,8 @@ CANDIDATES = (
     "0.1.0-beta.4",
     "v0.1.0-beta.11",
     "0.1.0-beta.11",
+    "v0.1.0-beta.12",
+    "0.1.0-beta.12",
     "0.1.0b1",
     "v0.1.0b1",
     "v0.1.0",
@@ -43,8 +45,8 @@ CANDIDATES = (
 # Locked mapping for Slice 4/6 (see docs/PHASE5_PLAN.md Slice 3 Implementation Notes).
 FIRST_BETA_TAG = "v0.1.0-beta.1"
 FIRST_BETA_MANIFEST = "0.1.0-beta.1"
-CURRENT_BETA_TAG = "v0.1.0-beta.11"
-CURRENT_BETA_MANIFEST = "0.1.0-beta.11"
+CURRENT_BETA_TAG = "v0.1.0-beta.12"
+CURRENT_BETA_MANIFEST = "0.1.0-beta.12"
 FIRST_STABLE_TAG = "v0.1.0"
 FIRST_STABLE_MANIFEST = "0.1.0"
 
@@ -96,6 +98,7 @@ def test_pep440_beta_candidates_are_prerelease() -> None:
         ("0.1.0-beta.3", "0.1.0b3"),
         ("0.1.0-beta.4", "0.1.0b4"),
         ("0.1.0-beta.11", "0.1.0b11"),
+        ("0.1.0-beta.12", "0.1.0b12"),
         ("0.1.0b1", "0.1.0b1"),
         ("v0.1.0-beta.1", "0.1.0b1"),
         ("v0.1.0b1", "0.1.0b1"),
