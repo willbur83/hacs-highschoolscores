@@ -6,7 +6,11 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vite
 
 import { resolveCardMode } from "../src/card-helpers";
 import { isProgramEntity } from "../src/entity-suggestion";
-import { HighSchoolSportsScoresCard } from "../src/high-school-sports-scores-card";
+import {
+  HSSS_CARD_VERSION,
+  HighSchoolSportsScoresCard,
+  bootstrapHighSchoolSportsScoresCard,
+} from "../src/high-school-sports-scores-card";
 import {
   WS_GET_PROGRAM_SCHEDULE,
   WS_SUBSCRIBE_PROGRAM_SCHEDULE_UPDATES,
@@ -537,6 +541,41 @@ describe("HighSchoolSportsScoresCard", () => {
     );
     expect(cardSource).not.toContain("later slice");
     expect(cardSource).not.toContain("Schedule rendering is not available");
+  });
+
+  it("announces the manifest version and logs a define failure", () => {
+    const manifest = JSON.parse(
+      readFileSync(
+        resolve(testDir, "../../custom_components/high_school_sports_scores/manifest.json"),
+        "utf8",
+      ),
+    ) as { version: string };
+    const cardSource = readFileSync(
+      resolve(srcDir, "high-school-sports-scores-card.ts"),
+      "utf8",
+    );
+
+    expect(HSSS_CARD_VERSION).toBe(manifest.version);
+    expect(window.__hsssCardVersion).toBe(manifest.version);
+    expect(cardSource).not.toContain("__hsssCardBootstrapped");
+    expect(cardSource).toContain("console.info");
+    expect(cardSource).toContain("console.error");
+
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const get = vi.spyOn(customElements, "get").mockReturnValue(undefined);
+    const define = vi.spyOn(customElements, "define").mockImplementation(() => {
+      throw new Error("define failed");
+    });
+    try {
+      bootstrapHighSchoolSportsScoresCard();
+      expect(error.mock.calls.some((call) => String(call[0]).includes(manifest.version))).toBe(
+        true,
+      );
+    } finally {
+      define.mockRestore();
+      get.mockRestore();
+      error.mockRestore();
+    }
   });
 
   it("registers picker metadata without custom: prefix but suggests configs with it", () => {

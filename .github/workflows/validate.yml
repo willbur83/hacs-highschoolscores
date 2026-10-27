@@ -55,7 +55,8 @@ jobs:
             tests/test_manifest.py tests/test_init.py tests/test_ha_transport.py \
             tests/test_config_flow.py tests/test_programs.py tests/test_coordinator.py \
             tests/test_sensor.py tests/test_options_flow.py tests/test_multi_school.py \
-            tests/test_failure.py tests/test_rollover.py tests/test_websocket.py
+            tests/test_failure.py tests/test_rollover.py tests/test_websocket.py \
+            tests/test_frontend_register.py
           '
 
   packaging:

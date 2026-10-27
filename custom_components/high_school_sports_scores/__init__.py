@@ -18,10 +18,16 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
     from homeassistant.core import CoreState
 
-    from custom_components.high_school_sports_scores.frontend_register import async_register_frontend
+    from custom_components.high_school_sports_scores.frontend_register import (
+        async_register_card_static,
+        async_register_frontend,
+    )
     from custom_components.high_school_sports_scores.websocket import async_register_websocket_handlers
 
     async_register_websocket_handlers(hass)
+    # The HTTP view has to exist before dashboards load. Resource registration can
+    # wait for Lovelace; a kiosk that fetches the card during startup must not 404.
+    await async_register_card_static(hass)
 
     async def _register_frontend_when_ready(_event=None) -> None:
         await async_register_frontend(hass)
@@ -40,20 +46,20 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up High School Sports Scores from a config entry."""
     from homeassistant.const import Platform
+    from homeassistant.core import CoreState
 
     from custom_components.high_school_sports_scores.coordinator import MaxPrepsDataUpdateCoordinator
+    from custom_components.high_school_sports_scores.frontend_register import async_register_frontend
+
+    # Publish the loader URL before the MaxPreps refresh. Waiting on that refresh
+    # left the card path unregistered while always-on kiosks loaded the dashboard.
+    await async_register_frontend(hass, prompt_browser_reload=hass.state is CoreState.running)
 
     coordinator = MaxPrepsDataUpdateCoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
 
     await hass.config_entries.async_forward_entry_setups(entry, [Platform.SENSOR])
-
-    from custom_components.high_school_sports_scores.frontend_register import async_register_frontend
-
-    # Domain async_setup runs once; first registration can race Lovelace init (picker needs
-    # the module resource before the next HA restart). Retry after config entry is live.
-    await async_register_frontend(hass, prompt_browser_reload=True)
     return True
 
 

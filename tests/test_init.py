@@ -48,6 +48,53 @@ async def test_config_entry_setup_registers_frontend(
 
 
 @pytest.mark.asyncio
+async def test_config_entry_registers_frontend_before_first_refresh(
+    hass: HomeAssistant,
+    enable_custom_integrations: None,
+    coordinator_client,
+    frozen_applicable_date,
+) -> None:
+    """Kiosks must be able to fetch the card before the first MaxPreps refresh returns."""
+    from custom_components.high_school_sports_scores.coordinator import MaxPrepsDataUpdateCoordinator
+
+    entry = centennial_entry(
+        [
+            {
+                CONF_SPORT: "Football",
+                CONF_GENDER: "Boys",
+                CONF_LEVEL: "Varsity",
+            }
+        ]
+    )
+    entry.add_to_hass(hass)
+    order: list[str] = []
+    original_refresh = MaxPrepsDataUpdateCoordinator.async_config_entry_first_refresh
+
+    async def _register(*_args, **_kwargs) -> None:
+        order.append("frontend")
+
+    async def _refresh(self):
+        order.append("refresh")
+        return await original_refresh(self)
+
+    with (
+        patch(
+            "custom_components.high_school_sports_scores.frontend_register.async_register_frontend",
+            new=_register,
+        ),
+        patch.object(
+            MaxPrepsDataUpdateCoordinator,
+            "async_config_entry_first_refresh",
+            new=_refresh,
+        ),
+    ):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+    assert order.index("frontend") < order.index("refresh")
+
+
+@pytest.mark.asyncio
 async def test_setup_and_unload(
     hass: HomeAssistant,
     enable_custom_integrations: None,

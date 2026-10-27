@@ -1,7 +1,19 @@
-import { defineConfig } from "vite";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { defineConfig } from "vite";
+
+const manifest = JSON.parse(
+  readFileSync(
+    resolve(__dirname, "../custom_components/high_school_sports_scores/manifest.json"),
+    "utf8",
+  ),
+) as { version: string };
+
 export default defineConfig({
+  define: {
+    __HSSS_CARD_VERSION__: JSON.stringify(manifest.version),
+  },
   build: {
     outDir: resolve(__dirname, "../custom_components/high_school_sports_scores/www"),
     emptyOutDir: false,
