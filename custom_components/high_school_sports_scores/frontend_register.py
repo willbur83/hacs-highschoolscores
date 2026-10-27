@@ -143,16 +143,33 @@ def js_string_literal(value: str) -> str:
     )
 
 
+def _read_card_loader_template() -> str:
+    """Read the loader template from disk. Call this off the event loop."""
+    return _LOADER_TEMPLATE_PATH.read_text(encoding="utf-8")
+
+
+async def async_load_card_loader_template(hass: HomeAssistant) -> str:
+    """Read the loader template once, on the executor, and cache it."""
+    global _loader_template
+    if _loader_template is None:
+        _loader_template = await hass.async_add_executor_job(_read_card_loader_template)
+    return _loader_template
+
+
 def render_card_loader_script(
     version: str,
     bundle_url: str,
     *,
     tag: str = CARD_TAG,
 ) -> str:
-    """Fill the loader template. The loader fetches ``bundle_url`` and can retry."""
+    """Fill the cached loader template. The loader fetches ``bundle_url`` and can retry.
+
+    Request handlers must call ``async_load_card_loader_template`` first. The
+    synchronous read below is only for callers that are already off the event loop.
+    """
     global _loader_template
     if _loader_template is None:
-        _loader_template = _LOADER_TEMPLATE_PATH.read_text(encoding="utf-8")
+        _loader_template = _read_card_loader_template()
     return (
         _loader_template.replace("@@VERSION@@", js_string_literal(version))
         .replace("@@BUNDLE_URL@@", js_string_literal(bundle_url))
@@ -288,6 +305,7 @@ async def _async_serve_card_file(request: web.Request, filename: str) -> web.Res
         hass = request.app["hass"]
         try:
             content_hash = await hass.async_add_executor_job(bundle_content_hash)
+            await async_load_card_loader_template(hass)
         except OSError:
             _LOGGER.warning("Lovelace card bundle could not be read for the loader")
             return _status_response(404, NO_STORE_CACHE_CONTROL)
@@ -304,6 +322,11 @@ async def _async_serve_card_file(request: web.Request, filename: str) -> web.Res
 
 async def _register_static_http_path(hass: HomeAssistant) -> None:
     """Serve card files under /high_school_sports_scores/."""
+    try:
+        await async_load_card_loader_template(hass)
+    except OSError as err:
+        _LOGGER.warning("Lovelace card loader template could not be read: %s", err)
+        return
     domain_data = hass.data.setdefault(DOMAIN, {})
     if domain_data.get("card_http_view"):
         return

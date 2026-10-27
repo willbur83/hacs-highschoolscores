@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import threading
 from contextlib import contextmanager
+from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -12,10 +15,12 @@ pytest.importorskip("homeassistant")
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
 from homeassistant.core import HomeAssistant
 
-from custom_components.high_school_sports_scores import async_setup
+from custom_components.high_school_sports_scores import async_setup, frontend_register
 from custom_components.high_school_sports_scores.const import VERSION
 from custom_components.high_school_sports_scores.frontend_register import (
+    _async_serve_card_file,
     _lovelace_resource_mode,
+    async_load_card_loader_template,
     async_register_frontend,
     card_loader_url,
 )
@@ -299,3 +304,46 @@ async def test_version_change_while_ui_is_open_prompts(
         await hass.async_block_till_done()
 
     mock_notify.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_loader_template_is_read_off_the_loop_and_not_on_request(
+    hass: HomeAssistant,
+    tmp_path: Path,
+) -> None:
+    """Setup reads card_loader.js.tpl on the executor. A later request uses the cache."""
+    bundle = tmp_path / "high-school-sports-scores-card.js"
+    bundle.write_bytes(b"/* bundle */")
+    loop_thread = threading.current_thread()
+    template_threads: list[threading.Thread] = []
+    real_read_text = Path.read_text
+
+    def spy_read_text(self: Path, *args, **kwargs):
+        if self.name == "card_loader.js.tpl":
+            template_threads.append(threading.current_thread())
+        return real_read_text(self, *args, **kwargs)
+
+    frontend_register._loader_template = None
+    try:
+        with (
+            patch.object(frontend_register, "CARD_PATH", bundle),
+            patch.object(Path, "read_text", spy_read_text),
+        ):
+            await async_load_card_loader_template(hass)
+            assert template_threads
+            assert all(thread is not loop_thread for thread in template_threads)
+
+            template_threads.clear()
+            request = SimpleNamespace(app={"hass": hass}, query={}, headers={})
+            response = await _async_serve_card_file(request, frontend_register.LOADER_FILENAME)
+    finally:
+        frontend_register._loader_template = None
+
+    assert template_threads == []
+    assert response.status == 200
+    assert response.headers["Cache-Control"] == "no-store"
+    body = response.body.decode("utf-8")
+    assert "console.info" in body
+    assert "did not load" in body
+    assert "customElements.define" in body
+    assert VERSION in body

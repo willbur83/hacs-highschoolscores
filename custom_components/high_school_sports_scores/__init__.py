@@ -4,13 +4,24 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from homeassistant.helpers import config_validation as cv
+
 from custom_components.high_school_sports_scores.const import DOMAIN
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
 
-__all__ = ["DOMAIN", "async_setup", "async_setup_entry", "async_unload_entry"]
+# Config entries only. YAML under this domain is rejected by the helper.
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+__all__ = [
+    "CONFIG_SCHEMA",
+    "DOMAIN",
+    "async_setup",
+    "async_setup_entry",
+    "async_unload_entry",
+]
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:

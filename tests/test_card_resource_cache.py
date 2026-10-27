@@ -36,15 +36,15 @@ def test_bundle_content_hash_tracks_bytes(tmp_path: Path) -> None:
 
 
 def test_card_urls_include_version_hash_and_boot() -> None:
-    assert card_bundle_url("0.1.0-beta.12", "abc123") == (
-        "/high_school_sports_scores/high-school-sports-scores-card.js?v=0.1.0-beta.12&h=abc123"
+    assert card_bundle_url("0.1.0-beta.13", "abc123") == (
+        "/high_school_sports_scores/high-school-sports-scores-card.js?v=0.1.0-beta.13&h=abc123"
     )
-    assert card_loader_url("0.1.0-beta.12") == (
-        "/high_school_sports_scores/high-school-sports-scores-card-loader.js?v=0.1.0-beta.12"
+    assert card_loader_url("0.1.0-beta.13") == (
+        "/high_school_sports_scores/high-school-sports-scores-card-loader.js?v=0.1.0-beta.13"
     )
-    assert card_loader_url("0.1.0-beta.12", "deadbeef") == (
+    assert card_loader_url("0.1.0-beta.13", "deadbeef") == (
         "/high_school_sports_scores/high-school-sports-scores-card-loader.js"
-        "?v=0.1.0-beta.12&b=deadbeef"
+        "?v=0.1.0-beta.13&b=deadbeef"
     )
 
 
@@ -89,11 +89,11 @@ def test_if_none_match_accepts_this_strong_etag_only() -> None:
 
 
 def test_loader_script_points_at_the_hashed_bundle_and_is_diagnosable() -> None:
-    bundle = card_bundle_url("0.1.0-beta.12", "abc123")
-    script = render_card_loader_script("0.1.0-beta.12", bundle)
+    bundle = card_bundle_url("0.1.0-beta.13", "abc123")
+    script = render_card_loader_script("0.1.0-beta.13", bundle)
 
     assert "@@" not in script
-    assert "0.1.0-beta.12" in script
+    assert "0.1.0-beta.13" in script
     assert "abc123" in script
     assert "high-school-sports-scores-card.js" in script
     assert CARD_TAG in script
@@ -103,6 +103,24 @@ def test_loader_script_points_at_the_hashed_bundle_and_is_diagnosable() -> None:
     assert "clear the browser cache" in script
     assert "customElements.define" in script
     assert "&r=" in script or '?r="' in script or "r=" in script
+
+
+def test_cached_loader_template_is_not_reread(monkeypatch) -> None:
+    """Once the template is cached, rendering does not touch the file."""
+    import custom_components.high_school_sports_scores.frontend_register as frontend_register
+
+    frontend_register._loader_template = frontend_register._LOADER_TEMPLATE_PATH.read_text(
+        encoding="utf-8"
+    )
+
+    def fail_read(*_args, **_kwargs):
+        raise AssertionError("template was read after it was cached")
+
+    monkeypatch.setattr(Path, "read_text", fail_read)
+    script = render_card_loader_script("0.1.0-beta.13", card_bundle_url("0.1.0-beta.13", "abc"))
+    assert "0.1.0-beta.13" in script
+    assert "did not load" in script
+    frontend_register._loader_template = None
 
 
 def test_loader_script_escapes_markup() -> None:

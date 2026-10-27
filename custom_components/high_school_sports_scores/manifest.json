@@ -3,9 +3,10 @@
   "name": "High School Sports Scores",
   "codeowners": ["@willbur83"],
   "config_flow": true,
+  "dependencies": ["http"],
   "documentation": "https://github.com/willbur83/hacs-highschoolscores",
   "integration_type": "service",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/willbur83/hacs-highschoolscores/issues",
-  "version": "0.1.0-beta.12"
+  "version": "0.1.0-beta.13"
 }
