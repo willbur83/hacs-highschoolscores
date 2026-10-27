@@ -10,7 +10,28 @@ if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
 
-__all__ = ["DOMAIN", "async_setup", "async_setup_entry", "async_unload_entry"]
+
+def _config_entry_only_config_schema(config: dict) -> dict:
+    """Reject YAML setup. Home Assistant is imported only when the schema runs.
+
+    A module-level ``config_validation`` import would make every package import
+    require Home Assistant, including the Layer 1 tests.
+    """
+    from homeassistant.helpers import config_validation as cv
+
+    return cv.config_entry_only_config_schema(DOMAIN)(config)
+
+
+# Config entries only. Hassfest requires this name on a module that defines async_setup.
+CONFIG_SCHEMA = _config_entry_only_config_schema
+
+__all__ = [
+    "CONFIG_SCHEMA",
+    "DOMAIN",
+    "async_setup",
+    "async_setup_entry",
+    "async_unload_entry",
+]
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:

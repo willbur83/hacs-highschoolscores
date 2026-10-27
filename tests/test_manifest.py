@@ -46,7 +46,11 @@ def test_manifest_required_keys():
     for key in REQUIRED_MANIFEST_KEYS:
         assert key in manifest, f"missing manifest key: {key}"
     assert manifest["domain"] == DOMAIN
-    assert manifest["version"] == "0.1.0-beta.12"
+    assert manifest["version"] == "0.1.0-beta.13"
+    assert manifest["dependencies"] == ["http"]
+    keys = list(manifest)
+    assert keys[:2] == ["domain", "name"]
+    assert keys[2:] == sorted(keys[2:])
 
 
 def test_version_constant_matches_manifest():
@@ -55,6 +59,15 @@ def test_version_constant_matches_manifest():
 
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     assert VERSION == manifest["version"]
+
+
+def test_config_schema_is_config_entry_only():
+    """async_setup exists, and YAML setup is rejected by the config-entry helper."""
+    init_path = MANIFEST_PATH.parent / "__init__.py"
+    source = init_path.read_text(encoding="utf-8")
+    assert "async def async_setup(" in source
+    assert "CONFIG_SCHEMA = _config_entry_only_config_schema" in source
+    assert "cv.config_entry_only_config_schema(DOMAIN)" in source
 
 
 def test_brand_icon_exists():

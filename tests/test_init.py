@@ -11,10 +11,21 @@ pytest.importorskip("homeassistant")
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 
-from custom_components.high_school_sports_scores import async_setup
-from custom_components.high_school_sports_scores.const import CONF_GENDER, CONF_LEVEL, CONF_SPORT
+from custom_components.high_school_sports_scores import CONFIG_SCHEMA, async_setup
+from custom_components.high_school_sports_scores.const import (
+    CONF_GENDER,
+    CONF_LEVEL,
+    CONF_SPORT,
+    DOMAIN,
+)
 from tests.helpers.coordinator_test_helpers import centennial_entry
 from tests.test_coordinator import coordinator_client, frozen_applicable_date
+
+
+def test_config_schema_accepts_an_empty_yaml_document() -> None:
+    """Config-entry-only schema allows a configuration without this domain."""
+    assert CONFIG_SCHEMA({}) == {}
+    assert CONFIG_SCHEMA({DOMAIN: {}}) == {DOMAIN: {}}
 
 
 @pytest.mark.asyncio

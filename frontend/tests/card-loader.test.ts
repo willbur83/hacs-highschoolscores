@@ -61,19 +61,19 @@ afterEach(() => {
 describe("card loader", () => {
   it("retries a failed bundle fetch and then defines the card", async () => {
     const tag = "hsss-loader-retry";
-    const bundle = "/high_school_sports_scores/high-school-sports-scores-card.js?v=0.1.0-beta.12&h=abc";
+    const bundle = "/high_school_sports_scores/high-school-sports-scores-card.js?v=0.1.0-beta.13&h=abc";
     const error = vi.spyOn(console, "error").mockImplementation(() => {});
     const info = vi.spyOn(console, "info").mockImplementation(() => {});
     const stub = stubBundleLoads((src) => (src.includes("r=") ? "ok" : "error"), tag);
 
     try {
-      new Function(renderLoader("0.1.0-beta.12", bundle, tag))();
+      new Function(renderLoader("0.1.0-beta.13", bundle, tag))();
       await window.__hsssLoaderPromise?.promise;
 
       expect(stub.loads).toHaveLength(2);
       expect(stub.loads[1]).toContain("r=");
       expect(customElements.get(tag)).toBeTruthy();
-      expect(info.mock.calls.some((call) => String(call[0]).includes("loader 0.1.0-beta.12"))).toBe(
+      expect(info.mock.calls.some((call) => String(call[0]).includes("loader 0.1.0-beta.13"))).toBe(
         true,
       );
       expect(error).toHaveBeenCalled();
@@ -86,18 +86,18 @@ describe("card loader", () => {
 
   it("defines a visible fallback when the bundle never registers the card", async () => {
     const tag = "hsss-loader-fallback";
-    const bundle = "/high_school_sports_scores/high-school-sports-scores-card.js?v=0.1.0-beta.12&h=abc";
+    const bundle = "/high_school_sports_scores/high-school-sports-scores-card.js?v=0.1.0-beta.13&h=abc";
     const error = vi.spyOn(console, "error").mockImplementation(() => {});
     const stub = stubBundleLoads(() => "empty", tag);
 
     try {
-      new Function(renderLoader("0.1.0-beta.12", bundle, tag))();
+      new Function(renderLoader("0.1.0-beta.13", bundle, tag))();
       await window.__hsssLoaderPromise?.promise;
 
       expect(stub.loads).toHaveLength(2);
       const element = document.createElement(tag);
       document.body.appendChild(element);
-      expect(element.textContent).toContain("High School Sports Scores 0.1.0-beta.12 did not load");
+      expect(element.textContent).toContain("High School Sports Scores 0.1.0-beta.13 did not load");
       expect(element.textContent).toContain("did not register");
       expect(element.textContent).toContain("clear the browser cache");
       expect(error).toHaveBeenCalled();
